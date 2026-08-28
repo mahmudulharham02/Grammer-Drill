@@ -18,7 +18,7 @@ export const StudentIntroModal: React.FC<StudentIntroModalProps> = ({
   onSaveProfile,
   onClose,
 }) => {
-  const [step, setStep] = useState<'form' | 'carousel'>(isEditing ? 'form' : 'form');
+  const [step, setStep] = useState<'form' | 'carousel'>('form');
   const [carouselSlide, setCarouselSlide] = useState(0);
 
   const [name, setName] = useState(initialProfile?.name || '');
@@ -76,15 +76,17 @@ export const StudentIntroModal: React.FC<StudentIntroModalProps> = ({
       title: 'Master All HSC Grammar Topics 📚',
       subtitle: '60 Marks Board Standard Preparation',
       description:
-        'Drill deep into Voice Change, Direct/Indirect Narration, Right Form of Verbs, Completing Sentences, Modifiers, and more with instant rule explanations.',
+        'Drill deep into Voice Change, Direct/Indirect Narration, Right Form of Verbs, Completing Sentences, Modifiers, and more with instant formula breakdowns.',
       icon: '🏛️',
+      isCredit: false,
     },
     {
       title: 'Gamified Progress & Streaks 🎮',
       subtitle: 'Earn XP, Diamonds & 15+ Badges',
       description:
-        'Keep your daily streak burning for 1.5x XP multipliers. Maintain 5 hearts, level up your rank, and customize your profile in the Grammar Shop.',
+        'Keep your daily streak burning for 1.5x XP multipliers. Maintain 20 hearts, earn diamonds, level up your rank, and customize your profile in the Grammar Shop.',
       icon: '💎',
+      isCredit: false,
     },
     {
       title: 'Track Mastery & Get Certified 🏆',
@@ -92,6 +94,15 @@ export const StudentIntroModal: React.FC<StudentIntroModalProps> = ({
       description:
         'Everything is stored in your browser without requiring a server. Back up your progress anytime as JSON or export your verified Certificate of Grammar Mastery!',
       icon: '📜',
+      isCredit: false,
+    },
+    {
+      title: 'Made with ❤️ by ARHAM',
+      subtitle: 'Crafted to help HSC students conquer grammar.',
+      description:
+        'Engineered for Bangladesh Higher Secondary Certificate students across all boards with official NCTB curriculum precision.',
+      icon: '❤️',
+      isCredit: true,
     },
   ];
 
@@ -235,24 +246,40 @@ export const StudentIntroModal: React.FC<StudentIntroModalProps> = ({
             </div>
           </form>
         ) : (
-          /* 3-Slide Carousel */
+          /* 4-Slide Carousel */
           <div className="space-y-6 text-center">
-            <div className="text-6xl animate-bounce">{slides[carouselSlide].icon}</div>
-
-            <div className="space-y-2">
-              <span className="text-[11px] font-bold uppercase tracking-wider text-cyan-400">
-                Step {carouselSlide + 1} of {slides.length}
-              </span>
-              <h2 className="text-lg sm:text-xl font-extrabold text-white">
-                {slides[carouselSlide].title}
-              </h2>
-              <h3 className="text-xs sm:text-sm font-semibold text-violet-300">
-                {slides[carouselSlide].subtitle}
-              </h3>
-              <p className="text-xs sm:text-sm text-slate-300 leading-relaxed pt-1">
-                {slides[carouselSlide].description}
-              </p>
-            </div>
+            {slides[carouselSlide].isCredit ? (
+              <div className="p-5 rounded-3xl bg-gradient-to-b from-pink-500/20 to-purple-900/30 border border-pink-500/40 shadow-xl shadow-pink-500/10 space-y-3 animate-fade-in">
+                <div className="text-6xl heart-pulse">❤️</div>
+                <h2 className="text-2xl font-extrabold text-pink-400 tracking-tight drop-shadow-[0_0_15px_rgba(244,114,182,0.4)]">
+                  Made with ❤️ by ARHAM
+                </h2>
+                <h3 className="text-sm font-semibold text-slate-200">
+                  {slides[carouselSlide].subtitle}
+                </h3>
+                <p className="text-xs text-slate-300 leading-relaxed max-w-sm mx-auto">
+                  {slides[carouselSlide].description}
+                </p>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                <div className="text-6xl animate-bounce">{slides[carouselSlide].icon}</div>
+                <div className="space-y-2">
+                  <span className="text-[11px] font-bold uppercase tracking-wider text-cyan-400">
+                    Step {carouselSlide + 1} of {slides.length}
+                  </span>
+                  <h2 className="text-lg sm:text-xl font-extrabold text-white">
+                    {slides[carouselSlide].title}
+                  </h2>
+                  <h3 className="text-xs sm:text-sm font-semibold text-violet-300">
+                    {slides[carouselSlide].subtitle}
+                  </h3>
+                  <p className="text-xs sm:text-sm text-slate-300 leading-relaxed pt-1">
+                    {slides[carouselSlide].description}
+                  </p>
+                </div>
+              </div>
+            )}
 
             {/* Carousel Dots */}
             <div className="flex justify-center gap-1.5">
@@ -260,22 +287,29 @@ export const StudentIntroModal: React.FC<StudentIntroModalProps> = ({
                 <div
                   key={i}
                   className={`h-1.5 rounded-full transition-all ${
-                    carouselSlide === i ? 'w-6 bg-cyan-400' : 'w-2 bg-slate-700'
+                    carouselSlide === i
+                      ? slides[i].isCredit
+                        ? 'w-6 bg-pink-400'
+                        : 'w-6 bg-cyan-400'
+                      : 'w-2 bg-slate-700'
                   }`}
                 />
               ))}
             </div>
 
             <div className="flex gap-2 pt-2">
+              {carouselSlide < slides.length - 1 && (
+                <button
+                  type="button"
+                  onClick={handleFinishOnboarding}
+                  className="w-1/3 py-3 rounded-2xl bg-slate-800/80 hover:bg-slate-700 text-slate-400 text-xs font-semibold"
+                >
+                  Skip
+                </button>
+              )}
               <button
                 type="button"
-                onClick={handleFinishOnboarding}
-                className="w-1/3 py-3 rounded-2xl bg-slate-800/80 hover:bg-slate-700 text-slate-400 text-xs font-semibold"
-              >
-                Skip
-              </button>
-              <button
-                type="button"
+                id="btn-onboarding-continue"
                 onClick={() => {
                   soundManager.playClick();
                   if (carouselSlide + 1 < slides.length) {
@@ -284,10 +318,14 @@ export const StudentIntroModal: React.FC<StudentIntroModalProps> = ({
                     handleFinishOnboarding();
                   }
                 }}
-                className="flex-1 py-3.5 rounded-2xl bg-gradient-to-r from-cyan-400 to-blue-500 text-black font-extrabold text-xs sm:text-sm shadow-lg shadow-cyan-500/25 flex items-center justify-center gap-2"
+                className={`flex-1 rounded-2xl font-extrabold text-sm shadow-lg flex items-center justify-center gap-2 transition-all ${
+                  slides[carouselSlide].isCredit
+                    ? 'py-4 min-h-[56px] bg-gradient-to-r from-pink-500 to-violet-600 text-white shadow-pink-500/30 hover:scale-[1.02] active:scale-[0.98]'
+                    : 'py-3.5 bg-gradient-to-r from-cyan-400 to-blue-500 text-black shadow-cyan-500/25'
+                }`}
               >
-                <span>{carouselSlide + 1 < slides.length ? 'Continue' : 'Begin My Quest!'}</span>
-                <ChevronRight className="w-4 h-4" />
+                <span>{carouselSlide === slides.length - 1 ? "Let's Go 🚀" : 'Continue'}</span>
+                {carouselSlide < slides.length - 1 && <ChevronRight className="w-4 h-4" />}
               </button>
             </div>
           </div>

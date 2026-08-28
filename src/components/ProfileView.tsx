@@ -247,6 +247,36 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
           </label>
         </div>
       </div>
+
+      {/* About This App & ARHAM Credit Section */}
+      <div className="glass-panel rounded-3xl p-5 sm:p-6 border border-pink-500/30 space-y-4">
+        <div className="space-y-1 text-center sm:text-left">
+          <h3 className="text-base font-extrabold text-white flex items-center justify-center sm:justify-start gap-2">
+            <Sparkles className="w-4 h-4 text-pink-400" />
+            <span>About This App</span>
+          </h3>
+          <p className="text-xs text-slate-300 leading-relaxed">
+            HSC Grammar Quest is crafted with care to help students like you master HSC English grammar through gamified learning and syllabus-accurate drills.
+          </p>
+        </div>
+
+        <div className="p-4 rounded-2xl bg-gradient-to-r from-pink-500/15 via-purple-500/15 to-violet-500/15 border border-pink-500/30 flex flex-col sm:flex-row items-center justify-between gap-3 text-center sm:text-left">
+          <div className="flex items-center gap-3">
+            <span className="text-3xl heart-pulse">❤️</span>
+            <div>
+              <span className="text-sm sm:text-base font-extrabold text-pink-400 block drop-shadow-[0_0_12px_rgba(244,114,182,0.35)]">
+                Made with ❤️ by ARHAM
+              </span>
+              <span className="text-[11px] text-slate-400">
+                Created with passion for Bangladesh HSC Students
+              </span>
+            </div>
+          </div>
+          <span className="text-[11px] font-mono font-bold text-slate-400 px-3 py-1 rounded-xl bg-slate-900/80 border border-slate-800">
+            v3.0.0 (HSC Board Standard)
+          </span>
+        </div>
+      </div>
     </div>
   );
 };

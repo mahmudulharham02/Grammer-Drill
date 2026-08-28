@@ -3,7 +3,7 @@ import { TOPICS_DATA } from '../data/topics';
 import { getLevelTitle, getXpRequiredForLevel, ALL_BADGES } from '../data/badges';
 
 const STORAGE_KEY = 'hscGrammarQuest_v1';
-const HEART_REGEN_INTERVAL_MS = 10 * 60 * 1000; // 10 minutes per heart
+const HEART_REGEN_INTERVAL_MS = 60 * 1000; // 1 minute per heart in v3
 
 function createInitialTopicProgress(): Record<string, TopicProgressItem> {
   const progress: Record<string, TopicProgressItem> = {};
@@ -24,7 +24,7 @@ function createInitialTopicProgress(): Record<string, TopicProgressItem> {
 
 export function getDefaultState(): AppState {
   return {
-    version: 2,
+    version: 3,
     user: {
       name: null,
       roll: null,
@@ -38,9 +38,11 @@ export function getDefaultState(): AppState {
     xp: 0,
     level: 1,
     coins: 10,
-    hearts: 5,
-    maxHearts: 5,
+    diamonds: 10,
+    hearts: 20,
+    maxHearts: 20,
     lastHeartLostAt: null,
+    lastAdWatchedAt: null,
     streak: 1,
     lastStudyDate: new Date().toISOString().split('T')[0],
     lastBackupAt: null,
@@ -81,6 +83,21 @@ export function loadAppState(): AppState {
     }
     const parsed = JSON.parse(raw) as AppState;
 
+    // Migrate v2 / missing fields to v3
+    if (parsed.version === undefined || parsed.version < 3) {
+      parsed.version = 3;
+      parsed.maxHearts = 20;
+      if (parsed.hearts === undefined || parsed.hearts < 20) {
+        parsed.hearts = Math.max(parsed.hearts || 0, 20);
+      }
+      if (parsed.diamonds === undefined) {
+        parsed.diamonds = parsed.coins || 10;
+      }
+      if (parsed.lastAdWatchedAt === undefined) {
+        parsed.lastAdWatchedAt = null;
+      }
+    }
+
     // Ensure all topics exist in topicProgress
     TOPICS_DATA.forEach((topic) => {
       if (!parsed.topicProgress[topic.id]) {
@@ -105,6 +122,13 @@ export function loadAppState(): AppState {
       parsed.settings = getDefaultState().settings;
     }
 
+    if (parsed.diamonds === undefined) {
+      parsed.diamonds = 10;
+    }
+    if (parsed.maxHearts === undefined) {
+      parsed.maxHearts = 20;
+    }
+
     // Check & calculate heart regeneration
     const updated = calculateHeartRegen(parsed);
     // Check streak
@@ -125,7 +149,8 @@ export function saveAppState(state: AppState): void {
 }
 
 export function calculateHeartRegen(state: AppState): AppState {
-  if (state.hearts >= state.maxHearts || !state.lastHeartLostAt) {
+  const maxHearts = state.maxHearts || 20;
+  if (state.hearts >= maxHearts || !state.lastHeartLostAt) {
     return state;
   }
 
@@ -135,10 +160,10 @@ export function calculateHeartRegen(state: AppState): AppState {
 
   if (elapsed >= HEART_REGEN_INTERVAL_MS) {
     const heartsToAdd = Math.floor(elapsed / HEART_REGEN_INTERVAL_MS);
-    const newHearts = Math.min(state.maxHearts, state.hearts + heartsToAdd);
+    const newHearts = Math.min(maxHearts, state.hearts + heartsToAdd);
 
     let newLastLost: string | null = null;
-    if (newHearts < state.maxHearts) {
+    if (newHearts < maxHearts) {
       const remainder = elapsed % HEART_REGEN_INTERVAL_MS;
       newLastLost = new Date(now - remainder).toISOString();
     }
@@ -156,7 +181,8 @@ export function calculateHeartRegen(state: AppState): AppState {
 }
 
 export function getNextHeartRegenSeconds(state: AppState): number {
-  if (state.hearts >= state.maxHearts || !state.lastHeartLostAt) {
+  const maxHearts = state.maxHearts || 20;
+  if (state.hearts >= maxHearts || !state.lastHeartLostAt) {
     return 0;
   }
   const now = Date.now();
@@ -164,6 +190,69 @@ export function getNextHeartRegenSeconds(state: AppState): number {
   const elapsed = now - lastLost;
   const remainingMs = HEART_REGEN_INTERVAL_MS - (elapsed % HEART_REGEN_INTERVAL_MS);
   return Math.max(0, Math.ceil(remainingMs / 1000));
+}
+
+export function tradeDiamondsForHearts(
+  state: AppState,
+  heartsToBuy: number
+): { success: boolean; newState: AppState; message: string } {
+  const costInDiamonds = Math.ceil(heartsToBuy / 5);
+  if (state.diamonds < costInDiamonds) {
+    return {
+      success: false,
+      newState: state,
+      message: `Not enough diamonds! You need ${costInDiamonds} 💎 for ${heartsToBuy} ❤️.`,
+    };
+  }
+
+  const newDiamonds = state.diamonds - costInDiamonds;
+  const maxHearts = state.maxHearts || 20;
+  const newHearts = Math.min(maxHearts, state.hearts + heartsToBuy);
+  const newLastLost = newHearts >= maxHearts ? null : state.lastHeartLostAt;
+
+  const updated: AppState = {
+    ...state,
+    diamonds: newDiamonds,
+    hearts: newHearts,
+    lastHeartLostAt: newLastLost,
+  };
+  saveAppState(updated);
+  return {
+    success: true,
+    newState: updated,
+    message: `Successfully refilled +${heartsToBuy} hearts for ${costInDiamonds} 💎!`,
+  };
+}
+
+export function rewardMockAdWatch(state: AppState): { success: boolean; newState: AppState; message: string } {
+  const now = Date.now();
+  if (state.lastAdWatchedAt) {
+    const elapsed = now - new Date(state.lastAdWatchedAt).getTime();
+    const cooldownMs = 10 * 60 * 1000; // 10 min cooldown
+    if (elapsed < cooldownMs) {
+      const remainingMins = Math.ceil((cooldownMs - elapsed) / 60000);
+      return {
+        success: false,
+        newState: state,
+        message: `Ad reward cooldown active. Please wait ${remainingMins} minute(s).`,
+      };
+    }
+  }
+
+  const maxHearts = state.maxHearts || 20;
+  const newHearts = Math.min(maxHearts, state.hearts + 5);
+  const updated: AppState = {
+    ...state,
+    hearts: newHearts,
+    lastHeartLostAt: newHearts >= maxHearts ? null : state.lastHeartLostAt,
+    lastAdWatchedAt: new Date().toISOString(),
+  };
+  saveAppState(updated);
+  return {
+    success: true,
+    newState: updated,
+    message: `+5 Hearts unlocked from sponsor reward! ❤️`,
+  };
 }
 
 export function checkStreakIntegrity(state: AppState): AppState {
@@ -225,10 +314,12 @@ export function recordStudySession(state: AppState): AppState {
 export function addXPAndCoins(
   state: AppState,
   earnedXP: number,
-  earnedCoins: number
+  earnedCoins: number,
+  earnedDiamonds: number = 0
 ): { newState: AppState; leveledUp: boolean; newLevel: number; newlyUnlockedBadges: string[] } {
   let xp = state.xp + earnedXP;
   let coins = state.coins + earnedCoins;
+  let diamonds = (state.diamonds || 0) + earnedDiamonds;
   let level = state.level;
   let leveledUp = false;
 
@@ -246,6 +337,7 @@ export function addXPAndCoins(
     ...state,
     xp,
     coins,
+    diamonds,
     level,
     user: {
       ...state.user,
@@ -255,8 +347,10 @@ export function addXPAndCoins(
 
   const newlyUnlockedBadges = checkBadges(updatedState);
   if (newlyUnlockedBadges.length > 0) {
+    // Award 10 bonus diamonds for each unlocked badge
     updatedState = {
       ...updatedState,
+      diamonds: updatedState.diamonds + newlyUnlockedBadges.length * 10,
       badges: [...updatedState.badges, ...newlyUnlockedBadges],
       unclaimedBadges: [...(updatedState.unclaimedBadges || []), ...newlyUnlockedBadges],
     };
@@ -363,17 +457,22 @@ export function recordQuestionResult(
 
   let hearts = state.hearts;
   let lastHeartLostAt = state.lastHeartLostAt;
+  const maxHearts = state.maxHearts || 20;
 
   if (!isCorrect) {
     hearts = Math.max(0, state.hearts - 1);
-    if (lastHeartLostAt === null || hearts === state.maxHearts - 1) {
+    if (lastHeartLostAt === null || hearts === maxHearts - 1) {
       lastHeartLostAt = new Date().toISOString();
     }
   }
 
+  // Award 1 Diamond on correct answer
+  const diamonds = (state.diamonds || 0) + (isCorrect ? 1 : 0);
+
   const newState: AppState = {
     ...state,
     hearts,
+    diamonds,
     lastHeartLostAt,
     wrongQuestionReviewPool: wrongPool,
     topicProgress: {
@@ -423,7 +522,6 @@ export function exportStateAsJSON(state: AppState): AppState {
   document.body.appendChild(downloadAnchor);
   downloadAnchor.click();
   downloadAnchor.remove();
-
   return updatedState;
 }
 

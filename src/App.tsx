@@ -28,17 +28,26 @@ import { BookmarksView } from './components/BookmarksView';
 import { AchievementsView } from './components/AchievementsView';
 import { AnalyticsView } from './components/AnalyticsView';
 import { ProfileView } from './components/ProfileView';
+import { AppFooter } from './components/AppFooter';
 
 // Modals
 import { RulesGuideModal } from './components/RulesGuideModal';
 import { ShopModal } from './components/ShopModal';
+import { HeartsShopModal } from './components/HeartsShopModal';
+import { OutOfHeartsModal } from './components/OutOfHeartsModal';
 import { SettingsModal } from './components/SettingsModal';
 import { CertificateModal } from './components/CertificateModal';
 import { StudentIntroModal } from './components/StudentIntroModal';
+import {
+  tradeDiamondsForHearts,
+  rewardMockAdWatch,
+  getNextHeartRegenSeconds,
+} from './utils/storage';
 
 export function App() {
   const [state, setState] = useState<AppState>(() => loadAppState());
   const [currentRoute, setCurrentRoute] = useState<string>('home');
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
 
   // Active game session config
   const [activeQuestions, setActiveQuestions] = useState<Question[]>([]);
@@ -48,9 +57,18 @@ export function App() {
   // Modals state
   const [showRulesModal, setShowRulesModal] = useState(false);
   const [showShopModal, setShowShopModal] = useState(false);
+  const [showHeartsShopModal, setShowHeartsShopModal] = useState(false);
+  const [showOutOfHeartsModal, setShowOutOfHeartsModal] = useState(false);
   const [showSettingsModal, setShowSettingsModal] = useState(false);
   const [showCertModal, setShowCertModal] = useState(false);
   const [showIntroModal, setShowIntroModal] = useState<boolean>(state.firstTimeUser);
+
+  const showToast = useCallback((msg: string) => {
+    setToastMessage(msg);
+    setTimeout(() => {
+      setToastMessage((prev) => (prev === msg ? null : prev));
+    }, 3500);
+  }, []);
 
   // Sync sound settings with soundManager
   useEffect(() => {
@@ -303,14 +321,42 @@ export function App() {
     }));
   };
 
+  const handleTradeDiamonds = (hearts: number) => {
+    const res = tradeDiamondsForHearts(state, hearts);
+    if (res.success) {
+      updateState(res.newState);
+    }
+    return { success: res.success, message: res.message };
+  };
+
+  const handleWatchMockAd = () => {
+    const res = rewardMockAdWatch(state);
+    if (res.success) {
+      updateState(res.newState);
+    }
+    return { success: res.success, message: res.message };
+  };
+
   return (
-    <div className="min-h-screen bg-[#070a13] text-slate-100 flex flex-col selection:bg-cyan-500 selection:text-black">
+    <div className="min-h-screen bg-[#070a13] text-slate-100 flex flex-col selection:bg-cyan-500 selection:text-black relative">
+      {/* Toast Notification */}
+      {toastMessage && (
+        <div
+          id="global-app-toast"
+          className="fixed top-20 left-1/2 -translate-x-1/2 z-[100] px-4 py-2.5 rounded-2xl bg-slate-900/95 border border-pink-500/50 shadow-2xl text-xs sm:text-sm font-bold text-pink-300 flex items-center gap-2 animate-bounce"
+        >
+          <span>💖</span>
+          <span>{toastMessage}</span>
+        </div>
+      )}
+
       {/* Top Main Navigation Bar */}
       <Navbar
         state={state}
         currentRoute={currentRoute}
         onNavigate={(route) => handleNavigate(route)}
         onOpenShop={() => setShowShopModal(true)}
+        onOpenHeartsShop={() => setShowHeartsShopModal(true)}
         onOpenSettings={() => setShowSettingsModal(true)}
         onOpenRules={() => setShowRulesModal(true)}
         onToggleSound={() => {
@@ -332,6 +378,7 @@ export function App() {
             onStartDailyChallenge={startDailyChallenge}
             onOpenRules={() => setShowRulesModal(true)}
             onOpenCertificate={() => setShowCertModal(true)}
+            onOpenHeartsShop={() => setShowHeartsShopModal(true)}
             onExportBackup={handleExportBackup}
             onDismissCacheWarning={handleDismissCacheWarning}
           />
@@ -438,9 +485,33 @@ export function App() {
         )}
       </main>
 
+      {/* Persistent ARHAM Footer */}
+      <AppFooter hidden={currentRoute === 'game'} onToast={showToast} />
+
       {/* Global Modals */}
       {showRulesModal && (
         <RulesGuideModal onClose={() => setShowRulesModal(false)} />
+      )}
+
+      {showHeartsShopModal && (
+        <HeartsShopModal
+          hearts={state.hearts}
+          maxHearts={state.maxHearts}
+          diamonds={state.diamonds}
+          onTradeDiamonds={handleTradeDiamonds}
+          onClose={() => setShowHeartsShopModal(false)}
+        />
+      )}
+
+      {showOutOfHeartsModal && (
+        <OutOfHeartsModal
+          diamonds={state.diamonds}
+          regenSecondsLeft={getNextHeartRegenSeconds(state)}
+          lastAdWatchedAt={state.lastAdWatchedAt}
+          onTradeDiamonds={handleTradeDiamonds}
+          onWatchMockAd={handleWatchMockAd}
+          onClose={() => setShowOutOfHeartsModal(false)}
+        />
       )}
 
       {showShopModal && (

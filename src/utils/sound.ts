@@ -206,6 +206,14 @@ class SoundEngine {
       // Audio playback fails gracefully
     }
   }
+
+  public playReward() {
+    this.playLevelUp();
+  }
+
+  public playIncorrect() {
+    this.playWrong();
+  }
 }
 
 export const soundManager = new SoundEngine();

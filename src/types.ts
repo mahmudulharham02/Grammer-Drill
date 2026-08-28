@@ -181,9 +181,11 @@ export interface AppState {
   xp: number;
   level: number;
   coins: number;
+  diamonds: number;
   hearts: number;
   maxHearts: number;
   lastHeartLostAt: string | null;
+  lastAdWatchedAt: string | null;
   streak: number;
   lastStudyDate: string | null;
   lastBackupAt: string | null;

@@ -18,7 +18,7 @@ import {
   X,
   FileText,
   User,
-  Zap
+  Zap,
 } from 'lucide-react';
 import { AppState } from '../types';
 import { getNextHeartRegenSeconds } from '../utils/storage';
@@ -29,6 +29,7 @@ interface NavbarProps {
   currentRoute: string;
   onNavigate: (route: string) => void;
   onOpenShop: () => void;
+  onOpenHeartsShop: () => void;
   onOpenSettings: () => void;
   onOpenRules: () => void;
   onToggleSound: () => void;
@@ -39,6 +40,7 @@ export const Navbar: React.FC<NavbarProps> = ({
   currentRoute,
   onNavigate,
   onOpenShop,
+  onOpenHeartsShop,
   onOpenSettings,
   onOpenRules,
   onToggleSound,
@@ -63,8 +65,8 @@ export const Navbar: React.FC<NavbarProps> = ({
 
   const navItems = [
     { id: 'home', label: 'Home', icon: Home },
+    { id: 'topics', label: 'Topics', icon: BookOpen },
     { id: 'practice_hub', label: 'Drills', icon: Zap, badge: 'Voice & Narration' },
-    { id: 'topics', label: 'All Topics', icon: BookOpen },
     { id: 'changing_sentences', label: 'Transformations', icon: Layers, badge: '⭐ 10M' },
     { id: 'review_wrong', label: 'Errors', icon: RotateCcw, count: state.wrongQuestionReviewPool.length },
     { id: 'bookmarks', label: 'Saved', icon: Bookmark, count: state.bookmarkedQuestionIds.length },
@@ -73,57 +75,45 @@ export const Navbar: React.FC<NavbarProps> = ({
     { id: 'profile', label: 'Profile', icon: User },
   ];
 
+  const isRefilling = state.hearts < state.maxHearts;
+
   return (
     <>
       {/* Fix #3: Fixed Mobile Header (max 64px height, z-index 20) */}
       <header
         id="main-navbar"
-        className="fixed top-0 left-0 right-0 z-20 h-16 w-full border-b border-slate-800/80 bg-[#0a0e1a]/90 backdrop-blur-xl transition-all"
+        className="fixed top-0 left-0 right-0 z-20 h-16 w-full border-b border-slate-800/80 bg-[#0a0e1a]/95 backdrop-blur-xl transition-all select-none"
       >
         <div className="max-w-7xl mx-auto px-3 sm:px-6 h-full flex items-center justify-between">
-          {/* Brand Logo & Student Profile preview */}
-          <div className="flex items-center gap-3">
+          {/* Brand Logo & Mobile Hamburger */}
+          <div className="flex items-center gap-2 sm:gap-3">
+            <button
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              className="lg:hidden p-2 rounded-xl bg-slate-900 border border-slate-800 text-slate-300 hover:text-white"
+              aria-label="Toggle navigation drawer"
+            >
+              {mobileMenuOpen ? <X className="w-4 h-4" /> : <Menu className="w-4 h-4" />}
+            </button>
+
             <div
               id="brand-logo-container"
               onClick={() => {
                 soundManager.playClick();
                 onNavigate('home');
               }}
-              className="flex items-center gap-2.5 cursor-pointer group"
+              className="flex items-center gap-2 cursor-pointer group"
             >
-              <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-gradient-to-tr from-cyan-500 to-violet-600 p-0.5 shadow-md shadow-cyan-500/20 group-hover:scale-105 transition-transform">
+              <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-gradient-to-tr from-cyan-500 via-violet-600 to-pink-500 p-0.5 shadow-md shadow-cyan-500/20 group-hover:scale-105 transition-transform">
                 <div className="w-full h-full bg-[#0a0e1a] rounded-[10px] flex items-center justify-center">
                   <span className="text-lg">🎓</span>
                 </div>
               </div>
-              <div className="hidden sm:block">
-                <div className="flex items-center gap-1.5">
-                  <span className="font-extrabold text-sm sm:text-base tracking-tight bg-gradient-to-r from-white to-cyan-300 bg-clip-text text-transparent">
-                    HSC Grammar Quest
-                  </span>
-                  <span className="text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.2 rounded bg-cyan-950 text-cyan-400 border border-cyan-500/30">
-                    v2
-                  </span>
-                </div>
-                <p className="text-[10px] text-slate-400 truncate max-w-[150px]">
+              <div>
+                <p className="text-[10px] text-slate-400 truncate max-w-[140px] hidden sm:block">
                   {state.user.name || 'HSC Aspirant'} • Lvl {state.level}
                 </p>
               </div>
             </div>
-
-            {/* Student Avatar quick profile launcher on mobile */}
-            <button
-              onClick={() => {
-                soundManager.playClick();
-                onNavigate('profile');
-              }}
-              className="sm:hidden flex items-center gap-1.5 px-2 py-1 rounded-xl bg-slate-900 border border-slate-800 text-xs"
-            >
-              <span>{state.user.avatar || '🧑‍🎓'}</span>
-              <span className="font-bold text-white max-w-[70px] truncate text-[11px]">
-                {state.user.name?.split(' ')[0] || 'Profile'}
-              </span>
-            </button>
           </div>
 
           {/* Desktop Navigation Links */}
@@ -164,64 +154,56 @@ export const Navbar: React.FC<NavbarProps> = ({
 
           {/* Right Status Stats Bar */}
           <div id="stats-header-bar" className="flex items-center gap-1.5 sm:gap-2.5">
-            {/* Hearts / Lives */}
-            <div
+            {/* Hearts (Lives) - Tap to open Hearts Shop */}
+            <button
               id="stat-hearts-badge"
-              className="flex items-center gap-1 px-2 py-1 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-400 font-extrabold text-xs"
+              onClick={() => {
+                soundManager.playClick();
+                onOpenHeartsShop();
+              }}
+              className="flex items-center gap-1 px-2.5 py-1.5 rounded-xl bg-rose-500/15 border border-rose-500/30 text-rose-400 font-extrabold text-xs hover:bg-rose-500/25 transition-all cursor-pointer group"
               title={
-                state.hearts < state.maxHearts
-                  ? `Next heart in ${formatRegenTime(regenSecs)}`
-                  : 'Full Hearts'
+                isRefilling
+                  ? `Hearts refilling (+1/min). Next in ${formatRegenTime(regenSecs)}. Tap to open Shop.`
+                  : 'Hearts full (20/20). Tap to open Shop.'
               }
             >
-              <Heart className="w-3.5 h-3.5 fill-rose-500 text-rose-500" />
-              <span>{state.hearts}</span>
-              {state.hearts < state.maxHearts && (
+              <Heart
+                className={`w-3.5 h-3.5 fill-rose-500 text-rose-500 ${
+                  isRefilling ? 'heart-pulse' : ''
+                }`}
+              />
+              <span className="font-mono text-xs">{state.hearts}</span>
+              {isRefilling && (
                 <span className="text-[9px] text-rose-300/80 font-mono hidden md:inline ml-0.5">
                   ({formatRegenTime(regenSecs)})
                 </span>
               )}
-            </div>
+            </button>
+
+            {/* Diamonds (💎) - Tap to open Shop */}
+            <button
+              id="stat-diamonds-badge"
+              onClick={() => {
+                soundManager.playCoin();
+                onOpenHeartsShop();
+              }}
+              className="flex items-center gap-1 px-2.5 py-1.5 rounded-xl bg-amber-500/15 border border-amber-500/30 text-amber-300 font-extrabold text-xs hover:bg-amber-500/25 transition-all cursor-pointer"
+              title="Diamonds Balance. Tap to open Shop."
+            >
+              <span className="text-xs">💎</span>
+              <span className="font-mono text-xs">{state.diamonds ?? state.coins}</span>
+            </button>
 
             {/* Streak */}
             <div
               id="stat-streak-badge"
-              className="flex items-center gap-1 px-2 py-1 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-400 font-extrabold text-xs"
-              title="Current Daily Study Streak"
+              className="hidden sm:flex items-center gap-1 px-2 py-1.5 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-400 font-extrabold text-xs"
+              title="Daily Streak"
             >
               <Flame className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
               <span>{state.streak}</span>
             </div>
-
-            {/* Coins */}
-            <div
-              id="stat-coins-badge"
-              onClick={() => {
-                soundManager.playCoin();
-                onOpenShop();
-              }}
-              className="cursor-pointer flex items-center gap-1 px-2 py-1 rounded-xl bg-cyan-500/10 border border-cyan-500/20 text-cyan-300 font-extrabold text-xs hover:bg-cyan-500/20 transition-colors"
-              title="Grammar Shop"
-            >
-              <span>💎</span>
-              <span>{state.coins}</span>
-            </div>
-
-            {/* Sound Toggle */}
-            <button
-              onClick={() => {
-                soundManager.playClick();
-                onToggleSound();
-              }}
-              className="p-1.5 rounded-xl bg-slate-800/80 hover:bg-slate-700 text-slate-300 border border-slate-700 transition-colors"
-              title={state.settings.sound ? 'Mute Sound' : 'Enable Sound'}
-            >
-              {state.settings.sound ? (
-                <Volume2 className="w-3.5 h-3.5 text-cyan-400" />
-              ) : (
-                <VolumeX className="w-3.5 h-3.5 text-slate-500" />
-              )}
-            </button>
 
             {/* Settings */}
             <button
@@ -229,18 +211,11 @@ export const Navbar: React.FC<NavbarProps> = ({
                 soundManager.playClick();
                 onOpenSettings();
               }}
-              className="p-1.5 rounded-xl bg-slate-800/80 hover:bg-slate-700 text-slate-300 border border-slate-700 transition-colors"
+              className="p-2 rounded-xl bg-slate-800/80 hover:bg-slate-700 text-slate-300 border border-slate-700 transition-colors"
               title="Settings & Backup"
+              aria-label="Settings"
             >
               <Settings className="w-3.5 h-3.5" />
-            </button>
-
-            {/* Hamburger Button on Mobile */}
-            <button
-              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="lg:hidden p-1.5 rounded-xl bg-slate-800 text-slate-300 border border-slate-700"
-            >
-              {mobileMenuOpen ? <X className="w-4 h-4" /> : <Menu className="w-4 h-4" />}
             </button>
           </div>
         </div>
@@ -257,8 +232,12 @@ export const Navbar: React.FC<NavbarProps> = ({
               <div className="flex items-center gap-2.5">
                 <span className="text-2xl">{state.user.avatar || '🧑‍🎓'}</span>
                 <div>
-                  <span className="text-xs font-bold text-white block">{state.user.name || 'HSC Aspirant'}</span>
-                  <span className="text-[10px] text-slate-400">Roll: {state.user.roll || 'N/A'} • Lvl {state.level}</span>
+                  <span className="text-xs font-bold text-white block">
+                    {state.user.name || 'HSC Aspirant'}
+                  </span>
+                  <span className="text-[10px] text-slate-400">
+                    Roll: {state.user.roll || 'N/A'} • Lvl {state.level}
+                  </span>
                 </div>
               </div>
               <button
@@ -266,7 +245,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                   setMobileMenuOpen(false);
                   onNavigate('profile');
                 }}
-                className="text-[11px] font-bold text-cyan-400 bg-cyan-500/10 px-2 py-1 rounded-lg"
+                className="text-[11px] font-bold text-cyan-400 bg-cyan-500/10 px-2.5 py-1 rounded-lg border border-cyan-500/20"
               >
                 Profile
               </button>
@@ -298,6 +277,11 @@ export const Navbar: React.FC<NavbarProps> = ({
                       {item.badge}
                     </span>
                   )}
+                  {item.count !== undefined && item.count > 0 && (
+                    <span className="px-2 py-0.5 text-[9px] rounded-full bg-rose-500/20 text-rose-300 border border-rose-500/40 font-bold">
+                      {item.count}
+                    </span>
+                  )}
                 </button>
               );
             })}
@@ -322,6 +306,20 @@ export const Navbar: React.FC<NavbarProps> = ({
         >
           <Home className="w-5 h-5" />
           <span className="text-[9px] mt-0.5">Home</span>
+        </button>
+
+        <button
+          id="mobile-tab-topics"
+          onClick={() => {
+            soundManager.playClick();
+            onNavigate('topics');
+          }}
+          className={`flex flex-col items-center py-1 px-2 rounded-xl transition-all ${
+            currentRoute === 'topics' ? 'text-cyan-400 font-bold' : 'text-slate-400'
+          }`}
+        >
+          <BookOpen className="w-5 h-5" />
+          <span className="text-[9px] mt-0.5">Topics</span>
         </button>
 
         <button
@@ -353,23 +351,6 @@ export const Navbar: React.FC<NavbarProps> = ({
           </div>
           <Layers className="w-5 h-5" />
           <span className="text-[9px] mt-0.5">Transform</span>
-        </button>
-
-        <button
-          id="mobile-tab-review"
-          onClick={() => {
-            soundManager.playClick();
-            onNavigate('review_wrong');
-          }}
-          className={`flex flex-col items-center py-1 px-2 rounded-xl transition-all relative ${
-            currentRoute === 'review_wrong' ? 'text-rose-400 font-bold' : 'text-slate-400'
-          }`}
-        >
-          {state.wrongQuestionReviewPool.length > 0 && (
-            <span className="absolute -top-1 right-2 w-2 h-2 rounded-full bg-rose-500 animate-ping" />
-          )}
-          <RotateCcw className="w-5 h-5" />
-          <span className="text-[9px] mt-0.5">Errors</span>
         </button>
 
         <button

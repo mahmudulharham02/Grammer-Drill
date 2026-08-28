@@ -24,6 +24,7 @@ import { getXpRequiredForLevel } from '../data/badges';
 import { soundManager } from '../utils/sound';
 import { Mascot } from './Mascot';
 import { CacheWarningBanner } from './CacheWarningBanner';
+import { LowHeartsBanner } from './LowHeartsBanner';
 
 interface HomeDashboardProps {
   state: AppState;
@@ -31,6 +32,7 @@ interface HomeDashboardProps {
   onStartDailyChallenge: () => void;
   onOpenRules: () => void;
   onOpenCertificate: () => void;
+  onOpenHeartsShop: () => void;
   onExportBackup: () => void;
   onDismissCacheWarning: () => void;
 }
@@ -41,6 +43,7 @@ export const HomeDashboard: React.FC<HomeDashboardProps> = ({
   onStartDailyChallenge,
   onOpenRules,
   onOpenCertificate,
+  onOpenHeartsShop,
   onExportBackup,
   onDismissCacheWarning,
 }) => {
@@ -71,6 +74,14 @@ export const HomeDashboard: React.FC<HomeDashboardProps> = ({
 
   return (
     <div id="home-dashboard-container" className="space-y-5 sm:space-y-6 pb-24 max-w-7xl mx-auto">
+      {/* Low Hearts Banner */}
+      <LowHeartsBanner
+        hearts={state.hearts}
+        maxHearts={state.maxHearts}
+        diamonds={state.diamonds}
+        onOpenShop={onOpenHeartsShop}
+      />
+
       {/* Cache Warning Banner if not dismissed */}
       {!state.settings.cacheWarningDismissed && (
         <CacheWarningBanner

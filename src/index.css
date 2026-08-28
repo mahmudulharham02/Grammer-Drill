@@ -35,12 +35,48 @@
 /* Stacking context helpers */
 .z-bg { z-index: 0; }
 .z-content { z-index: 1; }
+.z-footer { z-index: 5; }
 .z-sticky { z-index: 10; }
 .z-header { z-index: 20; }
 .z-drawer { z-index: 30; }
 .z-bottom-nav { z-index: 40; }
 .z-modal { z-index: 50; }
 .z-toast { z-index: 100; }
+
+/* Heart pulse animation */
+@keyframes heartPulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.25); }
+}
+
+.heart-pulse {
+  display: inline-block;
+  animation: heartPulse 1.5s ease-in-out infinite;
+}
+
+.app-footer {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 28px;
+  z-index: 5;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  color: var(--text-muted);
+  background: rgba(10, 14, 26, 0.75);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border-top: 1px solid var(--border);
+  padding-bottom: env(safe-area-inset-bottom, 0);
+  user-select: none;
+}
+.app-footer strong {
+  color: var(--accent-pink);
+  font-weight: 700;
+}
 
 /* Aurora background animation */
 @keyframes aurora {
