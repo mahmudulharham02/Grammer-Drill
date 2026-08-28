@@ -306,9 +306,9 @@ export const GameScreen: React.FC<GameScreenProps> = ({
         />
       </div>
 
-      {/* Main Question Card Area (with pb-32 to guarantee clear space for sticky bottom submit bar) */}
+      {/* Main Question Card Area (Natural Height, Flex Col) */}
       {currentQ && (
-        <div className="glass-panel rounded-3xl p-5 sm:p-7 border border-slate-800 space-y-5 pb-32">
+        <div className="glass-panel rounded-3xl p-4 sm:p-6 border border-slate-800 flex flex-col gap-4">
           {/* Question Direction & Submodule Tags */}
           <div className="flex flex-wrap items-center justify-between gap-2">
             <span className="text-[11px] font-extrabold uppercase tracking-wider text-cyan-400 bg-cyan-500/10 px-2.5 py-1 rounded-lg border border-cyan-500/20 flex items-center gap-1.5">
@@ -356,7 +356,7 @@ export const GameScreen: React.FC<GameScreenProps> = ({
               </div>
             )}
 
-            <h2 className="text-sm sm:text-base font-bold text-slate-200 leading-relaxed pt-1">
+            <h2 className="text-sm sm:text-base font-bold text-slate-200 leading-relaxed">
               {currentQ.prompt}
             </h2>
           </div>
@@ -475,6 +475,39 @@ export const GameScreen: React.FC<GameScreenProps> = ({
             </div>
           )}
 
+          {/* FIX #1: INLINE CHECK / NEXT BUTTON DIRECTLY UNDER OPTIONS */}
+          <div className="pt-1">
+            {!canSubmit && !isAnswered && (
+              <button
+                id="btn-disabled-check"
+                disabled
+                className="w-full min-h-[56px] rounded-2xl bg-slate-800/80 text-slate-400 font-bold text-sm sm:text-base border border-slate-700/60 opacity-60 cursor-not-allowed flex items-center justify-center gap-2"
+              >
+                <span>👆 Select an option first</span>
+              </button>
+            )}
+
+            {canSubmit && !isAnswered && (
+              <button
+                id="btn-check-answer"
+                onClick={handleSubmitAnswer}
+                className="w-full min-h-[56px] rounded-2xl bg-gradient-to-r from-cyan-500 to-violet-500 hover:from-cyan-400 hover:to-violet-400 text-white font-bold text-base shadow-lg shadow-cyan-500/30 active:scale-[0.98] transition-all duration-200 flex items-center justify-center gap-2"
+              >
+                <span>✅ Check Answer</span>
+              </button>
+            )}
+
+            {isAnswered && (
+              <button
+                id="btn-next-question"
+                onClick={handleNextQuestion}
+                className="w-full min-h-[56px] rounded-2xl bg-gradient-to-r from-lime-400 via-emerald-400 to-cyan-400 hover:opacity-95 text-slate-950 font-extrabold text-base shadow-lg shadow-lime-500/30 active:scale-[0.98] transition-all duration-200 flex items-center justify-center gap-2"
+              >
+                <span>{currentIndex + 1 < questions.length ? 'Next Question →' : 'Finish Session 🏆'}</span>
+              </button>
+            )}
+          </div>
+
           {/* Instant Board-Standard Rule Card (After Answered) */}
           {isAnswered && (
             <div
@@ -549,48 +582,9 @@ export const GameScreen: React.FC<GameScreenProps> = ({
         </div>
       )}
 
-      {/* Mascot Speech */}
-      <div className="flex items-center justify-center gap-3 pt-1">
+      {/* Floating Mascot in Corner (Does not push content down) */}
+      <div className="fixed bottom-20 sm:bottom-24 right-3 sm:right-6 z-10 pointer-events-none drop-shadow-xl">
         <Mascot mood={mascotMood} size="sm" showSpeech={mascotSpeech} />
-      </div>
-
-      {/* FIX #2: STICKY SUBMIT / CONTINUE BOTTOM ACTION BAR */}
-      <div
-        id="sticky-game-action-bar"
-        className="fixed bottom-0 left-0 right-0 z-10 p-3 sm:p-4 bg-slate-950/95 backdrop-blur-xl border-t border-slate-800 flex items-center justify-between gap-4 max-w-3xl mx-auto rounded-t-3xl shadow-2xl"
-      >
-        <div className="text-xs text-slate-400 hidden sm:block">
-          {!isAnswered ? (
-            <span>Press <kbd className="px-1.5 py-0.5 rounded bg-slate-800 text-cyan-300 font-mono text-[11px]">Enter</kbd> to submit</span>
-          ) : (
-            <span>Press <kbd className="px-1.5 py-0.5 rounded bg-slate-800 text-cyan-300 font-mono text-[11px]">Space</kbd> for next</span>
-          )}
-        </div>
-
-        {!isAnswered ? (
-          <button
-            id="btn-submit-answer"
-            disabled={!canSubmit}
-            onClick={handleSubmitAnswer}
-            className={`w-full sm:w-auto px-8 py-3.5 rounded-2xl font-extrabold text-sm flex items-center justify-center gap-2 transition-all shadow-lg ${
-              canSubmit
-                ? 'bg-gradient-to-r from-cyan-400 to-blue-500 text-black shadow-cyan-500/25 hover:scale-[1.02] active:scale-[0.98]'
-                : 'bg-slate-800 text-slate-500 cursor-not-allowed opacity-50'
-            }`}
-          >
-            <span>Check Answer</span>
-            <ChevronRight className="w-4 h-4" />
-          </button>
-        ) : (
-          <button
-            id="btn-next-question"
-            onClick={handleNextQuestion}
-            className="w-full sm:w-auto px-8 py-3.5 rounded-2xl bg-white hover:bg-slate-100 text-black font-extrabold text-sm shadow-xl flex items-center justify-center gap-2 transition-all active:scale-95"
-          >
-            <span>{currentIndex + 1 < questions.length ? 'Continue' : 'Finish Session'}</span>
-            <ChevronRight className="w-4 h-4" />
-          </button>
-        )}
       </div>
 
       {/* Game Over Modal (0 Hearts) */}
@@ -603,7 +597,7 @@ export const GameScreen: React.FC<GameScreenProps> = ({
             <div className="text-5xl animate-bounce">💔</div>
             <h3 className="text-2xl font-extrabold text-white">Out of Hearts!</h3>
             <p className="text-xs sm:text-sm text-slate-300">
-              You lost all 5 hearts. Hearts automatically regenerate 1 every 10 minutes, or you can refill immediately.
+              You lost all hearts. Hearts automatically regenerate 1 every minute (up to 20), or you can refill immediately.
             </p>
 
             <div className="space-y-3 pt-2">

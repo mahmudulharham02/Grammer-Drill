@@ -285,6 +285,17 @@ export const Navbar: React.FC<NavbarProps> = ({
                 </button>
               );
             })}
+
+            {/* ARHAM credit in hamburger menu drawer at bottom */}
+            <div className="pt-4 mt-3 border-t border-slate-800/80 text-center space-y-1">
+              <div className="text-xs font-medium text-slate-400">
+                Made with <span className="text-rose-400 animate-pulse">❤️</span> by{' '}
+                <strong className="text-pink-400 font-extrabold">ARHAM</strong>
+              </div>
+              <p className="text-[10px] text-slate-500">
+                HSC Grammar Quest · v3.0 Board Edition
+              </p>
+            </div>
           </div>
         </div>
       )}

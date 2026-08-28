@@ -1,6 +1,10 @@
 import { Question } from '../types';
 import { VOICE_CHANGE_QUESTIONS } from './voiceChangeQuestions';
 import { NARRATION_QUESTIONS } from './narrationQuestions';
+import { VOICE_CHANGE_BANK } from './voiceChangeBank';
+import { NARRATION_BANK } from './narrationBank';
+
+export { VOICE_CHANGE_BANK, NARRATION_BANK };
 
 export const QUESTIONS_DATA: Question[] = [
   ...VOICE_CHANGE_QUESTIONS,

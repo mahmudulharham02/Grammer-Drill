@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { AppState, Question, ShopItem } from './types';
+import { AppState, Question, ShopItem, VoiceSubModuleId, NarrationSubModuleId } from './types';
 import {
   loadAppState,
   saveAppState,
@@ -13,6 +13,8 @@ import {
   importStateFromJSON,
 } from './utils/storage';
 import { ALL_QUESTIONS } from './data/questions';
+import { VOICE_CHANGE_QUESTIONS } from './data/voiceChangeQuestions';
+import { NARRATION_QUESTIONS } from './data/narrationQuestions';
 import { TOPICS_DATA } from './data/topics';
 import { soundManager } from './utils/sound';
 
@@ -28,7 +30,6 @@ import { BookmarksView } from './components/BookmarksView';
 import { AchievementsView } from './components/AchievementsView';
 import { AnalyticsView } from './components/AnalyticsView';
 import { ProfileView } from './components/ProfileView';
-import { AppFooter } from './components/AppFooter';
 
 // Modals
 import { RulesGuideModal } from './components/RulesGuideModal';
@@ -155,9 +156,58 @@ export function App() {
     setCurrentRoute('game');
   };
 
+  // Launch specialized Voice Change Drill
+  const startVoiceDrill = (subModule: VoiceSubModuleId) => {
+    const matched = VOICE_CHANGE_QUESTIONS.filter((q) => q.subModule === subModule);
+    const questionsToUse = matched.length > 0 ? matched : VOICE_CHANGE_QUESTIONS;
+    const shuffled = [...questionsToUse].sort(() => Math.random() - 0.5).slice(0, 10);
+    const subModuleNames: Record<string, string> = {
+      simple_present: 'Simple Present Voice',
+      present_continuous: 'Present Continuous Voice',
+      present_perfect: 'Present Perfect Voice',
+      simple_past: 'Simple Past Voice',
+      past_continuous: 'Past Continuous Voice',
+      past_perfect: 'Past Perfect Voice',
+      simple_future: 'Simple Future Voice',
+      future_perfect: 'Future Perfect Voice',
+      modals: 'Modal Verbs Voice',
+      imperatives: 'Imperative Voice',
+      interrogatives: 'Interrogative Voice',
+      negatives: 'Negatives & Intransitive',
+    };
+    setGameTitle(`Voice Change: ${subModuleNames[subModule] || subModule}`);
+    setGameSubTitle('Active ↔ Passive Transformation Drill');
+    setActiveQuestions(shuffled);
+    setCurrentRoute('game');
+  };
+
+  // Launch specialized Narration Change Drill
+  const startNarrationDrill = (subModule: NarrationSubModuleId) => {
+    const matched = NARRATION_QUESTIONS.filter((q) => q.subModule === subModule);
+    const questionsToUse = matched.length > 0 ? matched : NARRATION_QUESTIONS;
+    const shuffled = [...questionsToUse].sort(() => Math.random() - 0.5).slice(0, 10);
+    const subModuleNames: Record<string, string> = {
+      assertive: 'Assertive Sentences',
+      interrogative: 'Interrogative Sentences',
+      imperative: 'Imperative Sentences',
+      exclamatory: 'Exclamatory Sentences',
+      optative: 'Optative Sentences',
+      mixed: 'Mixed Board Narration',
+    };
+    setGameTitle(`Narration: ${subModuleNames[subModule] || subModule}`);
+    setGameSubTitle('Direct ↔ Indirect Speech Drill');
+    setActiveQuestions(shuffled);
+    setCurrentRoute('game');
+  };
+
   // Game action handlers
-  const handleRecordResult = (questionId: string, topicId: string, isCorrect: boolean) => {
-    setState((prev) => recordQuestionResult(prev, questionId, topicId, isCorrect));
+  const handleRecordResult = (
+    questionId: string,
+    topicId: string,
+    isCorrect: boolean,
+    subModuleId?: string
+  ) => {
+    setState((prev) => recordQuestionResult(prev, questionId, topicId, isCorrect, subModuleId));
   };
 
   const handleAddXP = (xp: number, coins: number) => {
@@ -387,7 +437,8 @@ export function App() {
         {currentRoute === 'practice_hub' && (
           <PracticeHub
             state={state}
-            onStartDrill={(topicId, subtopicId) => startTopicLesson(topicId, subtopicId)}
+            onStartVoiceDrill={startVoiceDrill}
+            onStartNarrationDrill={startNarrationDrill}
             onOpenRules={() => setShowRulesModal(true)}
           />
         )}
@@ -484,9 +535,6 @@ export function App() {
           />
         )}
       </main>
-
-      {/* Persistent ARHAM Footer */}
-      <AppFooter hidden={currentRoute === 'game'} onToast={showToast} />
 
       {/* Global Modals */}
       {showRulesModal && (
