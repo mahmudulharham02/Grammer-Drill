@@ -1,0 +1,137 @@
+@import "tailwindcss";
+
+/* z-index map: bg=0, content=1, sticky=10, header=20, drawer=30, bottomNav=40, modal=50, toast=100 */
+
+@layer base {
+  :root {
+    --bg-primary: #0a0e1a;
+    --bg-secondary: #111827;
+    --bg-card: #1f2937;
+    --accent-cyan: #22d3ee;
+    --accent-violet: #a78bfa;
+    --accent-pink: #f472b6;
+    --accent-lime: #a3e635;
+    --accent-rose: #fb7185;
+    --accent-amber: #fbbf24;
+    --text-primary: #f1f5f9;
+    --text-muted: #94a3b8;
+    --border: rgba(255, 255, 255, 0.08);
+  }
+
+  body {
+    font-family: 'Plus Jakarta Sans', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+    background-color: var(--bg-primary);
+    color: var(--text-primary);
+    min-height: 100vh;
+    overflow-x: hidden;
+    padding-top: 64px; /* Fix #3: clear fixed top header on mobile & desktop */
+  }
+
+  code, pre, .font-mono {
+    font-family: 'JetBrains Mono', monospace;
+  }
+}
+
+/* Stacking context helpers */
+.z-bg { z-index: 0; }
+.z-content { z-index: 1; }
+.z-sticky { z-index: 10; }
+.z-header { z-index: 20; }
+.z-drawer { z-index: 30; }
+.z-bottom-nav { z-index: 40; }
+.z-modal { z-index: 50; }
+.z-toast { z-index: 100; }
+
+/* Aurora background animation */
+@keyframes aurora {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+.aurora-bg {
+  background: radial-gradient(circle at 15% 15%, rgba(34, 211, 238, 0.08) 0%, transparent 45%),
+              radial-gradient(circle at 85% 25%, rgba(167, 139, 250, 0.09) 0%, transparent 45%),
+              radial-gradient(circle at 50% 85%, rgba(244, 114, 182, 0.06) 0%, transparent 50%),
+              #0a0e1a;
+  background-size: 180% 180%;
+  animation: aurora 22s ease infinite alternate;
+}
+
+/* Glassmorphism surfaces */
+.glass-panel {
+  background: rgba(17, 24, 39, 0.8);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.glass-card {
+  background: rgba(31, 41, 55, 0.7);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  position: relative;
+}
+
+.glass-card-hover {
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.glass-card-hover:hover {
+  transform: translateY(-2px);
+  border-color: rgba(34, 211, 238, 0.35);
+  box-shadow: 0 10px 25px -10px rgba(34, 211, 238, 0.2);
+}
+
+/* Glow effects */
+.glow-cyan {
+  box-shadow: 0 0 20px rgba(34, 211, 238, 0.25);
+}
+
+.glow-violet {
+  box-shadow: 0 0 20px rgba(167, 139, 250, 0.25);
+}
+
+.glow-lime {
+  box-shadow: 0 0 20px rgba(163, 230, 53, 0.3);
+}
+
+.glow-rose {
+  box-shadow: 0 0 20px rgba(251, 113, 133, 0.3);
+}
+
+/* Shake animation for wrong answers */
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  20%, 60% { transform: translateX(-6px); }
+  40%, 80% { transform: translateX(6px); }
+}
+
+.animate-shake {
+  animation: shake 0.4s ease-in-out;
+}
+
+/* Safe area padding helper for iOS devices */
+.pb-safe {
+  padding-bottom: max(1rem, env(safe-area-inset-bottom));
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(10, 14, 26, 0.9);
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 9999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(34, 211, 238, 0.4);
+}
