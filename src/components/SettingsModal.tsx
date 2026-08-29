@@ -21,13 +21,6 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
   const [avatar, setAvatar] = useState(state.user.avatar);
   const [showResetConfirm, setShowResetConfirm] = useState(false);
   const [importError, setImportError] = useState<string | null>(null);
-  const [showAuthCardTips, setShowAuthCardTips] = useState<boolean>(() => {
-    try {
-      return localStorage.getItem('hscGrammarQuest_v1.authCardDismissed') !== 'true';
-    } catch {
-      return true;
-    }
-  });
 
   const avatarsList = ['🧑‍🎓', '👩‍🎓', '🦉', '🚀', '⚡', '🏆', '🦁', '👑'];
 
@@ -186,42 +179,6 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                 }`}
               >
                 {state.settings.sound ? 'Enabled' : 'Muted'}
-              </button>
-            </div>
-          </div>
-
-          {/* Notifications & Tips */}
-          <div className="space-y-3 bg-slate-900/80 p-4 rounded-2xl border border-slate-800">
-            <h3 className="text-xs font-bold uppercase tracking-wider text-cyan-400">
-              Notifications & Hints
-            </h3>
-
-            <div className="flex items-center justify-between">
-              <div>
-                <h4 className="text-xs font-bold text-white">Show "Coming Soon" tips on dashboard</h4>
-                <p className="text-[11px] text-slate-400">
-                  Displays announcements regarding upcoming authentication and features
-                </p>
-              </div>
-
-              <button
-                onClick={() => {
-                  soundManager.playClick();
-                  const nextVal = !showAuthCardTips;
-                  setShowAuthCardTips(nextVal);
-                  if (nextVal) {
-                    localStorage.removeItem('hscGrammarQuest_v1.authCardDismissed');
-                  } else {
-                    localStorage.setItem('hscGrammarQuest_v1.authCardDismissed', 'true');
-                  }
-                }}
-                className={`px-3.5 py-1.5 rounded-xl font-bold text-xs transition-all ${
-                  showAuthCardTips
-                    ? 'bg-cyan-500 text-black'
-                    : 'bg-slate-800 text-slate-400 border border-slate-700'
-                }`}
-              >
-                {showAuthCardTips ? 'ON' : 'OFF'}
               </button>
             </div>
           </div>

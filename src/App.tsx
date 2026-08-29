@@ -99,15 +99,61 @@ export function App() {
     });
   }, []);
 
-  // Navigation handler
-  const handleNavigate = (route: string, params?: { topicId?: string; subtopicId?: string }) => {
-    if (route === 'game' && params?.topicId) {
+  // History-aware navigation handler
+  const navigate = (newPage: string, params?: { topicId?: string; subtopicId?: string }) => {
+    if (newPage === 'game' && params?.topicId) {
       startTopicLesson(params.topicId, params.subtopicId);
       return;
     }
-    setCurrentRoute(route);
+    window.history.pushState(
+      { page: newPage, params },
+      '',
+      `#${newPage}`
+    );
+    setCurrentRoute(newPage);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
+
+  // On initial app load: replace current state without pushing extra history
+  useEffect(() => {
+    const hash = window.location.hash.replace(/^#/, '');
+    const validRoutes = [
+      'home',
+      'practice_hub',
+      'topics',
+      'changing_sentences',
+      'review_wrong',
+      'bookmarks',
+      'achievements',
+      'analytics',
+      'profile',
+    ];
+    const initialRoute = validRoutes.includes(hash) ? hash : 'home';
+    if (initialRoute !== 'home') {
+      setCurrentRoute(initialRoute);
+    }
+    window.history.replaceState(
+      { page: initialRoute },
+      '',
+      `#${initialRoute}`
+    );
+  }, []);
+
+  // Listen for browser back/forward (popstate)
+  useEffect(() => {
+    const handlePopState = (event: PopStateEvent) => {
+      const state = event.state;
+      if (state && state.page) {
+        setCurrentRoute(state.page);
+      } else {
+        // No state means we're at the root/first entry, default to home
+        setCurrentRoute('home');
+      }
+    };
+
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, []);
 
   // Launch a standard topic lesson
   const startTopicLesson = (topicId: string, subtopicId?: string) => {
@@ -129,6 +175,7 @@ export function App() {
     setGameTitle(topic ? topic.title : 'Grammar Drill');
     setGameSubTitle(subtopicId ? `Module: ${subtopicId.replace(/_/g, ' ')}` : undefined);
     setActiveQuestions(shuffled);
+    window.history.pushState({ page: 'game' }, '', '#game');
     setCurrentRoute('game');
   };
 
@@ -150,6 +197,7 @@ export function App() {
     setGameTitle('Daily Board Challenge (10 Topics)');
     setGameSubTitle('Mixed 10-Topic Board Standard Test');
     setActiveQuestions(selected);
+    window.history.pushState({ page: 'game' }, '', '#game');
     setCurrentRoute('game');
   };
 
@@ -159,6 +207,7 @@ export function App() {
     setGameTitle(title);
     setGameSubTitle(undefined);
     setActiveQuestions(shuffled);
+    window.history.pushState({ page: 'game' }, '', '#game');
     setCurrentRoute('game');
   };
 
@@ -184,6 +233,7 @@ export function App() {
     setGameTitle(`Voice Change: ${subModuleNames[subModule] || subModule}`);
     setGameSubTitle('Active ↔ Passive Transformation Drill');
     setActiveQuestions(shuffled);
+    window.history.pushState({ page: 'game' }, '', '#game');
     setCurrentRoute('game');
   };
 
@@ -203,6 +253,7 @@ export function App() {
     setGameTitle(`Narration: ${subModuleNames[subModule] || subModule}`);
     setGameSubTitle('Direct ↔ Indirect Speech Drill');
     setActiveQuestions(shuffled);
+    window.history.pushState({ page: 'game' }, '', '#game');
     setCurrentRoute('game');
   };
 
@@ -413,7 +464,7 @@ export function App() {
       <Navbar
         state={state}
         currentRoute={currentRoute}
-        onNavigate={(route) => handleNavigate(route)}
+        onNavigate={(route) => navigate(route)}
         onOpenShop={() => setShowShopModal(true)}
         onOpenHeartsShop={(tab) => handleOpenHeartsShop(tab || 'hearts')}
         onOpenSettings={() => setShowSettingsModal(true)}
@@ -433,7 +484,7 @@ export function App() {
         {currentRoute === 'home' && (
           <HomeDashboard
             state={state}
-            onNavigate={(route, params) => handleNavigate(route, params)}
+            onNavigate={(route, params) => navigate(route, params)}
             onStartDailyChallenge={startDailyChallenge}
             onOpenRules={() => setShowRulesModal(true)}
             onOpenCertificate={() => setShowCertModal(true)}
@@ -457,7 +508,7 @@ export function App() {
             state={state}
             onSelectTopic={(topicId, subtopicId) => {
               if (topicId === 'changing_sentences') {
-                setCurrentRoute('changing_sentences');
+                navigate('changing_sentences');
               } else {
                 startTopicLesson(topicId, subtopicId);
               }
@@ -498,7 +549,7 @@ export function App() {
             onUseHint={handleUseHint}
             onRefillHearts={handleRefillHearts}
             onTradeDiamonds={handleTradeDiamonds}
-            onExit={() => setCurrentRoute('home')}
+            onExit={() => navigate('home')}
           />
         )}
 
@@ -508,7 +559,7 @@ export function App() {
             onStartReviewDrill={(questions) =>
               startCustomDrill(questions, 'Mistake Review Session')
             }
-            onNavigateHome={() => setCurrentRoute('topics')}
+            onNavigateHome={() => navigate('topics')}
           />
         )}
 
@@ -519,7 +570,7 @@ export function App() {
               startCustomDrill(questions, 'Saved Questions Revision')
             }
             onToggleBookmark={handleToggleBookmark}
-            onNavigateHome={() => setCurrentRoute('topics')}
+            onNavigateHome={() => navigate('topics')}
           />
         )}
 
