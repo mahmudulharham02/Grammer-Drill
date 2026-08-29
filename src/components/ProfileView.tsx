@@ -272,9 +272,25 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
               </span>
             </div>
           </div>
-          <span className="text-[11px] font-mono font-bold text-slate-400 px-3 py-1 rounded-xl bg-slate-900/80 border border-slate-800">
-            v3.0.0 (HSC Board Standard)
-          </span>
+          <div className="flex flex-col sm:flex-row items-center gap-2.5">
+            <a
+              href="https://www.launchvault.dev"
+              target="_blank"
+              rel="noopener noreferrer"
+              title="Featured on LaunchVault"
+              className="inline-block transition-transform hover:scale-105"
+            >
+              <img
+                src="https://www.launchvault.dev/images/badges/launch-valut-badge.svg"
+                alt="Featured on LaunchVault"
+                style={{ width: '165px', height: 'auto' }}
+                className="w-[150px] sm:w-[165px] h-auto"
+              />
+            </a>
+            <span className="text-[11px] font-mono font-bold text-slate-400 px-3 py-1 rounded-xl bg-slate-900/80 border border-slate-800">
+              v3.0.0 (HSC Board Standard)
+            </span>
+          </div>
         </div>
       </div>
     </div>

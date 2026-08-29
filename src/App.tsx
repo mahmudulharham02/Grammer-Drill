@@ -30,6 +30,7 @@ import { BookmarksView } from './components/BookmarksView';
 import { AchievementsView } from './components/AchievementsView';
 import { AnalyticsView } from './components/AnalyticsView';
 import { ProfileView } from './components/ProfileView';
+import { AppFooter } from './components/AppFooter';
 
 // Modals
 import { RulesGuideModal } from './components/RulesGuideModal';
@@ -535,6 +536,9 @@ export function App() {
           />
         )}
       </main>
+
+      {/* Site-wide Persistent Footer */}
+      <AppFooter hidden={currentRoute === 'game'} onToast={showToast} />
 
       {/* Global Modals */}
       {showRulesModal && (
