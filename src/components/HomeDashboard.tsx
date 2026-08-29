@@ -151,7 +151,7 @@ export const HomeDashboard: React.FC<HomeDashboardProps> = ({
             <Mascot
               mood="happy"
               size="md"
-              showSpeech="Gramify AI Comming Soon"
+              showSpeech="Gramify AI Comming Soon!"
             />
 
             <div className="flex items-center gap-2 shrink-0">
