@@ -256,7 +256,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
             <span>About This App</span>
           </h3>
           <p className="text-xs text-slate-300 leading-relaxed">
-            HSC Grammar Quest is crafted with care to help students like you master HSC English grammar through gamified learning and syllabus-accurate drills.
+            Gramify is crafted with care to help students like you master HSC English grammar through gamified learning and syllabus-accurate drills.
           </p>
         </div>
 

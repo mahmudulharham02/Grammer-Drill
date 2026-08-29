@@ -85,31 +85,31 @@ export const Navbar: React.FC<NavbarProps> = ({
         className="fixed top-0 left-0 right-0 z-20 h-16 w-full border-b border-slate-800/80 bg-[#0a0e1a]/95 backdrop-blur-xl transition-all select-none"
       >
         <div className="max-w-7xl mx-auto px-3 sm:px-6 h-full flex items-center justify-between">
-          {/* Brand Logo & Mobile Hamburger */}
+          {/* Brand Logo */}
           <div className="flex items-center gap-2 sm:gap-3">
-            <button
-              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="lg:hidden p-2 rounded-xl bg-slate-900 border border-slate-800 text-slate-300 hover:text-white"
-              aria-label="Toggle navigation drawer"
-            >
-              {mobileMenuOpen ? <X className="w-4 h-4" /> : <Menu className="w-4 h-4" />}
-            </button>
-
             <div
               id="brand-logo-container"
               onClick={() => {
                 soundManager.playClick();
                 onNavigate('home');
               }}
-              className="flex items-center gap-2 cursor-pointer group"
+              className="flex items-center gap-2.5 cursor-pointer group"
             >
-              <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-gradient-to-tr from-cyan-500 via-violet-600 to-pink-500 p-0.5 shadow-md shadow-cyan-500/20 group-hover:scale-105 transition-transform">
-                <div className="w-full h-full bg-[#0a0e1a] rounded-[10px] flex items-center justify-center">
-                  <span className="text-lg">🎓</span>
+              <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-gradient-to-tr from-cyan-500 via-violet-600 to-pink-500 p-0.5 shadow-md shadow-cyan-500/20 group-hover:scale-105 transition-transform overflow-hidden">
+                <div className="w-full h-full bg-[#0a0e1a] rounded-[10px] flex items-center justify-center p-1">
+                  <img
+                    src="/logo1.png"
+                    alt="Gramify"
+                    className="w-full h-full object-contain"
+                    referrerPolicy="no-referrer"
+                  />
                 </div>
               </div>
-              <div>
-                <p className="text-[10px] text-slate-400 truncate max-w-[140px] hidden sm:block">
+              <div className="flex flex-col">
+                <span className="font-black text-base sm:text-lg tracking-tight bg-gradient-to-r from-cyan-300 via-violet-200 to-pink-300 bg-clip-text text-transparent leading-tight">
+                  Gramify
+                </span>
+                <p className="text-[10px] text-slate-400 truncate max-w-[140px] hidden sm:block leading-none mt-0.5">
                   {state.user.name || 'HSC Aspirant'} • Lvl {state.level}
                 </p>
               </div>
@@ -217,6 +217,16 @@ export const Navbar: React.FC<NavbarProps> = ({
             >
               <Settings className="w-3.5 h-3.5" />
             </button>
+
+            {/* Mobile Navigation Drawer Toggle */}
+            <button
+              id="mobile-menu-toggle-btn"
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              className="lg:hidden p-2 rounded-xl bg-slate-800/80 hover:bg-slate-700 text-slate-300 border border-slate-700 transition-colors"
+              aria-label="Toggle navigation drawer"
+            >
+              {mobileMenuOpen ? <X className="w-4 h-4" /> : <Menu className="w-4 h-4" />}
+            </button>
           </div>
         </div>
       </header>
@@ -293,7 +303,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                 <strong className="text-pink-400 font-extrabold">ARHAM</strong>
               </div>
               <p className="text-[10px] text-slate-500">
-                HSC Grammar Quest · v3.0 Board Edition
+                Gramify · HSC Board Edition
               </p>
             </div>
           </div>

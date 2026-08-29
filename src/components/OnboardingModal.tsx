@@ -11,7 +11,7 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({ onFinish }) =>
 
   const slides = [
     {
-      title: 'Welcome to HSC Grammar Quest! 🎓',
+      title: 'Welcome to Gramify! 🚀',
       subtitle: 'Official 60-Mark Bangladesh HSC Syllabus Master',
       body: 'Master all 10 core grammar topics including Voice Change, Narration, 16 Affirmative/Negative Rules, Complex clauses, and Modifiers with instant feedback.',
       icon: '🏛️',
