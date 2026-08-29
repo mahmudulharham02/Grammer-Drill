@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import {
   Sparkles,
   Heart,
+  Lightbulb,
   Flame,
   Volume2,
   VolumeX,
@@ -21,7 +22,7 @@ import {
   Zap,
 } from 'lucide-react';
 import { AppState } from '../types';
-import { getNextHeartRegenSeconds } from '../utils/storage';
+import { getNextHeartRegenSeconds, formatHMS } from '../utils/storage';
 import { soundManager } from '../utils/sound';
 
 interface NavbarProps {
@@ -29,7 +30,7 @@ interface NavbarProps {
   currentRoute: string;
   onNavigate: (route: string) => void;
   onOpenShop: () => void;
-  onOpenHeartsShop: () => void;
+  onOpenHeartsShop: (tab?: 'hearts' | 'hints') => void;
   onOpenSettings: () => void;
   onOpenRules: () => void;
   onToggleSound: () => void;
@@ -58,9 +59,7 @@ export const Navbar: React.FC<NavbarProps> = ({
   }, [state]);
 
   const formatRegenTime = (seconds: number) => {
-    const mins = Math.floor(seconds / 60);
-    const secs = seconds % 60;
-    return `${mins}:${secs < 10 ? '0' : ''}${secs}`;
+    return formatHMS(seconds);
   };
 
   const navItems = [
@@ -159,12 +158,12 @@ export const Navbar: React.FC<NavbarProps> = ({
               id="stat-hearts-badge"
               onClick={() => {
                 soundManager.playClick();
-                onOpenHeartsShop();
+                onOpenHeartsShop('hearts');
               }}
               className="flex items-center gap-1 px-2.5 py-1.5 rounded-xl bg-rose-500/15 border border-rose-500/30 text-rose-400 font-extrabold text-xs hover:bg-rose-500/25 transition-all cursor-pointer group"
               title={
                 isRefilling
-                  ? `Hearts refilling (+1/min). Next in ${formatRegenTime(regenSecs)}. Tap to open Shop.`
+                  ? `Hearts refilling (+1 per 3 hours). Next in ${formatRegenTime(regenSecs)}. Tap to open Shop.`
                   : 'Hearts full (20/20). Tap to open Shop.'
               }
             >
@@ -186,13 +185,27 @@ export const Navbar: React.FC<NavbarProps> = ({
               id="stat-diamonds-badge"
               onClick={() => {
                 soundManager.playCoin();
-                onOpenHeartsShop();
+                onOpenHeartsShop('hearts');
               }}
-              className="flex items-center gap-1 px-2.5 py-1.5 rounded-xl bg-amber-500/15 border border-amber-500/30 text-amber-300 font-extrabold text-xs hover:bg-amber-500/25 transition-all cursor-pointer"
+              className="flex items-center gap-1 px-2.5 py-1.5 rounded-xl bg-cyan-500/15 border border-cyan-500/30 text-cyan-300 font-extrabold text-xs hover:bg-cyan-500/25 transition-all cursor-pointer"
               title="Diamonds Balance. Tap to open Shop."
             >
               <span className="text-xs">💎</span>
-              <span className="font-mono text-xs">{state.diamonds ?? state.coins}</span>
+              <span className="font-mono text-xs">{state.diamonds ?? 20}</span>
+            </button>
+
+            {/* Hints (💡) - Tap to open Hint Shop */}
+            <button
+              id="stat-hints-badge"
+              onClick={() => {
+                soundManager.playClick();
+                onOpenHeartsShop('hints');
+              }}
+              className="flex items-center gap-1 px-2.5 py-1.5 rounded-xl bg-amber-500/15 border border-amber-500/30 text-amber-300 font-extrabold text-xs hover:bg-amber-500/25 transition-all cursor-pointer"
+              title="50/50 Hints Inventory (Max 8). Tap to open Hint Shop."
+            >
+              <Lightbulb className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
+              <span className="font-mono text-xs">{state.inventory?.hints ?? 3}</span>
             </button>
 
             {/* Streak */}

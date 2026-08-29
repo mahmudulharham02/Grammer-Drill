@@ -8,6 +8,10 @@ import {
   recordQuestionResult,
   toggleBookmarkQuestion,
   calculateHeartRegen,
+  getNextHeartRegenSeconds,
+  tradeDiamondsForHearts,
+  tradeDiamondsForHints,
+  rewardMockAdWatch,
   getDefaultState,
   exportStateAsJSON,
   importStateFromJSON,
@@ -40,11 +44,6 @@ import { OutOfHeartsModal } from './components/OutOfHeartsModal';
 import { SettingsModal } from './components/SettingsModal';
 import { CertificateModal } from './components/CertificateModal';
 import { StudentIntroModal } from './components/StudentIntroModal';
-import {
-  tradeDiamondsForHearts,
-  rewardMockAdWatch,
-  getNextHeartRegenSeconds,
-} from './utils/storage';
 
 export function App() {
   const [state, setState] = useState<AppState>(() => loadAppState());
@@ -60,10 +59,16 @@ export function App() {
   const [showRulesModal, setShowRulesModal] = useState(false);
   const [showShopModal, setShowShopModal] = useState(false);
   const [showHeartsShopModal, setShowHeartsShopModal] = useState(false);
+  const [heartsShopTab, setHeartsShopTab] = useState<'hearts' | 'hints'>('hearts');
   const [showOutOfHeartsModal, setShowOutOfHeartsModal] = useState(false);
   const [showSettingsModal, setShowSettingsModal] = useState(false);
   const [showCertModal, setShowCertModal] = useState(false);
   const [showIntroModal, setShowIntroModal] = useState<boolean>(state.firstTimeUser);
+
+  const handleOpenHeartsShop = useCallback((tab: 'hearts' | 'hints' = 'hearts') => {
+    setHeartsShopTab(tab);
+    setShowHeartsShopModal(true);
+  }, []);
 
   const showToast = useCallback((msg: string) => {
     setToastMessage(msg);
@@ -224,19 +229,14 @@ export function App() {
   };
 
   const handleUseHint = (): boolean => {
-    if (state.inventory.hints > 0) {
+    const currentHints = state.inventory?.hints ?? 0;
+    if (currentHints > 0) {
       setState((prev) => ({
         ...prev,
         inventory: {
           ...prev.inventory,
-          hints: prev.inventory.hints - 1,
+          hints: Math.max(0, (prev.inventory?.hints ?? 1) - 1),
         },
-      }));
-      return true;
-    } else if (state.coins >= 1) {
-      setState((prev) => ({
-        ...prev,
-        coins: prev.coins - 1,
       }));
       return true;
     }
@@ -372,8 +372,16 @@ export function App() {
     }));
   };
 
-  const handleTradeDiamonds = (hearts: number) => {
-    const res = tradeDiamondsForHearts(state, hearts);
+  const handleTradeDiamonds = (hearts: number, cost?: number) => {
+    const res = tradeDiamondsForHearts(state, hearts, cost);
+    if (res.success) {
+      updateState(res.newState);
+    }
+    return { success: res.success, message: res.message };
+  };
+
+  const handleTradeHints = (hints: number, cost: number) => {
+    const res = tradeDiamondsForHints(state, hints, cost);
     if (res.success) {
       updateState(res.newState);
     }
@@ -407,7 +415,7 @@ export function App() {
         currentRoute={currentRoute}
         onNavigate={(route) => handleNavigate(route)}
         onOpenShop={() => setShowShopModal(true)}
-        onOpenHeartsShop={() => setShowHeartsShopModal(true)}
+        onOpenHeartsShop={(tab) => handleOpenHeartsShop(tab || 'hearts')}
         onOpenSettings={() => setShowSettingsModal(true)}
         onOpenRules={() => setShowRulesModal(true)}
         onToggleSound={() => {
@@ -429,7 +437,7 @@ export function App() {
             onStartDailyChallenge={startDailyChallenge}
             onOpenRules={() => setShowRulesModal(true)}
             onOpenCertificate={() => setShowCertModal(true)}
-            onOpenHeartsShop={() => setShowHeartsShopModal(true)}
+            onOpenHeartsShop={() => handleOpenHeartsShop('hearts')}
             onExportBackup={handleExportBackup}
             onDismissCacheWarning={handleDismissCacheWarning}
           />
@@ -489,6 +497,7 @@ export function App() {
             onToggleBookmark={handleToggleBookmark}
             onUseHint={handleUseHint}
             onRefillHearts={handleRefillHearts}
+            onTradeDiamonds={handleTradeDiamonds}
             onExit={() => setCurrentRoute('home')}
           />
         )}
@@ -549,8 +558,12 @@ export function App() {
         <HeartsShopModal
           hearts={state.hearts}
           maxHearts={state.maxHearts}
+          hints={state.inventory?.hints ?? 3}
+          maxHints={8}
           diamonds={state.diamonds}
+          initialTab={heartsShopTab}
           onTradeDiamonds={handleTradeDiamonds}
+          onTradeHints={handleTradeHints}
           onClose={() => setShowHeartsShopModal(false)}
         />
       )}
@@ -563,6 +576,10 @@ export function App() {
           onTradeDiamonds={handleTradeDiamonds}
           onWatchMockAd={handleWatchMockAd}
           onClose={() => setShowOutOfHeartsModal(false)}
+          onOpenShop={() => {
+            setShowOutOfHeartsModal(false);
+            handleOpenHeartsShop('hearts');
+          }}
         />
       )}
 

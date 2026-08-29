@@ -1,9 +1,30 @@
-import { AppState, TopicProgressItem, SubModuleProgressItem } from '../types';
+import { AppState, TopicProgressItem, SubModuleProgressItem, StudentProfile } from '../types';
 import { TOPICS_DATA } from '../data/topics';
 import { getLevelTitle, getXpRequiredForLevel, ALL_BADGES } from '../data/badges';
 
 const STORAGE_KEY = 'hscGrammarQuest_v1';
-const HEART_REGEN_INTERVAL_MS = 60 * 1000; // 1 minute per heart in v3
+export const HEART_REGEN_INTERVAL_MS = 3 * 60 * 60 * 1000; // 3 hours per heart (10,800,000 ms)
+
+export function formatHMS(secondsOrMs: number, isMs: boolean = false): string {
+  const totalSec = isMs ? Math.floor(secondsOrMs / 1000) : Math.floor(secondsOrMs);
+  const h = Math.floor(totalSec / 3600);
+  const m = Math.floor((totalSec % 3600) / 60);
+  const s = totalSec % 60;
+  return `${h}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+}
+
+export function ensureUserDefaults(user: Partial<StudentProfile> = {}): StudentProfile {
+  return {
+    name: user.name || null,
+    roll: user.roll || null,
+    group: user.group || null,
+    board: user.board || null,
+    avatar: user.avatar || '🧑‍🎓',
+    avatarFrame: user.avatarFrame || 'none',
+    joinedAt: user.joinedAt || new Date().toISOString(),
+    title: user.title || 'Apprentice 🐣',
+  };
+}
 
 function createInitialTopicProgress(): Record<string, TopicProgressItem> {
   const progress: Record<string, TopicProgressItem> = {};
@@ -38,7 +59,7 @@ export function getDefaultState(): AppState {
     xp: 0,
     level: 1,
     coins: 10,
-    diamonds: 10,
+    diamonds: 20, // starting bonus for new users (20 💎)
     hearts: 20,
     maxHearts: 20,
     lastHeartLostAt: null,
@@ -56,7 +77,7 @@ export function getDefaultState(): AppState {
     inventory: {
       themes: ['default'],
       avatarFrames: ['none'],
-      hints: 3,
+      hints: 3, // starting bonus: 3 hints (max 8)
     },
     activeTheme: 'default',
     badges: [],
@@ -90,8 +111,8 @@ export function loadAppState(): AppState {
       if (parsed.hearts === undefined || parsed.hearts < 20) {
         parsed.hearts = Math.max(parsed.hearts || 0, 20);
       }
-      if (parsed.diamonds === undefined) {
-        parsed.diamonds = parsed.coins || 10;
+      if (parsed.diamonds === undefined || parsed.diamonds === null) {
+        parsed.diamonds = 20;
       }
       if (parsed.lastAdWatchedAt === undefined) {
         parsed.lastAdWatchedAt = null;
@@ -122,14 +143,29 @@ export function loadAppState(): AppState {
       parsed.settings = getDefaultState().settings;
     }
 
-    if (parsed.diamonds === undefined) {
-      parsed.diamonds = 10;
+    // Preserve existing diamonds (if already defined e.g. 0, do NOT overwrite), only default undefined/null
+    if (parsed.diamonds === undefined || parsed.diamonds === null) {
+      parsed.diamonds = 20;
     }
     if (parsed.maxHearts === undefined) {
       parsed.maxHearts = 20;
     }
 
-    // Check & calculate heart regeneration
+    if (!parsed.inventory) {
+      parsed.inventory = {
+        themes: ['default'],
+        avatarFrames: ['none'],
+        hints: 3,
+      };
+    } else {
+      if (parsed.inventory.hints === undefined || parsed.inventory.hints === null) {
+        parsed.inventory.hints = 3;
+      } else {
+        parsed.inventory.hints = Math.min(8, parsed.inventory.hints);
+      }
+    }
+
+    // Check & calculate heart regeneration (every 3 hours)
     const updated = calculateHeartRegen(parsed);
     // Check streak
     const updatedWithStreak = checkStreakIntegrity(updated);
@@ -194,9 +230,11 @@ export function getNextHeartRegenSeconds(state: AppState): number {
 
 export function tradeDiamondsForHearts(
   state: AppState,
-  heartsToBuy: number
+  heartsToBuy: number,
+  customCost?: number
 ): { success: boolean; newState: AppState; message: string } {
-  const costInDiamonds = Math.ceil(heartsToBuy / 5);
+  // New rate: 1 💎 = 3 hearts
+  const costInDiamonds = customCost !== undefined ? customCost : Math.ceil(heartsToBuy / 3);
   if (state.diamonds < costInDiamonds) {
     return {
       success: false,
@@ -205,8 +243,16 @@ export function tradeDiamondsForHearts(
     };
   }
 
-  const newDiamonds = state.diamonds - costInDiamonds;
   const maxHearts = state.maxHearts || 20;
+  if (state.hearts >= maxHearts) {
+    return {
+      success: false,
+      newState: state,
+      message: `Your hearts are already full (${maxHearts}/${maxHearts})!`,
+    };
+  }
+
+  const newDiamonds = state.diamonds - costInDiamonds;
   const newHearts = Math.min(maxHearts, state.hearts + heartsToBuy);
   const newLastLost = newHearts >= maxHearts ? null : state.lastHeartLostAt;
 
@@ -220,7 +266,51 @@ export function tradeDiamondsForHearts(
   return {
     success: true,
     newState: updated,
-    message: `Successfully refilled +${heartsToBuy} hearts for ${costInDiamonds} 💎!`,
+    message: `Successfully refilled +${newHearts - state.hearts} hearts for ${costInDiamonds} 💎!`,
+  };
+}
+
+export function tradeDiamondsForHints(
+  state: AppState,
+  hintsToBuy: number,
+  costInDiamonds: number
+): { success: boolean; newState: AppState; message: string } {
+  const currentHints = state.inventory?.hints ?? 3;
+  const maxHints = 8;
+
+  if (currentHints >= maxHints) {
+    return {
+      success: false,
+      newState: state,
+      message: `Your hint inventory is already full (max ${maxHints} 💡)!`,
+    };
+  }
+
+  if (state.diamonds < costInDiamonds) {
+    return {
+      success: false,
+      newState: state,
+      message: `Not enough diamonds! You need ${costInDiamonds} 💎 for ${hintsToBuy} 💡.`,
+    };
+  }
+
+  const newDiamonds = state.diamonds - costInDiamonds;
+  const newHints = Math.min(maxHints, currentHints + hintsToBuy);
+  const actualAdded = newHints - currentHints;
+
+  const updated: AppState = {
+    ...state,
+    diamonds: newDiamonds,
+    inventory: {
+      ...state.inventory,
+      hints: newHints,
+    },
+  };
+  saveAppState(updated);
+  return {
+    success: true,
+    newState: updated,
+    message: `Successfully gained +${actualAdded} hints for ${costInDiamonds} 💎!`,
   };
 }
 

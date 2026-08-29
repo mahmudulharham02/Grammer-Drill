@@ -21,6 +21,7 @@ import {
 } from 'lucide-react';
 import { Question, AppState } from '../types';
 import { soundManager } from '../utils/sound';
+import { getNextHeartRegenSeconds, formatHMS } from '../utils/storage';
 import { Mascot, MascotMood } from './Mascot';
 
 interface GameScreenProps {
@@ -34,6 +35,7 @@ interface GameScreenProps {
   onToggleBookmark: (questionId: string) => void;
   onUseHint: () => boolean;
   onRefillHearts: () => void;
+  onTradeDiamonds?: (hearts: number, cost?: number) => { success: boolean; message: string };
   onExit: () => void;
 }
 
@@ -48,6 +50,7 @@ export const GameScreen: React.FC<GameScreenProps> = ({
   onToggleBookmark,
   onUseHint,
   onRefillHearts,
+  onTradeDiamonds,
   onExit,
 }) => {
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -66,8 +69,18 @@ export const GameScreen: React.FC<GameScreenProps> = ({
   const [showGameOverModal, setShowGameOverModal] = useState(false);
   const [showSessionSummary, setShowSessionSummary] = useState(false);
   const [isWatchingAd, setIsWatchingAd] = useState(false);
+  const [countdownSecs, setCountdownSecs] = useState<number>(0);
 
   const currentQ = questions[currentIndex] || questions[0];
+
+  useEffect(() => {
+    if (!showGameOverModal) return;
+    setCountdownSecs(getNextHeartRegenSeconds(state));
+    const interval = setInterval(() => {
+      setCountdownSecs(getNextHeartRegenSeconds(state));
+    }, 1000);
+    return () => clearInterval(interval);
+  }, [showGameOverModal, state]);
 
   useEffect(() => {
     if (!currentQ) return;
@@ -195,10 +208,26 @@ export const GameScreen: React.FC<GameScreenProps> = ({
 
   const handleUse5050Hint = () => {
     if (isAnswered || !currentQ?.options || disabledOptionIndices.length > 0) return;
+    const currentHints = state.inventory?.hints ?? 0;
+    if (currentHints <= 0) {
+      soundManager.playIncorrect();
+      setMascotMood('surprised');
+      setMascotSpeech("You're out of 50/50 hints! Recharge in the Grammar Shop.");
+      return;
+    }
+
     const granted = onUseHint();
     if (!granted) return;
 
-    soundManager.playClick();
+    soundManager.playReward();
+    try {
+      confetti({
+        particleCount: 25,
+        spread: 45,
+        origin: { y: 0.8 },
+      });
+    } catch (_) {}
+
     const wrongIndices: number[] = [];
     currentQ.options.forEach((opt, idx) => {
       if (opt.trim().toLowerCase() !== String(currentQ.correctAnswer).trim().toLowerCase()) {
@@ -210,7 +239,7 @@ export const GameScreen: React.FC<GameScreenProps> = ({
     const toDisable = shuffled.slice(0, 2);
     setDisabledOptionIndices(toDisable);
     setMascotMood('thinking');
-    setMascotSpeech('I removed two incorrect choices for you!');
+    setMascotSpeech('✨ I removed two incorrect choices for you!');
   };
 
   const handleWatchMockAd = () => {
@@ -591,36 +620,126 @@ export const GameScreen: React.FC<GameScreenProps> = ({
       {showGameOverModal && (
         <div
           id="modal-game-over"
-          className="fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex items-center justify-center p-4"
+          className="fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex items-center justify-center p-3 sm:p-4 overflow-y-auto"
         >
-          <div className="glass-panel max-w-md w-full rounded-3xl p-6 sm:p-8 text-center space-y-5 border-rose-500/40 shadow-2xl">
-            <div className="text-5xl animate-bounce">💔</div>
-            <h3 className="text-2xl font-extrabold text-white">Out of Hearts!</h3>
-            <p className="text-xs sm:text-sm text-slate-300">
-              You lost all hearts. Hearts automatically regenerate 1 every minute (up to 20), or you can refill immediately.
-            </p>
-
-            <div className="space-y-3 pt-2">
-              <button
-                id="btn-watch-ad-refill"
-                disabled={isWatchingAd}
-                onClick={handleWatchMockAd}
-                className="w-full py-3.5 rounded-2xl bg-gradient-to-r from-cyan-500 to-blue-600 text-black font-extrabold text-sm shadow-lg hover:scale-[1.02] transition-all flex items-center justify-center gap-2"
-              >
-                <span>{isWatchingAd ? 'Refilling Hearts...' : 'Watch Quick Sponsor Message (Refill 5 ❤️)'}</span>
-              </button>
-
-              <button
-                id="btn-exit-to-home"
-                onClick={() => {
-                  setShowGameOverModal(false);
-                  onExit();
-                }}
-                className="w-full py-3 rounded-2xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-bold"
-              >
-                Return to Dashboard
-              </button>
+          <div className="glass-panel max-w-md w-full rounded-3xl p-5 sm:p-6 text-center space-y-4 border-rose-500/40 shadow-2xl my-auto animate-fade-in">
+            <div className="text-4xl animate-bounce">💔</div>
+            <div>
+              <h3 className="text-xl sm:text-2xl font-extrabold text-white">Out of Hearts!</h3>
+              <p className="text-xs text-slate-300 mt-1">
+                You need at least 1 ❤️ to continue your drill session.
+              </p>
             </div>
+
+            {/* 1. PRIMARY: Trade Diamonds (1 💎 = 3 ❤️) */}
+            <div className="p-3.5 rounded-2xl bg-gradient-to-b from-slate-900 to-slate-950 border-2 border-rose-500/50 text-left space-y-2">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-1.5">
+                  <span className="text-sm">💎</span>
+                  <span className="text-xs font-bold text-white">Instant Refill (1 💎 = 3 ❤️)</span>
+                </div>
+                <span className="text-xs font-mono font-bold text-cyan-300">
+                  {state.diamonds} 💎
+                </span>
+              </div>
+
+              <div className="grid grid-cols-3 gap-2">
+                <button
+                  type="button"
+                  disabled={state.diamonds < 1}
+                  onClick={() => {
+                    if (onTradeDiamonds) {
+                      const res = onTradeDiamonds(3, 1);
+                      if (res.success) {
+                        setShowGameOverModal(false);
+                      }
+                    }
+                  }}
+                  className={`p-2 rounded-xl border flex flex-col items-center justify-center text-center transition-all ${
+                    state.diamonds >= 1
+                      ? 'bg-rose-500/20 hover:bg-rose-500/30 border-rose-500/50 text-white'
+                      : 'bg-slate-800/40 border-slate-800 text-slate-500 cursor-not-allowed'
+                  }`}
+                >
+                  <span className="text-xs font-bold text-rose-300">+3 ❤️</span>
+                  <span className="text-[10px] font-mono text-cyan-300">1 💎</span>
+                </button>
+
+                <button
+                  type="button"
+                  disabled={state.diamonds < 3}
+                  onClick={() => {
+                    if (onTradeDiamonds) {
+                      const res = onTradeDiamonds(9, 3);
+                      if (res.success) {
+                        setShowGameOverModal(false);
+                      }
+                    }
+                  }}
+                  className={`p-2 rounded-xl border flex flex-col items-center justify-center text-center transition-all ${
+                    state.diamonds >= 3
+                      ? 'bg-purple-500/20 hover:bg-purple-500/30 border-purple-500/50 text-white'
+                      : 'bg-slate-800/40 border-slate-800 text-slate-500 cursor-not-allowed'
+                  }`}
+                >
+                  <span className="text-xs font-bold text-rose-300">+9 ❤️</span>
+                  <span className="text-[10px] font-mono text-cyan-300">3 💎</span>
+                </button>
+
+                <button
+                  type="button"
+                  disabled={state.diamonds < 7}
+                  onClick={() => {
+                    if (onTradeDiamonds) {
+                      const res = onTradeDiamonds(20, 7);
+                      if (res.success) {
+                        setShowGameOverModal(false);
+                      }
+                    }
+                  }}
+                  className={`p-2 rounded-xl border flex flex-col items-center justify-center text-center transition-all ${
+                    state.diamonds >= 7
+                      ? 'bg-gradient-to-br from-amber-500/20 to-rose-500/20 hover:scale-105 border-amber-400 text-white shadow-md'
+                      : 'bg-slate-800/40 border-slate-800 text-slate-500 cursor-not-allowed'
+                  }`}
+                >
+                  <span className="text-xs font-bold text-amber-300">Full (20)</span>
+                  <span className="text-[10px] font-mono text-amber-400">7 💎</span>
+                </button>
+              </div>
+            </div>
+
+            {/* 2. SECONDARY: Watch Mock Ad */}
+            <button
+              id="btn-watch-ad-refill"
+              disabled={isWatchingAd}
+              onClick={handleWatchMockAd}
+              className="w-full py-2.5 rounded-xl bg-purple-600/80 hover:bg-purple-600 text-white font-bold text-xs shadow-md transition-all flex items-center justify-center gap-2"
+            >
+              <span>{isWatchingAd ? 'Refilling Hearts...' : '📺 Watch Sponsor Clip (+5 ❤️)'}</span>
+            </button>
+
+            {/* 3. TERTIARY: Wait 3 Hours */}
+            <div className="p-3 rounded-2xl bg-slate-900/60 border border-slate-800 flex items-center justify-between text-left">
+              <div>
+                <span className="text-xs font-semibold text-slate-400 block">Wait for Auto-Refill</span>
+                <span className="text-[10px] text-slate-500">Each heart takes 3 hours to refill</span>
+              </div>
+              <span className="text-xs font-mono font-bold text-cyan-400">
+                {formatHMS(countdownSecs)}
+              </span>
+            </div>
+
+            <button
+              id="btn-exit-to-home"
+              onClick={() => {
+                setShowGameOverModal(false);
+                onExit();
+              }}
+              className="w-full py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-bold transition-colors"
+            >
+              Return to Dashboard
+            </button>
           </div>
         </div>
       )}

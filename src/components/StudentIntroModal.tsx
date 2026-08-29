@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import confetti from 'canvas-confetti';
 import { User, Sparkles, BookOpen, Trophy, ShieldAlert, ChevronRight, Check } from 'lucide-react';
 import { StudentProfile } from '../types';
 import { soundManager } from '../utils/sound';
@@ -60,6 +61,14 @@ export const StudentIntroModal: React.FC<StudentIntroModalProps> = ({
 
   const handleFinishOnboarding = () => {
     soundManager.playLevelUp();
+    try {
+      confetti({
+        particleCount: 80,
+        spread: 70,
+        origin: { y: 0.6 },
+      });
+    } catch (_) {}
+
     triggerSave({
       name: name.trim().slice(0, 30),
       roll: roll.trim().slice(0, 20),
@@ -81,11 +90,11 @@ export const StudentIntroModal: React.FC<StudentIntroModalProps> = ({
       isCredit: false,
     },
     {
-      title: 'Gamified Progress & Streaks 🎮',
+      title: '20 Diamonds Welcome Bonus! 💎',
       subtitle: 'Earn XP, Diamonds & 15+ Badges',
       description:
-        'Keep your daily streak burning for 1.5x XP multipliers. Maintain 20 hearts, earn diamonds, level up your rank, and customize your profile in the Grammar Shop.',
-      icon: '💎',
+        'You start with 20 💎 to exchange for 20 ❤️ hearts or 💡 50/50 hints in the shop. Keep your daily streak burning for 1.5x XP multipliers and level up your rank!',
+      icon: '🎁',
       isCredit: false,
     },
     {
