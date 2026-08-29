@@ -263,29 +263,29 @@ export const GameScreen: React.FC<GameScreenProps> = ({
       currentQ?.type === 'true_false' && selectedOption !== null);
 
   return (
-    <div id="screen-game" className="relative z-content max-w-3xl mx-auto space-y-4">
+    <div id="screen-game" className="relative z-content max-w-3xl mx-auto space-y-3.5 sm:space-y-4 w-full min-w-0 pb-16 sm:pb-8">
       {/* Top Header Controls Bar */}
-      <div className="flex items-center justify-between gap-3 p-3 rounded-2xl bg-slate-900/90 border border-slate-800">
-        <div className="flex items-center gap-3">
+      <div className="flex items-center justify-between gap-2 sm:gap-3 p-2.5 sm:p-3.5 rounded-2xl bg-slate-900/90 border border-slate-800 w-full min-w-0">
+        <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1">
           <button
             onClick={() => {
               soundManager.playClick();
               onExit();
             }}
-            className="px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-bold transition-colors"
+            className="px-2.5 sm:px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-bold transition-colors shrink-0"
           >
             ✕ Exit
           </button>
-          <div>
-            <h2 className="text-xs sm:text-sm font-bold text-white truncate max-w-[160px] sm:max-w-xs">
+          <div className="min-w-0 flex-1">
+            <h2 className="text-xs sm:text-sm font-bold text-white truncate max-w-[130px] sm:max-w-xs">
               {title}
             </h2>
-            <div className="flex items-center gap-2 text-[10px] text-slate-400">
-              <span>
-                Q {currentIndex + 1} / {questions.length}
+            <div className="flex flex-wrap items-center gap-1.5 text-[10px] text-slate-400">
+              <span className="shrink-0 font-medium">
+                Q {currentIndex + 1}/{questions.length}
               </span>
               {currentQ?.boardReference && (
-                <span className="text-cyan-400 bg-cyan-500/10 px-1.5 py-0.2 rounded font-mono">
+                <span className="text-cyan-400 bg-cyan-500/10 px-1.5 py-0.5 rounded font-mono truncate max-w-[100px] sm:max-w-none">
                   {currentQ.boardReference}
                 </span>
               )}
@@ -293,10 +293,10 @@ export const GameScreen: React.FC<GameScreenProps> = ({
           </div>
         </div>
 
-        {/* Hearts & Hints */}
-        <div className="flex items-center gap-2">
-          <div className="flex items-center gap-1 bg-rose-500/10 border border-rose-500/20 px-2.5 py-1 rounded-xl text-rose-400 text-xs font-extrabold">
-            <Heart className="w-3.5 h-3.5 fill-rose-500 text-rose-500 animate-pulse" />
+        {/* Hearts, Bookmark & Hints */}
+        <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
+          <div className="flex items-center gap-1 bg-rose-500/10 border border-rose-500/20 px-2 sm:px-2.5 py-1 rounded-xl text-rose-400 text-xs font-extrabold shrink-0">
+            <Heart className="w-3.5 h-3.5 fill-rose-500 text-rose-500 animate-pulse shrink-0" />
             <span>{state.hearts}</span>
           </div>
 
@@ -305,7 +305,7 @@ export const GameScreen: React.FC<GameScreenProps> = ({
               soundManager.playClick();
               onToggleBookmark(currentQ.id);
             }}
-            className={`p-2 rounded-xl border transition-colors ${
+            className={`p-1.5 sm:p-2 rounded-xl border transition-colors shrink-0 ${
               isBookmarked
                 ? 'bg-amber-500/20 border-amber-500/50 text-amber-400'
                 : 'bg-slate-800 border-slate-700 text-slate-400 hover:text-white'
@@ -318,10 +318,10 @@ export const GameScreen: React.FC<GameScreenProps> = ({
           <button
             onClick={handleUse5050Hint}
             disabled={isAnswered || state.inventory.hints <= 0 || disabledOptionIndices.length > 0}
-            className="flex items-center gap-1 px-2.5 py-1 rounded-xl bg-violet-500/20 border border-violet-500/30 hover:bg-violet-500/30 text-violet-300 text-xs font-bold disabled:opacity-40 transition-colors"
+            className="flex items-center gap-1 px-2 sm:px-2.5 py-1 rounded-xl bg-violet-500/20 border border-violet-500/30 hover:bg-violet-500/30 text-violet-300 text-xs font-bold disabled:opacity-40 transition-colors shrink-0"
             title="50/50 hint: removes 2 wrong options"
           >
-            <Lightbulb className="w-3.5 h-3.5 text-amber-400" />
+            <Lightbulb className="w-3.5 h-3.5 text-amber-400 shrink-0" />
             <span>{state.inventory.hints}</span>
           </button>
         </div>
@@ -335,19 +335,19 @@ export const GameScreen: React.FC<GameScreenProps> = ({
         />
       </div>
 
-      {/* Main Question Card Area (Natural Height, Flex Col) */}
+      {/* Main Question Card Area (Natural Height, Responsive Flex Col) */}
       {currentQ && (
-        <div className="glass-panel rounded-3xl p-4 sm:p-6 border border-slate-800 flex flex-col gap-4">
+        <div className="glass-panel rounded-3xl p-3.5 sm:p-6 border border-slate-800 flex flex-col gap-3.5 sm:gap-4 w-full min-w-0 overflow-hidden">
           {/* Question Direction & Submodule Tags */}
-          <div className="flex flex-wrap items-center justify-between gap-2">
-            <span className="text-[11px] font-extrabold uppercase tracking-wider text-cyan-400 bg-cyan-500/10 px-2.5 py-1 rounded-lg border border-cyan-500/20 flex items-center gap-1.5">
-              <Sparkles className="w-3 h-3" />
+          <div className="flex flex-wrap items-center justify-between gap-1.5 sm:gap-2">
+            <span className="text-[10px] sm:text-[11px] font-extrabold uppercase tracking-wider text-cyan-400 bg-cyan-500/10 px-2 sm:px-2.5 py-1 rounded-lg border border-cyan-500/20 flex items-center gap-1.5 break-words max-w-full">
+              <Sparkles className="w-3 h-3 shrink-0" />
               <span>{currentQ.instruction || 'Select the correct answer'}</span>
             </span>
 
             {currentQ.direction && (
-              <span className="text-[11px] font-bold text-violet-300 bg-violet-500/10 px-2.5 py-1 rounded-lg border border-violet-500/20 flex items-center gap-1">
-                <ArrowLeftRight className="w-3 h-3" />
+              <span className="text-[10px] sm:text-[11px] font-bold text-violet-300 bg-violet-500/10 px-2 sm:px-2.5 py-1 rounded-lg border border-violet-500/20 flex items-center gap-1 shrink-0">
+                <ArrowLeftRight className="w-3 h-3 shrink-0" />
                 <span>
                   {currentQ.direction === 'active_to_passive'
                     ? 'Active ➔ Passive'
@@ -362,37 +362,37 @@ export const GameScreen: React.FC<GameScreenProps> = ({
           </div>
 
           {/* Sentence / Prompt Display */}
-          <div className="space-y-2">
+          <div className="space-y-2 w-full min-w-0">
             {currentQ.sentence && (
-              <div className="p-3.5 rounded-2xl bg-slate-900/90 border border-slate-700/80">
+              <div className="p-3 sm:p-3.5 rounded-2xl bg-slate-900/90 border border-slate-700/80 w-full min-w-0 overflow-hidden">
                 <span className="text-slate-400 font-bold block text-[10px] uppercase tracking-wider mb-1">
                   Given Sentence:
                 </span>
-                <span className="text-base sm:text-lg font-bold text-white">
+                <span className="text-sm sm:text-base md:text-lg font-bold text-white break-words block leading-snug">
                   "{currentQ.sentence}"
                 </span>
               </div>
             )}
 
             {currentQ.originalSentence && (
-              <div className="p-3.5 rounded-2xl bg-slate-900/90 border border-slate-700/80">
+              <div className="p-3 sm:p-3.5 rounded-2xl bg-slate-900/90 border border-slate-700/80 w-full min-w-0 overflow-hidden">
                 <span className="text-slate-400 font-bold block text-[10px] uppercase tracking-wider mb-1">
                   Original Sentence:
                 </span>
-                <span className="text-base font-bold text-white">
+                <span className="text-sm sm:text-base font-bold text-white break-words block leading-snug">
                   "{currentQ.originalSentence}"
                 </span>
               </div>
             )}
 
-            <h2 className="text-sm sm:text-base font-bold text-slate-200 leading-relaxed">
+            <h2 className="text-xs sm:text-sm md:text-base font-bold text-slate-200 leading-relaxed break-words">
               {currentQ.prompt}
             </h2>
           </div>
 
           {/* Options: MCQ */}
           {(currentQ.type === 'mcq' || currentQ.type === 'transformation_mcq') && currentQ.options && (
-            <div className="grid grid-cols-1 gap-2.5">
+            <div className="grid grid-cols-1 gap-2 sm:gap-2.5 w-full min-w-0">
               {currentQ.options.map((option, idx) => {
                 const isSelected = selectedOption === option;
                 const isDisabled = disabledOptionIndices.includes(idx);
@@ -421,22 +421,22 @@ export const GameScreen: React.FC<GameScreenProps> = ({
                       soundManager.playClick();
                       setSelectedOption(option);
                     }}
-                    className={`w-full p-3 sm:p-4 rounded-2xl border text-left transition-all flex items-center justify-between gap-3 ${optionStyle} ${
+                    className={`w-full p-2.5 sm:p-3.5 md:p-4 rounded-2xl border text-left transition-all flex items-center justify-between gap-2.5 sm:gap-3 min-w-0 overflow-hidden ${optionStyle} ${
                       isDisabled ? 'opacity-25 line-through cursor-not-allowed' : ''
                     }`}
                   >
-                    <div className="flex items-center gap-3">
-                      <span className="w-6 h-6 sm:w-7 sm:h-7 rounded-xl bg-slate-800 text-slate-300 font-mono text-xs font-bold flex items-center justify-center shrink-0 border border-slate-700">
+                    <div className="flex items-start sm:items-center gap-2.5 sm:gap-3 min-w-0 flex-1">
+                      <span className="w-6 h-6 sm:w-7 sm:h-7 rounded-xl bg-slate-800 text-slate-300 font-mono text-xs font-bold flex items-center justify-center shrink-0 border border-slate-700 mt-0.5 sm:mt-0">
                         {idx + 1}
                       </span>
-                      <span className="text-xs sm:text-sm font-medium leading-relaxed">{option}</span>
+                      <span className="text-xs sm:text-sm font-medium leading-relaxed break-words min-w-0 flex-1">{option}</span>
                     </div>
 
                     {isAnswered && option.trim().toLowerCase() === String(currentQ.correctAnswer).trim().toLowerCase() && (
-                      <CheckCircle2 className="w-5 h-5 text-lime-400 shrink-0" />
+                      <CheckCircle2 className="w-5 h-5 text-lime-400 shrink-0 ml-1" />
                     )}
                     {isAnswered && isSelected && option.trim().toLowerCase() !== String(currentQ.correctAnswer).trim().toLowerCase() && (
-                      <XCircle className="w-5 h-5 text-rose-400 shrink-0" />
+                      <XCircle className="w-5 h-5 text-rose-400 shrink-0 ml-1" />
                     )}
                   </button>
                 );
@@ -446,7 +446,7 @@ export const GameScreen: React.FC<GameScreenProps> = ({
 
           {/* Fill in the Blank */}
           {currentQ.type === 'fill_blank' && (
-            <div className="space-y-3">
+            <div className="space-y-3 w-full min-w-0">
               <input
                 id="input-fill-blank"
                 type="text"
@@ -454,15 +454,15 @@ export const GameScreen: React.FC<GameScreenProps> = ({
                 disabled={isAnswered}
                 onChange={(e) => setTypedAnswer(e.target.value)}
                 placeholder="Type your answer here..."
-                className="w-full bg-slate-900/90 border border-slate-700 focus:border-cyan-400 text-slate-100 px-4 py-3.5 rounded-2xl text-sm sm:text-base font-mono focus:outline-none focus:ring-2 focus:ring-cyan-500/20"
+                className="w-full bg-slate-900/90 border border-slate-700 focus:border-cyan-400 text-slate-100 px-3.5 py-3 sm:px-4 sm:py-3.5 rounded-2xl text-xs sm:text-sm md:text-base font-mono focus:outline-none focus:ring-2 focus:ring-cyan-500/20"
               />
             </div>
           )}
 
           {/* Rearrange Sentence */}
           {currentQ.type === 'rearrange' && (
-            <div className="space-y-4">
-              <div className="min-h-[56px] p-3 rounded-2xl bg-slate-950/80 border-2 border-dashed border-slate-700 flex flex-wrap gap-2 items-center">
+            <div className="space-y-3 w-full min-w-0">
+              <div className="min-h-[52px] p-2.5 sm:p-3 rounded-2xl bg-slate-950/80 border-2 border-dashed border-slate-700 flex flex-wrap gap-1.5 sm:gap-2 items-center w-full min-w-0">
                 {selectedRearrangeWords.length === 0 ? (
                   <span className="text-xs text-slate-500 italic">Click words below in correct order...</span>
                 ) : (
@@ -476,7 +476,7 @@ export const GameScreen: React.FC<GameScreenProps> = ({
                         setSelectedRearrangeWords(selectedRearrangeWords.filter((_, idx) => idx !== i));
                         setAvailableRearrangeWords([...availableRearrangeWords, word]);
                       }}
-                      className="px-3 py-1.5 rounded-xl bg-cyan-950 text-cyan-200 border border-cyan-500/40 text-xs font-mono font-bold hover:bg-rose-950 hover:text-rose-300 transition-all"
+                      className="px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-xl bg-cyan-950 text-cyan-200 border border-cyan-500/40 text-xs font-mono font-bold hover:bg-rose-950 hover:text-rose-300 transition-all max-w-full break-all"
                     >
                       {word} ✕
                     </button>
@@ -484,7 +484,7 @@ export const GameScreen: React.FC<GameScreenProps> = ({
                 )}
               </div>
 
-              <div className="flex flex-wrap gap-2">
+              <div className="flex flex-wrap gap-1.5 sm:gap-2 w-full min-w-0">
                 {availableRearrangeWords.map((word, i) => (
                   <button
                     key={i}
@@ -495,7 +495,7 @@ export const GameScreen: React.FC<GameScreenProps> = ({
                       setSelectedRearrangeWords([...selectedRearrangeWords, word]);
                       setAvailableRearrangeWords(availableRearrangeWords.filter((_, idx) => idx !== i));
                     }}
-                    className="px-3.5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-200 text-xs font-mono font-bold transition-all hover:scale-105 active:scale-95"
+                    className="px-2.5 py-1.5 sm:px-3.5 sm:py-2 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-200 text-xs font-mono font-bold transition-all hover:scale-105 active:scale-95 max-w-full break-words"
                   >
                     {word}
                   </button>
@@ -504,13 +504,13 @@ export const GameScreen: React.FC<GameScreenProps> = ({
             </div>
           )}
 
-          {/* FIX #1: INLINE CHECK / NEXT BUTTON DIRECTLY UNDER OPTIONS */}
-          <div className="pt-1">
+          {/* INLINE CHECK / NEXT BUTTON DIRECTLY UNDER OPTIONS */}
+          <div className="pt-1 w-full min-w-0">
             {!canSubmit && !isAnswered && (
               <button
                 id="btn-disabled-check"
                 disabled
-                className="w-full min-h-[56px] rounded-2xl bg-slate-800/80 text-slate-400 font-bold text-sm sm:text-base border border-slate-700/60 opacity-60 cursor-not-allowed flex items-center justify-center gap-2"
+                className="w-full min-h-[48px] sm:min-h-[56px] rounded-2xl bg-slate-800/80 text-slate-400 font-bold text-xs sm:text-base border border-slate-700/60 opacity-60 cursor-not-allowed flex items-center justify-center gap-2 px-3 py-2 text-center"
               >
                 <span>👆 Select an option first</span>
               </button>
@@ -520,7 +520,7 @@ export const GameScreen: React.FC<GameScreenProps> = ({
               <button
                 id="btn-check-answer"
                 onClick={handleSubmitAnswer}
-                className="w-full min-h-[56px] rounded-2xl bg-gradient-to-r from-cyan-500 to-violet-500 hover:from-cyan-400 hover:to-violet-400 text-white font-bold text-base shadow-lg shadow-cyan-500/30 active:scale-[0.98] transition-all duration-200 flex items-center justify-center gap-2"
+                className="w-full min-h-[48px] sm:min-h-[56px] rounded-2xl bg-gradient-to-r from-cyan-500 to-violet-500 hover:from-cyan-400 hover:to-violet-400 text-white font-bold text-sm sm:text-base shadow-lg shadow-cyan-500/30 active:scale-[0.98] transition-all duration-200 flex items-center justify-center gap-2 px-3 py-2 text-center"
               >
                 <span>✅ Check Answer</span>
               </button>
@@ -530,7 +530,7 @@ export const GameScreen: React.FC<GameScreenProps> = ({
               <button
                 id="btn-next-question"
                 onClick={handleNextQuestion}
-                className="w-full min-h-[56px] rounded-2xl bg-gradient-to-r from-lime-400 via-emerald-400 to-cyan-400 hover:opacity-95 text-slate-950 font-extrabold text-base shadow-lg shadow-lime-500/30 active:scale-[0.98] transition-all duration-200 flex items-center justify-center gap-2"
+                className="w-full min-h-[48px] sm:min-h-[56px] rounded-2xl bg-gradient-to-r from-lime-400 via-emerald-400 to-cyan-400 hover:opacity-95 text-slate-950 font-extrabold text-sm sm:text-base shadow-lg shadow-lime-500/30 active:scale-[0.98] transition-all duration-200 flex items-center justify-center gap-2 px-3 py-2 text-center"
               >
                 <span>{currentIndex + 1 < questions.length ? 'Next Question →' : 'Finish Session 🏆'}</span>
               </button>
@@ -541,32 +541,32 @@ export const GameScreen: React.FC<GameScreenProps> = ({
           {isAnswered && (
             <div
               id="feedback-card"
-              className={`rounded-2xl p-4 sm:p-5 border space-y-3.5 animate-fade-in ${
+              className={`rounded-2xl p-3 sm:p-4 md:p-5 border space-y-3 animate-fade-in w-full min-w-0 overflow-hidden ${
                 isCorrect
                   ? 'bg-lime-950/30 border-lime-500/40 text-lime-200'
                   : 'bg-rose-950/30 border-rose-500/40 text-rose-200'
               }`}
             >
-              <div className="flex items-center justify-between gap-2">
-                <div className="flex items-center gap-2">
+              <div className="flex flex-col xs:flex-row xs:items-center justify-between gap-1.5 sm:gap-2">
+                <div className="flex items-center gap-2 min-w-0">
                   {isCorrect ? (
                     <CheckCircle2 className="w-5 h-5 text-lime-400 shrink-0" />
                   ) : (
                     <XCircle className="w-5 h-5 text-rose-400 shrink-0" />
                   )}
-                  <span className="text-sm sm:text-base font-extrabold text-white">
+                  <span className="text-xs sm:text-sm md:text-base font-extrabold text-white">
                     {isCorrect ? 'Correct! +10 XP' : 'Incorrect (-1 Heart ❤️)'}
                   </span>
                 </div>
 
-                <span className="text-[11px] font-bold px-2 py-0.5 rounded bg-slate-900 text-slate-300 border border-slate-700 truncate max-w-[180px]">
+                <span className="text-[10px] sm:text-[11px] font-bold px-2 py-0.5 rounded bg-slate-900 text-slate-300 border border-slate-700 break-words self-start xs:self-auto max-w-full">
                   {currentQ.explanation.rule}
                 </span>
               </div>
 
               {/* Grammar Formula */}
               {currentQ.explanation.formula && (
-                <div className="bg-slate-950/80 p-2.5 rounded-xl border border-slate-800 text-xs font-mono text-cyan-300">
+                <div className="bg-slate-950/80 p-2.5 rounded-xl border border-slate-800 text-[11px] sm:text-xs font-mono text-cyan-300 break-words overflow-x-auto">
                   <span className="text-slate-400 font-bold block text-[10px] uppercase">Rule Formula:</span>
                   {currentQ.explanation.formula}
                 </div>
@@ -574,35 +574,35 @@ export const GameScreen: React.FC<GameScreenProps> = ({
 
               {/* Tense & Shift Badges if present */}
               {(currentQ.explanation.tenseShift || currentQ.explanation.timeShift || currentQ.explanation.pronounShift) && (
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-[11px]">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-1.5 sm:gap-2 text-[10px] sm:text-[11px]">
                   {currentQ.explanation.tenseShift && (
-                    <div className="p-2 rounded-xl bg-slate-900/90 border border-slate-800">
+                    <div className="p-2 rounded-xl bg-slate-900/90 border border-slate-800 min-w-0">
                       <span className="text-slate-400 block text-[10px]">Tense Back-Shift:</span>
-                      <span className="text-cyan-300 font-bold">{currentQ.explanation.tenseShift}</span>
+                      <span className="text-cyan-300 font-bold break-words">{currentQ.explanation.tenseShift}</span>
                     </div>
                   )}
                   {currentQ.explanation.timeShift && (
-                    <div className="p-2 rounded-xl bg-slate-900/90 border border-slate-800">
+                    <div className="p-2 rounded-xl bg-slate-900/90 border border-slate-800 min-w-0">
                       <span className="text-slate-400 block text-[10px]">Time/Place Shift:</span>
-                      <span className="text-amber-300 font-bold">{currentQ.explanation.timeShift}</span>
+                      <span className="text-amber-300 font-bold break-words">{currentQ.explanation.timeShift}</span>
                     </div>
                   )}
                   {currentQ.explanation.pronounShift && (
-                    <div className="p-2 rounded-xl bg-slate-900/90 border border-slate-800">
+                    <div className="p-2 rounded-xl bg-slate-900/90 border border-slate-800 min-w-0">
                       <span className="text-slate-400 block text-[10px]">Pronoun Shift:</span>
-                      <span className="text-violet-300 font-bold">{currentQ.explanation.pronounShift}</span>
+                      <span className="text-violet-300 font-bold break-words">{currentQ.explanation.pronounShift}</span>
                     </div>
                   )}
                 </div>
               )}
 
               {/* Detailed Reason */}
-              <p className="text-xs sm:text-sm text-slate-200 leading-relaxed">
+              <p className="text-xs sm:text-sm text-slate-200 leading-relaxed break-words">
                 {currentQ.explanation.whyCorrect}
               </p>
 
               {currentQ.explanation.tip && (
-                <div className="p-2 rounded-xl bg-slate-900/60 text-xs text-amber-300 font-medium">
+                <div className="p-2 rounded-xl bg-slate-900/60 text-xs text-amber-300 font-medium break-words">
                   {currentQ.explanation.tip}
                 </div>
               )}
@@ -611,8 +611,8 @@ export const GameScreen: React.FC<GameScreenProps> = ({
         </div>
       )}
 
-      {/* Floating Mascot in Corner (Does not push content down) */}
-      <div className="fixed bottom-20 sm:bottom-24 right-3 sm:right-6 z-10 pointer-events-none drop-shadow-xl">
+      {/* Floating Mascot in Corner (Scaled on mobile, does not block clicks) */}
+      <div className="fixed bottom-16 sm:bottom-20 right-2 sm:right-6 z-10 pointer-events-none drop-shadow-xl scale-75 sm:scale-100 origin-bottom-right">
         <Mascot mood={mascotMood} size="sm" showSpeech={mascotSpeech} />
       </div>
 
@@ -622,17 +622,17 @@ export const GameScreen: React.FC<GameScreenProps> = ({
           id="modal-game-over"
           className="fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex items-center justify-center p-3 sm:p-4 overflow-y-auto"
         >
-          <div className="glass-panel max-w-md w-full rounded-3xl p-5 sm:p-6 text-center space-y-4 border-rose-500/40 shadow-2xl my-auto animate-fade-in">
-            <div className="text-4xl animate-bounce">💔</div>
+          <div className="glass-panel max-w-sm sm:max-w-md w-full rounded-3xl p-4 sm:p-6 text-center space-y-3.5 sm:space-y-4 border-rose-500/40 shadow-2xl my-auto animate-fade-in max-h-[92vh] overflow-y-auto">
+            <div className="text-3xl sm:text-4xl animate-bounce">💔</div>
             <div>
-              <h3 className="text-xl sm:text-2xl font-extrabold text-white">Out of Hearts!</h3>
+              <h3 className="text-lg sm:text-2xl font-extrabold text-white">Out of Hearts!</h3>
               <p className="text-xs text-slate-300 mt-1">
                 You need at least 1 ❤️ to continue your drill session.
               </p>
             </div>
 
             {/* 1. PRIMARY: Trade Diamonds (1 💎 = 3 ❤️) */}
-            <div className="p-3.5 rounded-2xl bg-gradient-to-b from-slate-900 to-slate-950 border-2 border-rose-500/50 text-left space-y-2">
+            <div className="p-3 sm:p-3.5 rounded-2xl bg-gradient-to-b from-slate-900 to-slate-950 border-2 border-rose-500/50 text-left space-y-2">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-1.5">
                   <span className="text-sm">💎</span>
@@ -643,7 +643,7 @@ export const GameScreen: React.FC<GameScreenProps> = ({
                 </span>
               </div>
 
-              <div className="grid grid-cols-3 gap-2">
+              <div className="grid grid-cols-3 gap-1.5 sm:gap-2">
                 <button
                   type="button"
                   disabled={state.diamonds < 1}
@@ -720,7 +720,7 @@ export const GameScreen: React.FC<GameScreenProps> = ({
             </button>
 
             {/* 3. TERTIARY: Wait 3 Hours */}
-            <div className="p-3 rounded-2xl bg-slate-900/60 border border-slate-800 flex items-center justify-between text-left">
+            <div className="p-2.5 sm:p-3 rounded-2xl bg-slate-900/60 border border-slate-800 flex items-center justify-between text-left">
               <div>
                 <span className="text-xs font-semibold text-slate-400 block">Wait for Auto-Refill</span>
                 <span className="text-[10px] text-slate-500">Each heart takes 3 hours to refill</span>
@@ -748,31 +748,31 @@ export const GameScreen: React.FC<GameScreenProps> = ({
       {showSessionSummary && (
         <div
           id="modal-session-summary"
-          className="fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex items-center justify-center p-4"
+          className="fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex items-center justify-center p-3 sm:p-4 overflow-y-auto"
         >
-          <div className="glass-panel max-w-md w-full rounded-3xl p-6 sm:p-8 text-center space-y-6 border-cyan-500/40 shadow-2xl">
-            <div className="text-5xl">🎉</div>
+          <div className="glass-panel max-w-sm sm:max-w-md w-full rounded-3xl p-5 sm:p-8 text-center space-y-4 sm:space-y-6 border-cyan-500/40 shadow-2xl my-auto animate-fade-in max-h-[92vh] overflow-y-auto">
+            <div className="text-4xl sm:text-5xl">🎉</div>
             <div>
-              <h3 className="text-2xl font-extrabold text-white">Drill Completed!</h3>
+              <h3 className="text-xl sm:text-2xl font-extrabold text-white">Drill Completed!</h3>
               <p className="text-xs sm:text-sm text-slate-400 mt-1">{title}</p>
             </div>
 
-            <div className="grid grid-cols-3 gap-3 bg-slate-950/70 p-4 rounded-2xl border border-slate-800">
+            <div className="grid grid-cols-3 gap-2 sm:gap-3 bg-slate-950/70 p-3 sm:p-4 rounded-2xl border border-slate-800">
               <div className="space-y-1">
                 <span className="text-[10px] uppercase font-bold text-slate-400">Score</span>
-                <span className="text-lg font-extrabold text-lime-400 block">
+                <span className="text-base sm:text-lg font-extrabold text-lime-400 block">
                   {sessionCorrectCount}/{questions.length}
                 </span>
               </div>
               <div className="space-y-1">
                 <span className="text-[10px] uppercase font-bold text-slate-400">XP Earned</span>
-                <span className="text-lg font-extrabold text-cyan-400 block">
+                <span className="text-base sm:text-lg font-extrabold text-cyan-400 block">
                   +{sessionTotalXp}
                 </span>
               </div>
               <div className="space-y-1">
                 <span className="text-[10px] uppercase font-bold text-slate-400">Coins</span>
-                <span className="text-lg font-extrabold text-amber-400 block">
+                <span className="text-base sm:text-lg font-extrabold text-amber-400 block">
                   +{sessionTotalCoins}
                 </span>
               </div>
@@ -783,7 +783,7 @@ export const GameScreen: React.FC<GameScreenProps> = ({
                 setShowSessionSummary(false);
                 onExit();
               }}
-              className="w-full py-3.5 rounded-2xl bg-gradient-to-r from-cyan-400 to-blue-500 text-black font-extrabold text-sm shadow-lg shadow-cyan-500/25 transition-all"
+              className="w-full py-3 sm:py-3.5 rounded-2xl bg-gradient-to-r from-cyan-400 to-blue-500 text-black font-extrabold text-xs sm:text-sm shadow-lg shadow-cyan-500/25 transition-all"
             >
               Continue to Dashboard
             </button>
