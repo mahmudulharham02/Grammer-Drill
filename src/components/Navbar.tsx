@@ -326,7 +326,7 @@ export const Navbar: React.FC<NavbarProps> = ({
       {/* Mobile Bottom Fixed Nav Bar (z-index 40) */}
       <div
         id="mobile-bottom-bar"
-        className="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-[#0a0e1a]/95 backdrop-blur-lg border-t border-slate-800 px-2 py-1.5 flex items-center justify-around"
+        className="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-[#0a0e1a]/95 backdrop-blur-lg border-t border-slate-800 px-2 pt-1.5 pb-[10px] flex items-center justify-around"
       >
         <button
           id="mobile-tab-home"

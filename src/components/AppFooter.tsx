@@ -17,9 +17,9 @@ export const AppFooter: React.FC<AppFooterProps> = ({ hidden = false, onToast })
   return (
     <footer
       id="persistent-app-footer"
-      className="w-full border-t border-slate-800/80 bg-slate-950/60 backdrop-blur-md py-6 px-4 mt-12 transition-colors"
+      className="w-full border-t border-slate-800/80 bg-slate-950/60 backdrop-blur-md py-6 px-4 mt-[5px] mb-0 mx-0 transition-colors"
     >
-      <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4 text-center sm:text-left">
+      <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4 text-center sm:text-left mt-0 mr-0 mb-0 pb-[100px]">
         {/* Credential text */}
         <div
           onClick={handleClick}

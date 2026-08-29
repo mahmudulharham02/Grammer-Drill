@@ -73,7 +73,7 @@ export const HomeDashboard: React.FC<HomeDashboardProps> = ({
   const activeTip = GRAMMAR_TIPS[currentTipIndex] || GRAMMAR_TIPS[0];
 
   return (
-    <div id="home-dashboard-container" className="space-y-5 sm:space-y-6 pb-24 max-w-7xl mx-auto">
+    <div id="home-dashboard-container" className="space-y-5 sm:space-y-6 pb-[7px] max-w-7xl mx-auto">
       {/* Low Hearts Banner */}
       <LowHeartsBanner
         hearts={state.hearts}
