@@ -10,7 +10,7 @@ export const AppFooter: React.FC<AppFooterProps> = ({ hidden = false, onToast })
 
   const handleClick = () => {
     if (onToast) {
-      onToast('ARHAM made this with love for HSC students 💖');
+      onToast('ARHAM made this with love for YOU 💖');
     }
   };
 

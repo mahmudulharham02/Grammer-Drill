@@ -421,7 +421,7 @@ export function App() {
       />
 
       {/* Main Container Content */}
-      <main className="flex-1 max-w-7xl w-full mx-auto px-3 sm:px-6 lg:px-8 pt-20 pb-16">
+      <main className="flex-1 max-w-7xl w-full mx-auto px-3 sm:px-6 lg:px-8 pt-[15px] pb-16">
         {currentRoute === 'home' && (
           <HomeDashboard
             state={state}
