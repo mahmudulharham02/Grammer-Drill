@@ -23,6 +23,7 @@ export function ensureUserDefaults(user: Partial<StudentProfile> = {}): StudentP
     avatarFrame: user.avatarFrame || 'none',
     joinedAt: user.joinedAt || new Date().toISOString(),
     title: user.title || 'Apprentice 🐣',
+    gender: user.gender === 'male' || user.gender === 'female' ? user.gender : null,
   };
 }
 
@@ -55,6 +56,7 @@ export function getDefaultState(): AppState {
       avatarFrame: 'none',
       joinedAt: null,
       title: 'Apprentice 🐣',
+      gender: null,
     },
     xp: 0,
     level: 1,
@@ -137,6 +139,10 @@ export function loadAppState(): AppState {
 
     if (!parsed.user) {
       parsed.user = getDefaultState().user;
+    } else {
+      if ((parsed.user as any).gender === 'other' || ((parsed.user as any).gender !== 'male' && (parsed.user as any).gender !== 'female')) {
+        parsed.user.gender = null;
+      }
     }
 
     if (!parsed.settings) {

@@ -173,6 +173,7 @@ export interface StudentProfile {
   avatarFrame?: string;
   joinedAt: string | null;
   title: string;
+  gender: 'male' | 'female' | null;
 }
 
 export interface AppState {

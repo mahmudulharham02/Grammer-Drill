@@ -27,10 +27,16 @@ export const StudentIntroModal: React.FC<StudentIntroModalProps> = ({
   const [group, setGroup] = useState(initialProfile?.group || 'Science');
   const [board, setBoard] = useState(initialProfile?.board || 'Dhaka');
   const [avatar, setAvatar] = useState(initialProfile?.avatar || '🧑‍🎓');
+  const [gender, setGender] = useState<'male' | 'female' | null>(
+    initialProfile?.gender === 'male' || initialProfile?.gender === 'female'
+      ? initialProfile.gender
+      : null
+  );
+  const [submitAttempted, setSubmitAttempted] = useState(false);
 
   const avatarOptions = ['🧑‍🎓', '👩‍🎓', '🧠', '🦉', '⭐', '🚀', '👑', '🔥'];
 
-  const isFormValid = name.trim().length > 0 && roll.trim().length > 0;
+  const isFormValid = name.trim().length > 0 && roll.trim().length > 0 && gender !== null;
 
   const triggerSave = (profile: Partial<StudentProfile>) => {
     if (typeof onSave === 'function') {
@@ -42,7 +48,8 @@ export const StudentIntroModal: React.FC<StudentIntroModalProps> = ({
 
   const handleFormSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!isFormValid) return;
+    setSubmitAttempted(true);
+    if (!isFormValid || gender === null) return;
     soundManager.playClick();
 
     if (isEditing) {
@@ -52,6 +59,7 @@ export const StudentIntroModal: React.FC<StudentIntroModalProps> = ({
         group,
         board,
         avatar,
+        gender,
       });
       if (onClose) onClose();
     } else {
@@ -75,6 +83,7 @@ export const StudentIntroModal: React.FC<StudentIntroModalProps> = ({
       group,
       board,
       avatar,
+      gender,
       joinedAt: new Date().toISOString(),
     });
     if (onClose) onClose();
@@ -191,6 +200,44 @@ export const StudentIntroModal: React.FC<StudentIntroModalProps> = ({
                 onChange={(e) => setRoll(e.target.value)}
                 className="w-full px-3.5 py-2.5 rounded-xl bg-slate-900/90 border border-slate-700 text-white text-sm focus:outline-none focus:border-cyan-400 transition-colors font-mono"
               />
+            </div>
+
+            {/* Gender Selector (2 Options Only: Male & Female) */}
+            <div className="space-y-1">
+              <label className="text-xs font-semibold text-slate-300 block">
+                Gender <span className="text-rose-400">*</span>
+              </label>
+              <div className="grid grid-cols-2 gap-3">
+                {[
+                  { value: 'male', label: 'Male', emoji: '🚹' },
+                  { value: 'female', label: 'Female', emoji: '🚺' },
+                ].map((opt) => (
+                  <button
+                    key={opt.value}
+                    type="button"
+                    onClick={() => {
+                      soundManager.playClick();
+                      setGender(opt.value as 'male' | 'female');
+                    }}
+                    className={`
+                      flex flex-col items-center justify-center gap-2
+                      p-4 rounded-2xl border-2 transition-all
+                      min-h-[100px] text-base font-semibold
+                      ${
+                        gender === opt.value
+                          ? 'border-cyan-400 bg-cyan-500/10 text-cyan-200 shadow-lg shadow-cyan-500/30 scale-[1.02]'
+                          : 'border-white/10 bg-slate-800/50 text-slate-300 hover:border-white/30 active:scale-95'
+                      }
+                    `}
+                  >
+                    <span className="text-4xl">{opt.emoji}</span>
+                    <span>{opt.label}</span>
+                  </button>
+                ))}
+              </div>
+              {gender === null && submitAttempted && (
+                <p className="text-xs text-rose-400 mt-2">Please select your gender to continue.</p>
+              )}
             </div>
 
             {/* Group & Board Grid */}

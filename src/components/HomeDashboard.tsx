@@ -72,6 +72,12 @@ export const HomeDashboard: React.FC<HomeDashboardProps> = ({
   const isDailyCompletedToday = state.dailyChallenge.lastCompletedDate === todayStr;
   const activeTip = GRAMMAR_TIPS[currentTipIndex] || GRAMMAR_TIPS[0];
 
+  const greeting = state.user.gender === 'female'
+    ? `Assalamu Alaikum, ${state.user.name || 'Grammar Hero'}! 🌸`
+    : state.user.gender === 'male'
+    ? `Assalamu Alaikum, ${state.user.name || 'Grammar Hero'}! 👋`
+    : `Hello, ${state.user.name || 'Grammar Hero'}! 👋`;
+
   return (
     <div id="home-dashboard-container" className="space-y-5 sm:space-y-6 pb-[7px] max-w-7xl mx-auto">
       {/* Low Hearts Banner */}
@@ -118,7 +124,7 @@ export const HomeDashboard: React.FC<HomeDashboardProps> = ({
 
             <div className="space-y-1">
               <h1 className="text-lg sm:text-2xl font-extrabold text-white tracking-tight">
-                Get Ready, {state.user.name || 'Grammar Hero'}!
+                {greeting}
               </h1>
               <p className="text-xs sm:text-sm font-semibold text-cyan-300 flex items-center gap-1.5">
                 <span className="inline-block w-2 h-2 rounded-full bg-cyan-400 animate-ping" />

@@ -121,22 +121,33 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
               </button>
             </div>
 
-            {/* Roll Number with Copy */}
-            <div className="flex items-center justify-center sm:justify-start gap-2 pt-1">
-              <span className="text-xs text-slate-400 font-mono">Roll / ID:</span>
-              <span className="text-xs font-mono font-bold text-white bg-slate-900/90 px-2.5 py-1 rounded-lg border border-slate-700">
-                {state.user.roll || 'N/A'}
-              </span>
-              {state.user.roll && (
-                <button
-                  id="btn-copy-roll"
-                  onClick={handleCopyRoll}
-                  className="p-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 transition-colors"
-                  title="Copy Roll ID"
-                >
-                  {copiedRoll ? <Check className="w-3.5 h-3.5 text-lime-400" /> : <Copy className="w-3.5 h-3.5" />}
-                </button>
-              )}
+            {/* Roll Number & Gender */}
+            <div className="flex flex-wrap items-center justify-center sm:justify-start gap-4 pt-1">
+              <div className="flex items-center gap-2">
+                <span className="text-xs text-slate-400 font-mono">Roll / ID:</span>
+                <span className="text-xs font-mono font-bold text-white bg-slate-900/90 px-2.5 py-1 rounded-lg border border-slate-700">
+                  {state.user.roll || 'N/A'}
+                </span>
+                {state.user.roll && (
+                  <button
+                    id="btn-copy-roll"
+                    onClick={handleCopyRoll}
+                    className="p-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 transition-colors"
+                    title="Copy Roll ID"
+                  >
+                    {copiedRoll ? <Check className="w-3.5 h-3.5 text-lime-400" /> : <Copy className="w-3.5 h-3.5" />}
+                  </button>
+                )}
+              </div>
+
+              <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-slate-900/90 border border-slate-700">
+                <span className="text-base">
+                  {state.user.gender === 'male' ? '🚹' : state.user.gender === 'female' ? '🚺' : '👤'}
+                </span>
+                <span className="text-xs text-slate-300 font-medium">
+                  {state.user.gender === 'male' ? 'Male' : state.user.gender === 'female' ? 'Female' : 'Not set'}
+                </span>
+              </div>
             </div>
           </div>
         </div>
