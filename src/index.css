@@ -49,6 +49,11 @@
   50% { transform: scale(1.25); }
 }
 
+@keyframes authCardPulse {
+  0%, 100% { border-color: rgba(255, 255, 255, 0.08); }
+  50% { border-color: rgba(34, 211, 238, 0.4); }
+}
+
 .heart-pulse {
   display: inline-block;
   animation: heartPulse 1.5s ease-in-out infinite;

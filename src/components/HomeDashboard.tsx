@@ -25,6 +25,7 @@ import { soundManager } from '../utils/sound';
 import { Mascot } from './Mascot';
 import { CacheWarningBanner } from './CacheWarningBanner';
 import { LowHeartsBanner } from './LowHeartsBanner';
+import { AuthTeaserCard } from './AuthTeaserCard';
 
 interface HomeDashboardProps {
   state: AppState;
@@ -80,6 +81,9 @@ export const HomeDashboard: React.FC<HomeDashboardProps> = ({
 
   return (
     <div id="home-dashboard-container" className="space-y-5 sm:space-y-6 pb-[7px] max-w-7xl mx-auto">
+      {/* Auth Teaser Notification */}
+      <AuthTeaserCard />
+
       {/* Low Hearts Banner */}
       <LowHeartsBanner
         hearts={state.hearts}
