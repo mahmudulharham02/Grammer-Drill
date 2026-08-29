@@ -118,7 +118,7 @@ export const HomeDashboard: React.FC<HomeDashboardProps> = ({
 
             <div className="space-y-1">
               <h1 className="text-lg sm:text-2xl font-extrabold text-white tracking-tight">
-                Assalamu Alaikum, {state.user.name || 'Grammar Hero'}!
+                Get Ready, {state.user.name || 'Grammar Hero'}!
               </h1>
               <p className="text-xs sm:text-sm font-semibold text-cyan-300 flex items-center gap-1.5">
                 <span className="inline-block w-2 h-2 rounded-full bg-cyan-400 animate-ping" />
