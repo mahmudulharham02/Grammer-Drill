@@ -2,6 +2,7 @@ import React, { useState, useMemo } from 'react';
 import { Search, BookOpen, Layers, Zap, ChevronRight, CheckCircle, FileText } from 'lucide-react';
 import { AppState, TopicInfo } from '../types';
 import { TOPICS_DATA } from '../data/topics';
+import { QUESTIONS_DATA } from '../data/questions';
 import { soundManager } from '../utils/sound';
 
 interface TopicsLibraryProps {
@@ -166,9 +167,14 @@ export const TopicsLibrary: React.FC<TopicsLibraryProps> = ({
                     </div>
                   </div>
 
-                  <span className="text-xs font-extrabold px-2.5 py-1 rounded-xl bg-cyan-950 text-cyan-300 border border-cyan-500/30 shrink-0">
-                    {topic.marks} Marks
-                  </span>
+                  <div className="flex items-center gap-2 shrink-0">
+                    <span className="text-[11px] font-bold px-2 py-0.5 rounded-lg bg-slate-800 text-cyan-300 border border-cyan-500/20">
+                      {QUESTIONS_DATA.filter((q) => q.topicId === topic.id).length || '120+'} MCQs
+                    </span>
+                    <span className="text-xs font-extrabold px-2.5 py-1 rounded-xl bg-cyan-950 text-cyan-300 border border-cyan-500/30">
+                      {topic.marks} Marks
+                    </span>
+                  </div>
                 </div>
 
                 <p className="text-xs sm:text-sm text-slate-300 leading-relaxed mb-4">

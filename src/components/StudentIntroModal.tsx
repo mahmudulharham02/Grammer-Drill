@@ -160,10 +160,10 @@ export const StudentIntroModal: React.FC<StudentIntroModalProps> = ({
                 type="text"
                 maxLength={30}
                 required
-                placeholder="e.g. Mahir Rahman"
+                placeholder="e.g. Albert Arham"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                className="w-full px-3.5 py-2.5 rounded-xl bg-slate-900/90 border border-slate-700 text-white text-sm focus:outline-none focus:border-cyan-400 transition-colors"
+                className="w-full px-3.5 py-2.5 rounded-xl bg-slate-900/90 border border-slate-700 text-white text-sm font-normal focus:outline-none focus:border-cyan-400 transition-colors"
               />
             </div>
 

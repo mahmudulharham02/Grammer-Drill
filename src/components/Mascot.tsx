@@ -22,13 +22,13 @@ export const Mascot: React.FC<MascotProps> = ({
   const getMascotEmoji = () => {
     switch (mood) {
       case 'happy':
-        return '🦉✨';
+        return '🦉';
       case 'shocked':
-        return '🦉💦';
+        return '🦉';
       case 'thinking':
-        return '🦉🧐';
+        return '🦉';
       case 'celebrating':
-        return '🦉👑';
+        return '🦉';
       case 'neutral':
       default:
         return '🦉';
@@ -38,13 +38,13 @@ export const Mascot: React.FC<MascotProps> = ({
   const getAnimationClass = () => {
     switch (mood) {
       case 'happy':
-        return 'animate-bounce';
+        return 'hover:scale-105 transition-transform duration-200';
       case 'shocked':
-        return 'animate-shake';
+        return 'hover:scale-105 transition-transform duration-200';
       case 'celebrating':
-        return 'animate-pulse scale-110';
+        return 'hover:scale-105 transition-transform duration-200';
       case 'thinking':
-        return 'rotate-6 transition-transform duration-300';
+        return 'hover:scale-105 transition-transform duration-200';
       case 'neutral':
       default:
         return 'hover:scale-105 transition-transform duration-200';
@@ -52,23 +52,23 @@ export const Mascot: React.FC<MascotProps> = ({
   };
 
   return (
-    <div id="app-mascot-container" className="relative inline-flex flex-col items-center select-none">
-      {showSpeech && (
-        <div
-          id="mascot-speech-bubble"
-          className="absolute -top-12 bg-slate-800 text-cyan-200 text-xs px-3 py-1.5 rounded-xl border border-cyan-500/30 shadow-lg shadow-cyan-500/10 whitespace-nowrap animate-fade-in z-20"
-        >
-          {showSpeech}
-          <div className="absolute -bottom-1.5 left-1/2 -translate-x-1/2 w-3 h-3 bg-slate-800 border-r border-b border-cyan-500/30 rotate-45" />
-        </div>
-      )}
-
+    <div id="app-mascot-container" className="relative inline-flex items-center gap-2.5 select-none max-w-full">
       <div
         id="mascot-avatar"
-        className={`flex items-center justify-center rounded-2xl bg-gradient-to-br from-cyan-950/40 via-violet-950/40 to-slate-900 border border-cyan-500/20 shadow-inner cursor-pointer ${sizeClasses[size]} ${getAnimationClass()}`}
+        className={`shrink-0 flex items-center justify-center rounded-2xl bg-gradient-to-br from-cyan-950/40 via-violet-950/40 to-slate-900 border border-cyan-500/20 shadow-inner cursor-pointer ${sizeClasses[size]} ${getAnimationClass()}`}
       >
         <span>{getMascotEmoji()}</span>
       </div>
+
+      {showSpeech && (
+        <div
+          id="mascot-speech-bubble"
+          className="relative flex items-center gap-1.5 bg-slate-900/90 text-cyan-300 text-xs px-3 py-1.5 rounded-xl border border-cyan-500/30 shadow-md backdrop-blur-sm animate-fade-in z-10 font-semibold max-w-[200px] sm:max-w-none"
+        >
+          <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-ping shrink-0" />
+          <span className="truncate sm:whitespace-normal">{showSpeech}</span>
+        </div>
+      )}
     </div>
   );
 };

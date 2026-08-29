@@ -147,20 +147,14 @@ export const HomeDashboard: React.FC<HomeDashboardProps> = ({
           </div>
 
           {/* Right: Mascot & CTA Actions */}
-          <div className="flex items-center gap-3 w-full md:w-auto justify-between md:justify-end">
+          <div className="flex flex-wrap sm:flex-nowrap items-center justify-between sm:justify-end gap-3.5 w-full md:w-auto pt-3 md:pt-0 border-t border-slate-800/80 md:border-t-0">
             <Mascot
-              mood={state.hearts === 0 ? 'shocked' : state.streak >= 3 ? 'happy' : 'neutral'}
+              mood="happy"
               size="md"
-              showSpeech={
-                state.hearts === 0
-                  ? 'Refill hearts in shop! ❤️'
-                  : state.streak >= 3
-                  ? `On fire! ${state.streak} day streak 🔥`
-                  : 'Ready for HSC drills? ⚡'
-              }
+              showSpeech="Gramify AI Comming Soon"
             />
 
-            <div className="flex flex-col sm:flex-row gap-2">
+            <div className="flex items-center gap-2 shrink-0">
               <button
                 id="hero-btn-continue-drill"
                 onClick={() => {
