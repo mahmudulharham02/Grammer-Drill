@@ -15,7 +15,10 @@ import {
   Lightbulb,
   FileSpreadsheet,
   RotateCcw,
-  Volume2
+  Volume2,
+  Lock,
+  Crown,
+  Clock
 } from 'lucide-react';
 import { AppState, TopicInfo, TopicProgressItem } from '../types';
 import { TOPICS_DATA } from '../data/topics';
@@ -179,6 +182,97 @@ export const HomeDashboard: React.FC<HomeDashboardProps> = ({
             </div>
           </div>
         </div>
+      </section>
+
+      {/* Feature Spotlight: Last Hour Prep Test (Board Exam Simulator) */}
+      <section id="last-hour-prep-card-section">
+        {state.level >= 2 ? (
+          // UNLOCKED: Level >= 2
+          <div
+            id="card-last-hour-prep-unlocked"
+            onClick={() => {
+              soundManager.playClick();
+              onNavigate('last_hour_prep');
+            }}
+            className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-amber-950/40 via-slate-900 to-slate-950 border-2 border-amber-500/70 p-5 sm:p-6 shadow-2xl shadow-amber-500/10 cursor-pointer hover:border-amber-400 hover:scale-[1.01] active:scale-[0.99] transition-all group"
+          >
+            <div className="absolute top-0 right-0 -mt-12 -mr-12 w-64 h-64 bg-amber-500/15 rounded-full blur-3xl pointer-events-none" />
+            <div className="absolute bottom-0 right-1/3 -mb-12 w-48 h-48 bg-rose-500/10 rounded-full blur-2xl pointer-events-none" />
+
+            <div className="relative z-10 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+              <div className="space-y-2 max-w-xl">
+                <div className="flex items-center gap-2 flex-wrap">
+                  <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-500/20 border border-amber-500/40 text-amber-300 text-xs font-extrabold tracking-wider uppercase">
+                    <Crown className="w-3.5 h-3.5 fill-amber-400" />
+                    <span>Level 2 Unlocked · Board Exam Simulator</span>
+                  </span>
+                  <span className="px-2.5 py-0.5 rounded-full bg-red-500/20 border border-red-500/30 text-red-300 text-[11px] font-bold">
+                    60 Marks · 90 Min
+                  </span>
+                </div>
+
+                <h2 className="text-xl sm:text-2xl font-extrabold text-white group-hover:text-amber-300 transition-colors flex items-center gap-2">
+                  <span>Last Hour Prep Test</span>
+                  <Sparkles className="w-5 h-5 text-amber-400 animate-pulse" />
+                </h2>
+
+                <p className="text-xs sm:text-sm text-slate-300 leading-relaxed">
+                  Full mock HSC English 2nd Paper Grammar exam. 60 questions from all 10 topics, 90-minute live timer, no hints, predicted grade, and deep section breakdown.
+                </p>
+              </div>
+
+              <div className="flex items-center gap-3 w-full md:w-auto justify-between md:justify-end pt-2 md:pt-0 border-t border-slate-800/80 md:border-t-0 shrink-0">
+                <div className="text-left md:text-right hidden sm:block">
+                  <span className="text-[10px] uppercase font-bold text-slate-400 block">Board Coverage</span>
+                  <span className="text-xs font-extrabold text-amber-400 font-mono">10 Topics (100%)</span>
+                </div>
+
+                <button
+                  type="button"
+                  className="px-5 py-3 rounded-2xl bg-gradient-to-r from-amber-400 to-orange-500 text-black font-extrabold text-xs sm:text-sm shadow-lg shadow-amber-500/25 flex items-center gap-2 group-hover:scale-105 transition-transform"
+                >
+                  <Flame className="w-4 h-4 fill-black" />
+                  <span>Start Simulator</span>
+                  <ChevronRight className="w-4 h-4" />
+                </button>
+              </div>
+            </div>
+          </div>
+        ) : (
+          // LOCKED: Level < 2
+          <div
+            id="card-last-hour-prep-locked"
+            className="relative overflow-hidden rounded-3xl bg-slate-900/60 border border-slate-800/80 p-5 sm:p-6 shadow-xl"
+          >
+            {/* Dimmed Overlay with Lock */}
+            <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 opacity-75">
+              <div className="space-y-2 max-w-xl">
+                <div className="flex items-center gap-2">
+                  <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-slate-800 text-slate-400 text-xs font-bold">
+                    <Lock className="w-3.5 h-3.5 text-amber-400/80" />
+                    <span>Level 2 Exclusive</span>
+                  </span>
+                  <span className="text-xs font-mono text-slate-500">60 Marks · 90 Min</span>
+                </div>
+
+                <h2 className="text-lg sm:text-xl font-extrabold text-slate-300">
+                  Last Hour Prep Test (Board Exam Simulator)
+                </h2>
+
+                <p className="text-xs text-slate-400 leading-relaxed">
+                  Full 60-mark mock exam mimicking the real HSC English 2nd Paper Grammar experience with live 90-minute countdown and predicted grade.
+                </p>
+              </div>
+
+              <div className="flex items-center gap-3 shrink-0 pt-2 md:pt-0">
+                <div className="px-4 py-2.5 rounded-2xl bg-slate-800/90 border border-slate-700/80 text-amber-300 text-xs font-bold flex items-center gap-2 shadow-inner">
+                  <Lock className="w-4 h-4 text-amber-400" />
+                  <span>Unlocks at Level 2 — keep practicing</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
       </section>
 
       {/* Quick Access: Voice Change (12) & Narration Change (6) Submodule Cards */}

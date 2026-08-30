@@ -28,6 +28,9 @@ import { HomeDashboard } from './components/HomeDashboard';
 import { TopicsLibrary } from './components/TopicsLibrary';
 import { PracticeHub } from './components/PracticeHub';
 import { ChangingSentencesHub } from './components/ChangingSentencesHub';
+import { LastHourPrepSetup } from './components/LastHourPrepSetup';
+import { LastHourPrepExam } from './components/LastHourPrepExam';
+import { LastHourPrepResults } from './components/LastHourPrepResults';
 import { GameScreen } from './components/GameScreen';
 import { ReviewWrongPool } from './components/ReviewWrongPool';
 import { BookmarksView } from './components/BookmarksView';
@@ -35,6 +38,15 @@ import { AchievementsView } from './components/AchievementsView';
 import { AnalyticsView } from './components/AnalyticsView';
 import { ProfileView } from './components/ProfileView';
 import { AppFooter } from './components/AppFooter';
+import {
+  generateExamPaper,
+  saveExamAttempt,
+  calculateExamGrade,
+  EXAM_TOPIC_CONFIG,
+  LastHourPrepAttempt,
+  ExamTopicScore,
+  TOTAL_EXAM_MARKS,
+} from './utils/examGenerator';
 
 // Modals
 import { RulesGuideModal } from './components/RulesGuideModal';
@@ -54,6 +66,10 @@ export function App() {
   const [activeQuestions, setActiveQuestions] = useState<Question[]>([]);
   const [gameTitle, setGameTitle] = useState<string>('Grammar Practice');
   const [gameSubTitle, setGameSubTitle] = useState<string | undefined>();
+
+  // Last Hour Prep Test (Board Exam Simulator) session state
+  const [examQuestions, setExamQuestions] = useState<Question[]>([]);
+  const [currentExamAttempt, setCurrentExamAttempt] = useState<LastHourPrepAttempt | null>(null);
 
   // Modals state
   const [showRulesModal, setShowRulesModal] = useState(false);
@@ -122,6 +138,9 @@ export function App() {
       'practice_hub',
       'topics',
       'changing_sentences',
+      'last_hour_prep',
+      'last_hour_prep_exam',
+      'last_hour_prep_results',
       'review_wrong',
       'bookmarks',
       'achievements',
@@ -255,6 +274,90 @@ export function App() {
     setActiveQuestions(shuffled);
     window.history.pushState({ page: 'game' }, '', '#game');
     setCurrentRoute('game');
+  };
+
+  // Launch Last Hour Prep Test (Board Exam Simulator)
+  const startLastHourPrepExam = () => {
+    const questions = generateExamPaper();
+    setExamQuestions(questions);
+    window.history.pushState({ page: 'last_hour_prep_exam' }, '', '#last_hour_prep_exam');
+    setCurrentRoute('last_hour_prep_exam');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const handleFinishExam = (
+    userAnswers: Record<string, string>,
+    flaggedIds: string[],
+    timeTakenSeconds: number
+  ) => {
+    let totalScore = 0;
+    const topicBreakdown: Record<string, ExamTopicScore> = {};
+
+    EXAM_TOPIC_CONFIG.forEach((cfg) => {
+      topicBreakdown[cfg.topicId] = {
+        topicId: cfg.topicId,
+        topicTitle: cfg.title,
+        marks: cfg.marks,
+        scored: 0,
+        totalQuestions: cfg.count,
+      };
+    });
+
+    examQuestions.forEach((q) => {
+      const selected = userAnswers[q.id];
+      const isCorrect = selected === q.correctAnswer;
+      if (isCorrect) {
+        totalScore += 1;
+        if (topicBreakdown[q.topicId]) {
+          topicBreakdown[q.topicId].scored += 1;
+        } else {
+          const found = Object.keys(topicBreakdown).find((k) => q.topicId.includes(k) || k.includes(q.topicId));
+          if (found) topicBreakdown[found].scored += 1;
+        }
+      }
+
+      // Record question result in user state
+      setState((prev) => recordQuestionResult(prev, q.id, q.topicId, isCorrect));
+    });
+
+    const gradeData = calculateExamGrade(totalScore, TOTAL_EXAM_MARKS);
+    const bonusXP = totalScore * 2;
+    const bonusDiamonds = gradeData.diamondReward;
+
+    // Apply XP and Diamond bonus to user state
+    setState((prev) => {
+      const withSession = recordStudySession(prev);
+      const { newState } = addXPAndCoins(withSession, bonusXP, 0, bonusDiamonds);
+      return newState;
+    });
+
+    const attempt: LastHourPrepAttempt = {
+      id: `exam_${Date.now()}`,
+      date: new Date().toISOString(),
+      score: totalScore,
+      totalMarks: TOTAL_EXAM_MARKS,
+      grade: gradeData.grade,
+      percentage: gradeData.percentage,
+      timeTakenSeconds,
+      questionsAttemptedCount: Object.keys(userAnswers).length,
+      topicBreakdown,
+      userAnswers,
+      flaggedQuestionIds: flaggedIds,
+      questions: examQuestions,
+    };
+
+    saveExamAttempt(attempt);
+    setCurrentExamAttempt(attempt);
+    window.history.pushState({ page: 'last_hour_prep_results' }, '', '#last_hour_prep_results');
+    setCurrentRoute('last_hour_prep_results');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const handleViewPastAttempt = (attempt: LastHourPrepAttempt) => {
+    setCurrentExamAttempt(attempt);
+    window.history.pushState({ page: 'last_hour_prep_results' }, '', '#last_hour_prep_results');
+    setCurrentRoute('last_hour_prep_results');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   // Game action handlers
@@ -525,6 +628,32 @@ export function App() {
           />
         )}
 
+        {currentRoute === 'last_hour_prep' && (
+          <LastHourPrepSetup
+            state={state}
+            onStartExam={startLastHourPrepExam}
+            onBackToDashboard={() => navigate('home')}
+            onViewPastAttempt={handleViewPastAttempt}
+          />
+        )}
+
+        {currentRoute === 'last_hour_prep_exam' && (
+          <LastHourPrepExam
+            questions={examQuestions}
+            onFinishExam={handleFinishExam}
+            onExit={() => navigate('home')}
+          />
+        )}
+
+        {currentRoute === 'last_hour_prep_results' && currentExamAttempt && (
+          <LastHourPrepResults
+            attempt={currentExamAttempt}
+            onRetakeExam={startLastHourPrepExam}
+            onBackToDashboard={() => navigate('home')}
+            onToast={showToast}
+          />
+        )}
+
         {currentRoute === 'game' && (
           <GameScreen
             state={state}
@@ -598,7 +727,7 @@ export function App() {
       </main>
 
       {/* Site-wide Persistent Footer */}
-      <AppFooter hidden={currentRoute === 'game'} onToast={showToast} />
+      <AppFooter hidden={currentRoute === 'game' || currentRoute === 'last_hour_prep_exam'} onToast={showToast} />
 
       {/* Global Modals */}
       {showRulesModal && (
