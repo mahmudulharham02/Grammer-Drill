@@ -262,7 +262,7 @@ export const LastHourPrepSetup: React.FC<LastHourPrepSetupProps> = ({
             soundManager.playClick();
             onStartExam();
           }}
-          className="w-full py-4 sm:py-5 rounded-2xl bg-gradient-to-r from-red-600 via-rose-600 to-red-500 hover:from-red-500 hover:to-rose-500 text-white font-extrabold text-base sm:text-lg shadow-xl shadow-red-600/30 active:scale-[0.98] transition-all flex items-center justify-center gap-3 border border-red-400/40"
+          className="w-full py-4 sm:py-5 rounded-2xl bg-gradient-to-r from-red-600 via-rose-600 to-red-500 hover:from-red-500 hover:via-rose-500 hover:to-red-400 text-white font-extrabold text-base sm:text-lg shadow-xl shadow-red-600/30 hover:shadow-[0_0_30px_rgba(244,63,94,0.45)] hover:scale-[1.02] active:scale-[0.98] transition-all duration-200 ease-out flex items-center justify-center gap-3 border border-red-400/40 cursor-pointer select-none"
         >
           <Flame className="w-6 h-6 fill-white animate-pulse" />
           <span>START BOARD EXAM (90 MIN)</span>

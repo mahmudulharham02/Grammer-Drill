@@ -151,48 +151,71 @@ export const LastHourPrepExam: React.FC<LastHourPrepExamProps> = ({
 
   return (
     <div id="last-hour-prep-exam" className="min-h-[85vh] flex flex-col justify-between max-w-4xl mx-auto space-y-4 pb-28">
-      {/* Top Fixed Control Bar */}
-      <header className="sticky top-16 z-30 p-3 sm:p-4 rounded-2xl bg-slate-900/95 border border-slate-800 shadow-xl backdrop-blur-md flex items-center justify-between gap-2">
-        {/* Left: Question Counter */}
-        <div className="flex items-center gap-2 min-w-0">
-          <div className="px-3 py-1 rounded-xl bg-slate-800 border border-slate-700 text-xs sm:text-sm font-bold text-white font-mono shrink-0">
-            Question {currentIndex + 1} of {questions.length}
+      {/* Top Fixed Control Bar: 2 rows on mobile (<768px), 1 row on desktop (>=768px) */}
+      <header className="sticky top-14 sm:top-16 z-30 p-3 sm:p-4 rounded-2xl bg-slate-900/95 border border-slate-800 shadow-xl backdrop-blur-md md:flex md:items-center md:justify-between md:gap-4">
+        {/* Row 1 on Mobile (min-h 48px, space-between) | Left section on Desktop */}
+        <div className="flex items-center justify-between min-h-[48px] md:min-h-0 md:justify-start md:gap-4">
+          {/* Question Counter */}
+          <div className="flex items-center gap-2">
+            <div className="px-3 py-1.5 rounded-xl bg-slate-800 border border-slate-700 text-xs sm:text-sm font-bold text-white font-mono whitespace-nowrap shrink-0">
+              Question {currentIndex + 1} of {questions.length}
+            </div>
+            <span className="text-xs text-slate-400 font-medium hidden sm:inline whitespace-nowrap">
+              {answeredCount} Answered
+            </span>
           </div>
-          <span className="text-xs text-slate-400 font-medium hidden sm:inline truncate">
-            {answeredCount} Answered
-          </span>
+
+          {/* Live Countdown Timer (Mobile: Row 1 Right) */}
+          <div className="md:hidden">
+            <div
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl font-mono text-xs sm:text-sm font-extrabold border transition-all whitespace-nowrap shrink-0 ${
+                isCriticalTime
+                  ? 'bg-red-500/20 text-red-400 border-red-500 animate-pulse shadow-lg shadow-red-500/30'
+                  : isLowTime
+                  ? 'bg-red-950/60 text-red-400 border-red-500/60'
+                  : 'bg-slate-950 text-cyan-400 border-slate-800'
+              }`}
+            >
+              <Clock className={`w-3.5 h-3.5 shrink-0 ${isCriticalTime ? 'animate-spin' : ''}`} />
+              <span className="tracking-wide">{formatTimeRemaining(secondsRemaining)}</span>
+            </div>
+          </div>
         </div>
 
-        {/* Center: Live Countdown Timer */}
-        <div
-          className={`flex items-center gap-2 px-4 py-1.5 rounded-xl font-mono text-sm sm:text-base font-extrabold border transition-all ${
-            isCriticalTime
-              ? 'bg-red-500/20 text-red-400 border-red-500 animate-pulse shadow-lg shadow-red-500/30'
-              : isLowTime
-              ? 'bg-red-950/60 text-red-400 border-red-500/60'
-              : 'bg-slate-950 text-cyan-400 border-slate-800'
-          }`}
-        >
-          <Clock className={`w-4 h-4 ${isCriticalTime ? 'animate-spin' : ''}`} />
-          <span>{formatTimeRemaining(secondsRemaining)}</span>
+        {/* Live Countdown Timer (Desktop Only: Center) */}
+        <div className="hidden md:flex md:items-center md:justify-center">
+          <div
+            className={`flex items-center gap-2 px-4 py-2 rounded-xl font-mono text-sm sm:text-base font-extrabold border transition-all whitespace-nowrap shrink-0 ${
+              isCriticalTime
+                ? 'bg-red-500/20 text-red-400 border-red-500 animate-pulse shadow-lg shadow-red-500/30'
+                : isLowTime
+                ? 'bg-red-950/60 text-red-400 border-red-500/60'
+                : 'bg-slate-950 text-cyan-400 border-slate-800'
+            }`}
+          >
+            <Clock className={`w-4 h-4 shrink-0 ${isCriticalTime ? 'animate-spin' : ''}`} />
+            <span className="tracking-wide">{formatTimeRemaining(secondsRemaining)}</span>
+          </div>
         </div>
 
-        {/* Right: Flag & Submit Early */}
-        <div className="flex items-center gap-2">
+        {/* Row 2 on Mobile (min-h 48px, 8px gap above, space-between) | Right section on Desktop */}
+        <div className="flex items-center justify-between min-h-[48px] mt-2 md:mt-0 md:min-h-0 md:justify-end md:gap-4">
+          {/* Flag Toggle Button: min 40px touch target */}
           <button
             type="button"
             onClick={handleToggleFlag}
             title="Flag question for review"
-            className={`p-2 sm:px-3 sm:py-1.5 rounded-xl text-xs font-bold flex items-center gap-1.5 border transition-all ${
+            className={`min-h-[40px] min-w-[40px] px-3.5 py-2 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 border transition-all cursor-pointer select-none ${
               isCurrentFlagged
                 ? 'bg-amber-500/20 text-amber-300 border-amber-500/50 shadow-md shadow-amber-500/20'
                 : 'bg-slate-800/80 hover:bg-slate-800 text-slate-300 border-slate-700'
             }`}
           >
-            <Flag className={`w-4 h-4 ${isCurrentFlagged ? 'fill-amber-400 text-amber-400' : ''}`} />
-            <span className="hidden sm:inline">{isCurrentFlagged ? 'Flagged' : 'Flag'}</span>
+            <Flag className={`w-4 h-4 shrink-0 ${isCurrentFlagged ? 'fill-amber-400 text-amber-400' : ''}`} />
+            <span className="text-xs">{isCurrentFlagged ? 'Flagged' : 'Flag'}</span>
           </button>
 
+          {/* Submit Early Button: min 44px tall, fully visible and tappable */}
           <button
             type="button"
             id="btn-submit-exam-early"
@@ -200,7 +223,7 @@ export const LastHourPrepExam: React.FC<LastHourPrepExamProps> = ({
               soundManager.playClick();
               setShowSubmitModal(true);
             }}
-            className="px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-red-600 to-rose-600 hover:from-red-500 hover:to-rose-500 text-white font-extrabold text-xs sm:text-sm shadow-md shadow-red-600/30 active:scale-95 transition-all"
+            className="min-h-[44px] px-4 py-2 rounded-xl bg-gradient-to-r from-red-600 to-rose-600 hover:from-red-500 hover:to-rose-500 text-white font-extrabold text-xs sm:text-sm shadow-md shadow-red-600/30 active:scale-95 transition-all flex items-center justify-center whitespace-nowrap cursor-pointer select-none"
           >
             Submit Early
           </button>
