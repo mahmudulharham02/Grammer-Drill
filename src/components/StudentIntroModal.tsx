@@ -133,14 +133,14 @@ export const StudentIntroModal: React.FC<StudentIntroModalProps> = ({
         {step === 'form' ? (
           <form onSubmit={handleFormSubmit} className="space-y-4">
             <div className="text-center space-y-1">
-              <div className="text-5xl animate-bounce">🦉✨</div>
+              <div className="text-5xl animate-bounce">🦉</div>
               <h2 className="text-xl sm:text-2xl font-extrabold text-white">
-                {isEditing ? 'Edit Student Profile' : 'Welcome, Future Grammar Legend!'}
+                {isEditing ? 'Edit Student Profile' : 'Welcome to Gramify!'}
               </h2>
               <p className="text-xs sm:text-sm text-cyan-300">
                 {isEditing
                   ? 'Update your details for personalized certificate & analytics'
-                  : 'Enter your details to initialize your personalized HSC Quest'}
+                  : 'Enter your details to initialize your Grammar Quest'}
               </p>
             </div>
 
@@ -249,9 +249,9 @@ export const StudentIntroModal: React.FC<StudentIntroModalProps> = ({
                   onChange={(e) => setGroup(e.target.value)}
                   className="w-full px-3 py-2.5 rounded-xl bg-slate-900/90 border border-slate-700 text-white text-xs sm:text-sm focus:outline-none focus:border-cyan-400"
                 >
-                  <option value="Science">Science 🔬</option>
-                  <option value="Humanities">Humanities / Arts 🎨</option>
-                  <option value="Business Studies">Business Studies / Commerce 💼</option>
+                  <option value="Science">Science</option>
+                  <option value="Humanities">Humanities / Arts</option>
+                  <option value="Business Studies">Business Studies / Commerce</option>
                 </select>
               </div>
 

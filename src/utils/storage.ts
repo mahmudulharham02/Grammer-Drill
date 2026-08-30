@@ -1,9 +1,280 @@
-import { AppState, TopicProgressItem, SubModuleProgressItem, StudentProfile } from '../types';
+import { AppState, TopicProgressItem, SubModuleProgressItem, StudentProfile, CurrentDrillSession, SmartPracticeStats } from '../types';
 import { TOPICS_DATA } from '../data/topics';
 import { getLevelTitle, getXpRequiredForLevel, ALL_BADGES } from '../data/badges';
 
 const STORAGE_KEY = 'hscGrammarQuest_v1';
+const DRILL_SESSION_KEY = 'currentDrillSession';
 export const HEART_REGEN_INTERVAL_MS = 3 * 60 * 60 * 1000; // 3 hours per heart (10,800,000 ms)
+
+export const SUBMODULE_FRIENDLY_NAMES: Record<string, string> = {
+  // Voice
+  simple_present: 'Simple Present Voice',
+  present_continuous: 'Present Continuous Voice',
+  present_perfect: 'Present Perfect Voice',
+  simple_past: 'Simple Past Voice',
+  past_continuous: 'Past Continuous Voice',
+  past_perfect: 'Past Perfect Voice',
+  simple_future: 'Simple Future Voice',
+  future_perfect: 'Future Perfect Voice',
+  modals: 'Modal Verbs Voice',
+  imperatives: 'Imperative Voice',
+  interrogatives: 'Interrogative Voice',
+  negatives: 'Negatives & Intransitive',
+  // Narration
+  assertive: 'Assertive Sentences Narration',
+  interrogative: 'Interrogative Sentences Narration',
+  imperative: 'Imperative Sentences Narration',
+  exclamatory: 'Exclamatory Sentences Narration',
+  optative: 'Optative Sentences Narration',
+  mixed: 'Mixed Board Narration',
+  // Changing sentences subtopics
+  voice_change: 'Voice Transformations',
+  simple_complex_compound: 'Simple, Complex, Compound',
+  degree_comparison: 'Degrees of Comparison',
+  affirmative_negative: 'Affirmative to Negative',
+  assertive_interrogative: 'Assertive to Interrogative',
+  exclamatory_assertive: 'Exclamatory to Assertive',
+  mixed_board_transformations: 'Mixed Board Transformations',
+  // General topics
+  right_form_of_verbs: 'Right Form of Verbs',
+  articles: 'Articles & Determiners',
+  preposition: 'Prepositions',
+  completing_sentences: 'Completing Sentences',
+  connectors: 'Sentence Connectors',
+  synonyms_antonyms: 'Synonyms & Antonyms',
+  punctuation: 'Punctuation & Capitalization',
+  modifiers: 'Modifiers (Pre & Post)',
+  changing_sentences: 'Changing Sentences (10M)',
+  tag_questions_and_special: 'Tag Questions & Special Uses',
+};
+
+export interface MasteryTierInfo {
+  tier: number; // 0 to 5
+  label: string;
+  percent: number;
+  textColor: string;
+  barColor: string;
+  glowColor: string;
+  badgeBg: string;
+  hasLock: boolean;
+  hasStar: boolean;
+  hasCrown: boolean;
+  hasCheck: boolean;
+  isMastered: boolean;
+}
+
+export function getMasteryTier(prog?: TopicProgressItem): MasteryTierInfo {
+  const attempts = prog?.attempts || 0;
+  const correct = prog?.correct || 0;
+
+  if (attempts === 0) {
+    return {
+      tier: 0,
+      label: 'Not Started',
+      percent: 0,
+      textColor: 'text-slate-400',
+      barColor: 'bg-slate-700',
+      glowColor: '',
+      badgeBg: 'bg-slate-800 text-slate-400 border-slate-700',
+      hasLock: true,
+      hasStar: false,
+      hasCrown: false,
+      hasCheck: false,
+      isMastered: false,
+    };
+  }
+
+  const percent = Math.min(100, Math.round((correct / Math.max(1, attempts)) * 100));
+
+  if (percent === 0) {
+    return {
+      tier: 0,
+      label: 'Not Started',
+      percent: 0,
+      textColor: 'text-slate-400',
+      barColor: 'bg-slate-700',
+      glowColor: '',
+      badgeBg: 'bg-slate-800 text-slate-400 border-slate-700',
+      hasLock: true,
+      hasStar: false,
+      hasCrown: false,
+      hasCheck: false,
+      isMastered: false,
+    };
+  }
+
+  if (percent < 25) {
+    return {
+      tier: 1,
+      label: 'Just Started',
+      percent,
+      textColor: 'text-cyan-400',
+      barColor: 'bg-cyan-500',
+      glowColor: 'shadow-cyan-500/20',
+      badgeBg: 'bg-cyan-950/60 text-cyan-400 border-cyan-500/30',
+      hasLock: false,
+      hasStar: false,
+      hasCrown: false,
+      hasCheck: false,
+      isMastered: false,
+    };
+  }
+
+  if (percent < 50) {
+    return {
+      tier: 2,
+      label: 'Getting There',
+      percent,
+      textColor: 'text-cyan-300',
+      barColor: 'bg-cyan-400',
+      glowColor: 'shadow-cyan-500/30',
+      badgeBg: 'bg-cyan-900/60 text-cyan-300 border-cyan-400/40',
+      hasLock: false,
+      hasStar: false,
+      hasCrown: false,
+      hasCheck: false,
+      isMastered: false,
+    };
+  }
+
+  if (percent < 75) {
+    return {
+      tier: 3,
+      label: 'Strong',
+      percent,
+      textColor: 'text-violet-300',
+      barColor: 'bg-violet-500',
+      glowColor: 'shadow-violet-500/30',
+      badgeBg: 'bg-violet-950/60 text-violet-300 border-violet-500/40',
+      hasLock: false,
+      hasStar: true,
+      hasCrown: false,
+      hasCheck: false,
+      isMastered: false,
+    };
+  }
+
+  if (percent < 100) {
+    return {
+      tier: 4,
+      label: 'Almost Mastered',
+      percent,
+      textColor: 'text-amber-300',
+      barColor: 'bg-amber-400',
+      glowColor: 'shadow-amber-500/40 shadow-lg',
+      badgeBg: 'bg-amber-950/60 text-amber-300 border-amber-500/50',
+      hasLock: false,
+      hasStar: false,
+      hasCrown: true,
+      hasCheck: false,
+      isMastered: false,
+    };
+  }
+
+  return {
+    tier: 5,
+    label: 'Mastered',
+    percent: 100,
+    textColor: 'text-amber-300 font-extrabold',
+    barColor: 'bg-amber-400',
+    glowColor: 'shadow-amber-400/50',
+    badgeBg: 'bg-amber-500/20 text-amber-300 border-amber-400',
+    hasLock: false,
+    hasStar: false,
+    hasCrown: false,
+    hasCheck: true,
+    isMastered: true,
+  };
+}
+
+export interface WeakSpotInfo {
+  topicId: string;
+  subModuleId: string;
+  subModuleName: string;
+  accuracy: number;
+  totalAttempts: number;
+  correct: number;
+  wrong: number;
+}
+
+export function getWeakestSubModule(state: AppState): WeakSpotInfo | null {
+  const candidates: WeakSpotInfo[] = [];
+
+  Object.entries(state.topicProgress || {}).forEach(([topicId, topicProg]) => {
+    if (topicProg.subModules) {
+      Object.entries(topicProg.subModules).forEach(([subId, subProg]) => {
+        if (subProg.attempts >= 5) {
+          const accuracy = Math.round((subProg.correct / Math.max(1, subProg.attempts)) * 100);
+          candidates.push({
+            topicId,
+            subModuleId: subId,
+            subModuleName: SUBMODULE_FRIENDLY_NAMES[subId] || subId.replace(/_/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase()),
+            accuracy,
+            totalAttempts: subProg.attempts,
+            correct: subProg.correct,
+            wrong: subProg.wrong,
+          });
+        }
+      });
+    }
+
+    if (topicProg.attempts >= 5 && (!topicProg.subModules || Object.keys(topicProg.subModules).length === 0)) {
+      const accuracy = Math.round((topicProg.correct / Math.max(1, topicProg.attempts)) * 100);
+      candidates.push({
+        topicId,
+        subModuleId: topicId,
+        subModuleName: SUBMODULE_FRIENDLY_NAMES[topicId] || topicId.replace(/_/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase()),
+        accuracy,
+        totalAttempts: topicProg.attempts,
+        correct: topicProg.correct,
+        wrong: topicProg.wrong,
+      });
+    }
+  });
+
+  if (candidates.length === 0) return null;
+
+  // Pick the lowest accuracy
+  candidates.sort((a, b) => {
+    if (a.accuracy !== b.accuracy) {
+      return a.accuracy - b.accuracy;
+    }
+    return b.wrong - a.wrong;
+  });
+
+  return candidates[0];
+}
+
+export function saveCurrentDrillSession(session: CurrentDrillSession | null): void {
+  try {
+    if (!session) {
+      localStorage.removeItem(DRILL_SESSION_KEY);
+    } else {
+      localStorage.setItem(DRILL_SESSION_KEY, JSON.stringify(session));
+    }
+  } catch (e) {
+    console.error('Failed to save current drill session:', e);
+  }
+}
+
+export function getCurrentDrillSession(): CurrentDrillSession | null {
+  try {
+    const raw = localStorage.getItem(DRILL_SESSION_KEY);
+    if (!raw) return null;
+    return JSON.parse(raw) as CurrentDrillSession;
+  } catch (e) {
+    console.error('Failed to get current drill session:', e);
+    return null;
+  }
+}
+
+export function clearCurrentDrillSession(): void {
+  try {
+    localStorage.removeItem(DRILL_SESSION_KEY);
+  } catch (e) {
+    console.error('Failed to clear current drill session:', e);
+  }
+}
 
 export function formatHMS(secondsOrMs: number, isMs: boolean = false): string {
   const totalSec = isMs ? Math.floor(secondsOrMs / 1000) : Math.floor(secondsOrMs);
@@ -93,6 +364,19 @@ export function getDefaultState(): AppState {
     wrongQuestionReviewPool: [],
     recentScores: [],
     firstTimeUser: true,
+    bestStreak: 1,
+    totalStudyMinutes: 0,
+    authTeaserDismissedForever: false,
+    cacheWarningCollapsed: false,
+    dailyRuleIndex: 0,
+    smartPracticeStats: {
+      totalSmartSessions: 0,
+      totalWeakSpotQuestions: 0,
+      totalWeakSpotCorrect: 0,
+      lastWeakSpotModule: null,
+      lastSessionDate: null,
+    },
+    currentDrillSession: null,
   };
 }
 
@@ -157,18 +441,39 @@ export function loadAppState(): AppState {
       parsed.maxHearts = 20;
     }
 
-    if (!parsed.inventory) {
-      parsed.inventory = {
-        themes: ['default'],
-        avatarFrames: ['none'],
-        hints: 3,
-      };
-    } else {
+    if (parsed.inventory) {
       if (parsed.inventory.hints === undefined || parsed.inventory.hints === null) {
         parsed.inventory.hints = 3;
       } else {
         parsed.inventory.hints = Math.min(8, parsed.inventory.hints);
       }
+    }
+
+    if (parsed.smartPracticeStats === undefined) {
+      parsed.smartPracticeStats = {
+        totalSmartSessions: 0,
+        totalWeakSpotQuestions: 0,
+        totalWeakSpotCorrect: 0,
+        lastWeakSpotModule: null,
+        lastSessionDate: null,
+      };
+    }
+    if (parsed.bestStreak === undefined) {
+      parsed.bestStreak = Math.max(1, parsed.streak || 1);
+    } else {
+      parsed.bestStreak = Math.max(parsed.bestStreak, parsed.streak || 1);
+    }
+    if (parsed.totalStudyMinutes === undefined) {
+      parsed.totalStudyMinutes = 0;
+    }
+    if (parsed.authTeaserDismissedForever === undefined) {
+      parsed.authTeaserDismissedForever = false;
+    }
+    if (parsed.cacheWarningCollapsed === undefined) {
+      parsed.cacheWarningCollapsed = false;
+    }
+    if (parsed.dailyRuleIndex === undefined) {
+      parsed.dailyRuleIndex = 0;
     }
 
     // Check & calculate heart regeneration (every 3 hours)

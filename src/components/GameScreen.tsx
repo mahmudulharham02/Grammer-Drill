@@ -182,11 +182,11 @@ export const GameScreen: React.FC<GameScreenProps> = ({
       onAddXP(xpEarned, coinEarned);
 
       setMascotMood('happy');
-      setMascotSpeech('Shabash! Excellent grammar mastery!');
+      setMascotSpeech('Nailed it, mate.');
     } else {
       soundManager.playWrong();
       setMascotMood('sad');
-      setMascotSpeech('Check the rule card carefully below!');
+      setMascotSpeech('Read the Rules, mate!');
     }
   };
 

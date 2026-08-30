@@ -221,6 +221,75 @@ export function App() {
     setCurrentRoute('game');
   };
 
+  // Launch Smart Practice (Adaptive Weak-Spot 10-Question Drill)
+  const startSmartPractice = (weakSpot: {
+    topicId: string;
+    subModuleId: string;
+    subModuleName: string;
+    accuracy: number;
+  }) => {
+    let pool: Question[] = [];
+
+    if (weakSpot.topicId === 'changing_sentences') {
+      const voiceMatch = VOICE_CHANGE_QUESTIONS.filter(
+        (q) => q.subModule === weakSpot.subModuleId
+      );
+      if (voiceMatch.length > 0) {
+        pool = voiceMatch;
+      } else {
+        const narrationMatch = NARRATION_QUESTIONS.filter(
+          (q) => q.subModule === weakSpot.subModuleId
+        );
+        if (narrationMatch.length > 0) {
+          pool = narrationMatch;
+        }
+      }
+    }
+
+    if (pool.length === 0) {
+      const matched = ALL_QUESTIONS.filter(
+        (q) =>
+          q.topicId === weakSpot.topicId &&
+          (q.subtopicId === weakSpot.subModuleId || (q as any).subModule === weakSpot.subModuleId)
+      );
+      pool = matched.length > 0 ? matched : ALL_QUESTIONS.filter((q) => q.topicId === weakSpot.topicId);
+    }
+
+    if (pool.length === 0) {
+      pool = ALL_QUESTIONS;
+    }
+
+    const shuffled = [...pool].sort(() => Math.random() - 0.5).slice(0, 10);
+    setGameTitle(`Smart Practice: ${weakSpot.subModuleName}`);
+    setGameSubTitle(`Targeting ${weakSpot.accuracy}% Accuracy Weak Area`);
+    setActiveQuestions(shuffled);
+    window.history.pushState({ page: 'game' }, '', '#game');
+    setCurrentRoute('game');
+  };
+
+  // Resume saved drill session
+  const resumeDrillSession = (session: any) => {
+    if (session.questionIds && session.questionIds.length > 0) {
+      const restored = session.questionIds
+        .map((id: string) =>
+          ALL_QUESTIONS.find((q) => q.id === id) ||
+          VOICE_CHANGE_QUESTIONS.find((q) => q.id === id) ||
+          NARRATION_QUESTIONS.find((q) => q.id === id)
+        )
+        .filter(Boolean) as Question[];
+
+      if (restored.length > 0) {
+        setGameTitle(session.title || 'Resumed Drill');
+        setGameSubTitle(session.subTitle);
+        setActiveQuestions(restored);
+        window.history.pushState({ page: 'game' }, '', '#game');
+        setCurrentRoute('game');
+        return;
+      }
+    }
+    startTopicLesson(session.topicId, session.subtopicId || session.subModuleId);
+  };
+
   // Launch custom question set drill (e.g. from mistake pool or bookmarks)
   const startCustomDrill = (questions: Question[], title: string) => {
     const shuffled = [...questions].sort(() => Math.random() - 0.5);
@@ -605,6 +674,8 @@ export function App() {
             state={state}
             onNavigate={(route, params) => navigate(route, params)}
             onStartDailyChallenge={startDailyChallenge}
+            onStartSmartPractice={startSmartPractice}
+            onResumeDrillSession={resumeDrillSession}
             onOpenRules={() => setShowRulesModal(true)}
             onOpenCertificate={() => setShowCertModal(true)}
             onOpenHeartsShop={() => handleOpenHeartsShop('hearts')}
@@ -738,6 +809,8 @@ export function App() {
             onExportBackup={handleExportBackup}
             onImportBackup={handleImportBackup}
             onOpenCertificate={() => setShowCertModal(true)}
+            onNavigateTopic={(topicId) => startTopicLesson(topicId)}
+            onStartExam={startLastHourPrepExam}
           />
         )}
       </main>

@@ -1,13 +1,30 @@
 import React, { useState, useEffect } from 'react';
 
+const DISMISSED_KEY = 'authTeaserDismissedForever';
+
 export const AuthTeaserCard: React.FC = () => {
-  const [show, setShow] = useState<boolean>(true);
+  const [show, setShow] = useState<boolean>(() => {
+    try {
+      return localStorage.getItem(DISMISSED_KEY) !== 'true';
+    } catch {
+      return false;
+    }
+  });
   const [seconds, setSeconds] = useState<number>(10);
+
+  const handleDismiss = () => {
+    try {
+      localStorage.setItem(DISMISSED_KEY, 'true');
+    } catch (e) {
+      console.error(e);
+    }
+    setShow(false);
+  };
 
   useEffect(() => {
     if (!show) return;
     if (seconds <= 0) {
-      setShow(false);
+      handleDismiss();
       return;
     }
     const timer = setTimeout(() => {
@@ -39,7 +56,7 @@ export const AuthTeaserCard: React.FC = () => {
         <button
           id="btn-close-auth-teaser"
           type="button"
-          onClick={() => setShow(false)}
+          onClick={handleDismiss}
           className="w-7 h-7 flex items-center justify-center rounded-md text-white hover:bg-white/10 transition-colors text-sm font-bold"
           aria-label="Close"
         >

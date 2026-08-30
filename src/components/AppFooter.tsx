@@ -10,28 +10,27 @@ export const AppFooter: React.FC<AppFooterProps> = ({ hidden = false, onToast })
 
   const handleClick = () => {
     if (onToast) {
-      onToast('ARHAM made this with love for YOU 💖');
+      onToast('Made with love by ARHAM for HSC Students 🌟');
     }
   };
 
   return (
     <footer
       id="persistent-app-footer"
-      className="w-full border-t border-slate-800/80 bg-slate-950/60 backdrop-blur-md py-6 px-4 mt-[5px] mb-0 mx-0 transition-colors"
+      className="w-full border-t border-slate-800/60 bg-[#0a0e1a]/80 backdrop-blur-md py-3 px-4 transition-colors"
     >
-      <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4 text-center sm:text-left mt-0 mr-0 mb-0 pb-[100px]">
+      <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-3 text-center sm:text-left pb-[72px] lg:pb-0">
         {/* Credential text */}
         <div
           onClick={handleClick}
-          className="flex items-center gap-1.5 text-xs sm:text-sm text-slate-400 select-none cursor-pointer hover:text-slate-200 transition-colors"
+          className="flex items-center gap-1.5 text-xs text-slate-400 select-none cursor-pointer hover:text-slate-200 transition-colors"
           title="Click for creator note"
         >
-          <span>Made with</span>
-          <span className="heart-pulse text-rose-400">❤️</span>
-          <span>by</span>
+          <span>Made with love by</span>
           <strong className="text-pink-400 font-extrabold hover:underline tracking-wide">
             ARHAM
           </strong>
+          <span className="text-slate-400 text-[11px] hidden sm:inline">• HSC English 2nd Paper Quest</span>
         </div>
 
         {/* LaunchVault Badge */}
@@ -46,8 +45,8 @@ export const AppFooter: React.FC<AppFooterProps> = ({ hidden = false, onToast })
             <img
               src="https://www.launchvault.dev/images/badges/launch-valut-badge.svg"
               alt="Featured on LaunchVault"
-              style={{ width: '195px', height: 'auto' }}
-              className="w-[180px] sm:w-[195px] h-auto drop-shadow-md"
+              style={{ width: '145px', height: 'auto' }}
+              className="w-[135px] sm:w-[145px] h-auto drop-shadow"
             />
           </a>
         </div>

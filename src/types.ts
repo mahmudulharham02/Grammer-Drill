@@ -156,6 +156,39 @@ export interface GrammarTip {
   boardNote: string;
 }
 
+export interface GrammarRule {
+  id: string;
+  topicId: TopicId;
+  topicName: string;
+  title: string;
+  example1: string;
+  example2: string;
+  example3: string;
+  tip: string;
+  boardReference?: string;
+}
+
+export interface CurrentDrillSession {
+  topicId: string;
+  subModuleId?: string;
+  subtopicId?: string;
+  title: string;
+  subTitle?: string;
+  currentQuestionIndex: number;
+  totalQuestions: number;
+  selectedAnswers?: Record<number, string>;
+  sessionStartTime: number;
+  questionIds: string[];
+}
+
+export interface SmartPracticeStats {
+  totalSmartSessions: number;
+  totalWeakSpotQuestions: number;
+  totalWeakSpotCorrect: number;
+  lastWeakSpotModule: string | null;
+  lastSessionDate: string | null;
+}
+
 export interface DailyChallengeState {
   lastCompletedDate: string | null;
   currentStreak: number;
@@ -188,6 +221,8 @@ export interface AppState {
   lastHeartLostAt: string | null;
   lastAdWatchedAt: string | null;
   streak: number;
+  bestStreak?: number;
+  totalStudyMinutes?: number;
   lastStudyDate: string | null;
   lastBackupAt: string | null;
   settings: {
@@ -211,4 +246,9 @@ export interface AppState {
   wrongQuestionReviewPool: string[]; // Question IDs missed by user
   recentScores: { date: string; score: number; topic: string }[];
   firstTimeUser: boolean;
+  currentDrillSession?: CurrentDrillSession | null;
+  smartPracticeStats?: SmartPracticeStats;
+  authTeaserDismissedForever?: boolean;
+  cacheWarningCollapsed?: boolean;
+  dailyRuleIndex?: number;
 }

@@ -326,79 +326,99 @@ export const Navbar: React.FC<NavbarProps> = ({
       {/* Mobile Bottom Fixed Nav Bar (z-index 40) */}
       <div
         id="mobile-bottom-bar"
-        className="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-[#0a0e1a]/95 backdrop-blur-lg border-t border-slate-800 px-2 pt-1.5 pb-[10px] flex items-center justify-around"
+        className="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-[#0a0e1a]/95 backdrop-blur-lg border-t border-slate-800 px-2 pt-1.5 pb-[10px] flex items-center justify-around select-none"
       >
         <button
           id="mobile-tab-home"
+          type="button"
           onClick={() => {
             soundManager.playClick();
             onNavigate('home');
           }}
-          className={`flex flex-col items-center py-1 px-2 rounded-xl transition-all ${
-            currentRoute === 'home' ? 'text-cyan-400 font-bold' : 'text-slate-400'
+          className={`flex flex-col items-center py-1 px-2.5 rounded-xl transition-all relative ${
+            currentRoute === 'home' ? 'text-cyan-300 font-bold' : 'text-slate-400 hover:text-slate-200'
           }`}
         >
-          <Home className="w-5 h-5" />
+          <Home className={`w-5 h-5 transition-transform ${currentRoute === 'home' ? 'scale-110 drop-shadow-[0_0_8px_rgba(6,182,212,0.7)]' : ''}`} />
           <span className="text-[9px] mt-0.5">Home</span>
+          {currentRoute === 'home' && (
+            <span className="absolute -bottom-1 w-1.5 h-1.5 rounded-full bg-cyan-400 shadow-[0_0_6px_rgba(6,182,212,1)]" />
+          )}
         </button>
 
         <button
           id="mobile-tab-topics"
+          type="button"
           onClick={() => {
             soundManager.playClick();
             onNavigate('topics');
           }}
-          className={`flex flex-col items-center py-1 px-2 rounded-xl transition-all ${
-            currentRoute === 'topics' ? 'text-cyan-400 font-bold' : 'text-slate-400'
+          className={`flex flex-col items-center py-1 px-2.5 rounded-xl transition-all relative ${
+            currentRoute === 'topics' ? 'text-cyan-300 font-bold' : 'text-slate-400 hover:text-slate-200'
           }`}
         >
-          <BookOpen className="w-5 h-5" />
+          <BookOpen className={`w-5 h-5 transition-transform ${currentRoute === 'topics' ? 'scale-110 drop-shadow-[0_0_8px_rgba(6,182,212,0.7)]' : ''}`} />
           <span className="text-[9px] mt-0.5">Topics</span>
+          {currentRoute === 'topics' && (
+            <span className="absolute -bottom-1 w-1.5 h-1.5 rounded-full bg-cyan-400 shadow-[0_0_6px_rgba(6,182,212,1)]" />
+          )}
         </button>
 
         <button
           id="mobile-tab-drills"
+          type="button"
           onClick={() => {
             soundManager.playClick();
             onNavigate('practice_hub');
           }}
-          className={`flex flex-col items-center py-1 px-2 rounded-xl transition-all relative ${
-            currentRoute === 'practice_hub' ? 'text-cyan-400 font-bold' : 'text-slate-400'
+          className={`flex flex-col items-center py-1 px-2.5 rounded-xl transition-all relative ${
+            currentRoute === 'practice_hub' ? 'text-cyan-300 font-bold' : 'text-slate-400 hover:text-slate-200'
           }`}
         >
-          <Zap className="w-5 h-5" />
+          <Zap className={`w-5 h-5 transition-transform ${currentRoute === 'practice_hub' ? 'scale-110 drop-shadow-[0_0_8px_rgba(6,182,212,0.7)]' : ''}`} />
           <span className="text-[9px] mt-0.5">Drills</span>
+          {currentRoute === 'practice_hub' && (
+            <span className="absolute -bottom-1 w-1.5 h-1.5 rounded-full bg-cyan-400 shadow-[0_0_6px_rgba(6,182,212,1)]" />
+          )}
         </button>
 
         <button
           id="mobile-tab-changing"
+          type="button"
           onClick={() => {
             soundManager.playClick();
             onNavigate('changing_sentences');
           }}
-          className={`flex flex-col items-center py-1 px-2 rounded-xl transition-all relative ${
-            currentRoute === 'changing_sentences' ? 'text-lime-400 font-bold' : 'text-slate-400'
+          className={`flex flex-col items-center py-1 px-2.5 rounded-xl transition-all relative ${
+            currentRoute === 'changing_sentences' ? 'text-amber-300 font-bold' : 'text-slate-400 hover:text-slate-200'
           }`}
         >
-          <div className="absolute -top-1 px-1 py-0.2 bg-lime-500 text-black text-[7px] font-extrabold rounded-full">
+          <div className="absolute -top-1 px-1 py-0.2 bg-amber-400 text-black text-[7px] font-extrabold rounded-full">
             10M
           </div>
-          <Layers className="w-5 h-5" />
+          <Layers className={`w-5 h-5 transition-transform ${currentRoute === 'changing_sentences' ? 'scale-110 drop-shadow-[0_0_8px_rgba(251,191,36,0.7)]' : ''}`} />
           <span className="text-[9px] mt-0.5">Transform</span>
+          {currentRoute === 'changing_sentences' && (
+            <span className="absolute -bottom-1 w-1.5 h-1.5 rounded-full bg-amber-400 shadow-[0_0_6px_rgba(251,191,36,1)]" />
+          )}
         </button>
 
         <button
           id="mobile-tab-profile"
+          type="button"
           onClick={() => {
             soundManager.playClick();
             onNavigate('profile');
           }}
-          className={`flex flex-col items-center py-1 px-2 rounded-xl transition-all ${
-            currentRoute === 'profile' ? 'text-violet-400 font-bold' : 'text-slate-400'
+          className={`flex flex-col items-center py-1 px-2.5 rounded-xl transition-all relative ${
+            currentRoute === 'profile' ? 'text-violet-300 font-bold' : 'text-slate-400 hover:text-slate-200'
           }`}
         >
-          <User className="w-5 h-5" />
+          <User className={`w-5 h-5 transition-transform ${currentRoute === 'profile' ? 'scale-110 drop-shadow-[0_0_8px_rgba(167,139,250,0.7)]' : ''}`} />
           <span className="text-[9px] mt-0.5">Profile</span>
+          {currentRoute === 'profile' && (
+            <span className="absolute -bottom-1 w-1.5 h-1.5 rounded-full bg-violet-400 shadow-[0_0_6px_rgba(167,139,250,1)]" />
+          )}
         </button>
       </div>
     </>
