@@ -21,6 +21,7 @@ import { soundManager } from '../utils/sound';
 import {
   EXAM_TOPIC_CONFIG,
   TOTAL_EXAM_MARKS,
+  TOTAL_EXAM_QUESTIONS,
   EXAM_DURATION_SECONDS,
   getExamHistory,
   LastHourPrepAttempt
@@ -54,7 +55,7 @@ export const LastHourPrepSetup: React.FC<LastHourPrepSetupProps> = ({
       number: index + 1,
       icon: matched?.icon || '📝',
       accentColor: matched?.accentColor || '#38bdf8',
-      description: matched?.bengaliTitle || matched?.title || conf.title,
+      bengaliTitle: matched?.bengaliTitle || conf.title,
     };
   });
 
@@ -76,7 +77,7 @@ export const LastHourPrepSetup: React.FC<LastHourPrepSetupProps> = ({
 
         <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-amber-500/10 border border-amber-500/30 text-amber-300 text-xs font-bold">
           <Crown className="w-3.5 h-3.5" />
-          <span>Board Exam Simulator</span>
+          <span>HSC Board Exam Simulator</span>
         </div>
       </div>
 
@@ -89,32 +90,38 @@ export const LastHourPrepSetup: React.FC<LastHourPrepSetupProps> = ({
           <div className="space-y-2 max-w-xl">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-lg bg-red-500/20 border border-red-500/30 text-red-300 text-xs font-extrabold tracking-wider uppercase">
               <span className="w-2 h-2 rounded-full bg-red-400 animate-ping" />
-              <span>Mock Board Examination</span>
+              <span>Full Board Exam Simulator</span>
             </div>
             <h1 className="text-2xl sm:text-3xl md:text-4xl font-extrabold text-white tracking-tight">
               Last Hour Prep Test
             </h1>
-            <p className="text-sm sm:text-base font-semibold text-amber-300 flex items-center gap-2">
-              <span>60 Marks</span>
+            <p className="text-sm sm:text-base font-semibold text-amber-300 flex items-center flex-wrap gap-2">
+              <span className="bg-amber-400/10 px-2 py-0.5 rounded border border-amber-400/30">60 Marks</span>
               <span className="text-slate-500">•</span>
-              <span>90 Minutes</span>
+              <span className="bg-cyan-400/10 px-2 py-0.5 rounded border border-cyan-400/30 text-cyan-300">90 Questions</span>
               <span className="text-slate-500">•</span>
-              <span>Full HSC Syllabus</span>
+              <span className="bg-purple-400/10 px-2 py-0.5 rounded border border-purple-400/30 text-purple-300">90 Minutes</span>
+              <span className="text-slate-500">•</span>
+              <span>Full Syllabus</span>
             </p>
             <p className="text-xs sm:text-sm text-slate-300 leading-relaxed pt-1">
-              Test your grammar mastery under realistic board exam conditions. Mixed questions from all 10 topics, strict timer, instant predicted grade, and section-wise accuracy.
+              Authentic NCTB / Board syllabus exam experience. Complete 90 randomized questions across all 10 grammar items with weighted scoring, real-time countdown, and comprehensive diagnostics.
             </p>
           </div>
 
           {/* Quick Stat Pill Highlights */}
-          <div className="grid grid-cols-2 gap-3 w-full sm:w-auto shrink-0">
-            <div className="p-3.5 rounded-2xl bg-slate-950/70 border border-slate-800 text-center">
+          <div className="grid grid-cols-3 gap-2.5 w-full sm:w-auto shrink-0">
+            <div className="p-3 rounded-2xl bg-slate-950/70 border border-slate-800 text-center">
               <span className="text-[10px] uppercase font-bold text-slate-400 block">Total Marks</span>
-              <span className="text-xl font-extrabold text-amber-400 font-mono">60</span>
+              <span className="text-lg sm:text-xl font-extrabold text-amber-400 font-mono">60</span>
             </div>
-            <div className="p-3.5 rounded-2xl bg-slate-950/70 border border-slate-800 text-center">
-              <span className="text-[10px] uppercase font-bold text-slate-400 block">Time Allowed</span>
-              <span className="text-xl font-extrabold text-cyan-400 font-mono">90 min</span>
+            <div className="p-3 rounded-2xl bg-slate-950/70 border border-slate-800 text-center">
+              <span className="text-[10px] uppercase font-bold text-slate-400 block">Questions</span>
+              <span className="text-lg sm:text-xl font-extrabold text-purple-400 font-mono">90 Qs</span>
+            </div>
+            <div className="p-3 rounded-2xl bg-slate-950/70 border border-slate-800 text-center">
+              <span className="text-[10px] uppercase font-bold text-slate-400 block">Duration</span>
+              <span className="text-lg sm:text-xl font-extrabold text-cyan-400 font-mono">90 min</span>
             </div>
           </div>
         </div>
@@ -126,9 +133,9 @@ export const LastHourPrepSetup: React.FC<LastHourPrepSetupProps> = ({
           <AlertTriangle className="w-5 h-5" />
         </div>
         <div className="space-y-1">
-          <h4 className="text-sm font-bold text-red-200">Strict Exam Rules</h4>
+          <h4 className="text-sm font-bold text-red-200">Strict Board Rules</h4>
           <p className="text-xs text-slate-300 leading-relaxed">
-            Once started, the timer cannot be paused. Switching tabs or minimizing the browser will <strong className="text-red-300">NOT</strong> stop the timer. No hints, no bookmarks, and no heart costs — just authentic board performance.
+            Once started, the timer cannot be paused. Minimizing the browser or switching tabs will <strong className="text-red-300">not</strong> stop the timer. No hints, no bookmarks, and no heart cost.
           </p>
         </div>
       </div>
@@ -139,11 +146,11 @@ export const LastHourPrepSetup: React.FC<LastHourPrepSetupProps> = ({
           <div>
             <h2 className="text-base sm:text-lg font-bold text-white flex items-center gap-2">
               <BookOpen className="w-4 h-4 text-cyan-400" />
-              <span>Full Syllabus Structure (10 Sections · 60 Marks)</span>
+              <span>Full Syllabus Structure (10 Topics · 90 Qs · 60 Marks)</span>
             </h2>
-            <p className="text-xs text-slate-400">Official HSC English 2nd Paper Grammar distribution</p>
+            <p className="text-xs text-slate-400">Official NCTB / BOU HSC English 2nd Paper mark distribution</p>
           </div>
-          <span className="text-xs font-mono text-cyan-400 font-bold">100% Comprehensive</span>
+          <span className="text-xs font-mono text-cyan-400 font-bold hidden sm:inline">60 Marks Total</span>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -161,13 +168,15 @@ export const LastHourPrepSetup: React.FC<LastHourPrepSetupProps> = ({
                     {item.number}. {item.title}
                   </div>
                   <div className="text-[11px] text-slate-400 truncate">
-                    {item.description}
+                    {item.count} Questions · {item.perQuestionMark} mark each
                   </div>
                 </div>
               </div>
-              <span className="shrink-0 px-2.5 py-1 rounded-lg bg-cyan-950/80 border border-cyan-500/30 text-cyan-300 text-xs font-extrabold font-mono">
-                {item.marks} M
-              </span>
+              <div className="shrink-0 text-right">
+                <span className="inline-block px-2.5 py-1 rounded-lg bg-cyan-950/80 border border-cyan-500/30 text-cyan-300 text-xs font-extrabold font-mono">
+                  {item.marks} Marks
+                </span>
+              </div>
             </div>
           ))}
         </div>
@@ -211,7 +220,7 @@ export const LastHourPrepSetup: React.FC<LastHourPrepSetupProps> = ({
                     <div>
                       <div className="flex items-center gap-2">
                         <span className="text-xs sm:text-sm font-bold text-white">
-                          Scored {att.score} / {att.totalMarks}
+                          Scored {att.score % 1 === 0 ? att.score : att.score.toFixed(1)} / {att.totalMarks} ({att.percentage}%)
                         </span>
                         <span
                           className={`px-2 py-0.5 rounded text-[10px] font-extrabold ${

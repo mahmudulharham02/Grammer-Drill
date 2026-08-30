@@ -45,6 +45,7 @@ import {
   EXAM_TOPIC_CONFIG,
   LastHourPrepAttempt,
   ExamTopicScore,
+  ExamQuestion,
   TOTAL_EXAM_MARKS,
 } from './utils/examGenerator';
 
@@ -68,7 +69,7 @@ export function App() {
   const [gameSubTitle, setGameSubTitle] = useState<string | undefined>();
 
   // Last Hour Prep Test (Board Exam Simulator) session state
-  const [examQuestions, setExamQuestions] = useState<Question[]>([]);
+  const [examQuestions, setExamQuestions] = useState<ExamQuestion[]>([]);
   const [currentExamAttempt, setCurrentExamAttempt] = useState<LastHourPrepAttempt | null>(null);
 
   // Modals state
@@ -290,7 +291,8 @@ export function App() {
     flaggedIds: string[],
     timeTakenSeconds: number
   ) => {
-    let totalScore = 0;
+    let totalWeightedScore = 0;
+    let rawCorrectCount = 0;
     const topicBreakdown: Record<string, ExamTopicScore> = {};
 
     EXAM_TOPIC_CONFIG.forEach((cfg) => {
@@ -298,30 +300,42 @@ export function App() {
         topicId: cfg.topicId,
         topicTitle: cfg.title,
         marks: cfg.marks,
-        scored: 0,
+        scoredMarks: 0,
+        correctCount: 0,
         totalQuestions: cfg.count,
+        perQuestionMark: cfg.perQuestionMark,
       };
     });
 
     examQuestions.forEach((q) => {
       const selected = userAnswers[q.id];
       const isCorrect = selected === q.correctAnswer;
+      const questionMark = q.markValue !== undefined ? q.markValue : 1;
+
       if (isCorrect) {
-        totalScore += 1;
+        totalWeightedScore += questionMark;
+        rawCorrectCount += 1;
+
         if (topicBreakdown[q.topicId]) {
-          topicBreakdown[q.topicId].scored += 1;
+          topicBreakdown[q.topicId].correctCount += 1;
+          topicBreakdown[q.topicId].scoredMarks += questionMark;
         } else {
           const found = Object.keys(topicBreakdown).find((k) => q.topicId.includes(k) || k.includes(q.topicId));
-          if (found) topicBreakdown[found].scored += 1;
+          if (found) {
+            topicBreakdown[found].correctCount += 1;
+            topicBreakdown[found].scoredMarks += questionMark;
+          }
         }
       }
 
-      // Record question result in user state
+      // Record question result in user state for analytics & mistakes pool
       setState((prev) => recordQuestionResult(prev, q.id, q.topicId, isCorrect));
     });
 
-    const gradeData = calculateExamGrade(totalScore, TOTAL_EXAM_MARKS);
-    const bonusXP = totalScore * 2;
+    // Clean rounding for floating point representation (e.g. 0.5 steps)
+    const finalScore = Math.round(totalWeightedScore * 10) / 10;
+    const gradeData = calculateExamGrade(finalScore, TOTAL_EXAM_MARKS);
+    const bonusXP = Math.round(finalScore * 2);
     const bonusDiamonds = gradeData.diamondReward;
 
     // Apply XP and Diamond bonus to user state
@@ -334,12 +348,14 @@ export function App() {
     const attempt: LastHourPrepAttempt = {
       id: `exam_${Date.now()}`,
       date: new Date().toISOString(),
-      score: totalScore,
+      score: finalScore,
       totalMarks: TOTAL_EXAM_MARKS,
+      totalQuestions: examQuestions.length,
       grade: gradeData.grade,
       percentage: gradeData.percentage,
       timeTakenSeconds,
       questionsAttemptedCount: Object.keys(userAnswers).length,
+      rawCorrectCount,
       topicBreakdown,
       userAnswers,
       flaggedQuestionIds: flaggedIds,

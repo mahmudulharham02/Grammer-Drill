@@ -11,17 +11,18 @@ import {
   X,
   Bookmark
 } from 'lucide-react';
-import { Question } from '../types';
 import { soundManager } from '../utils/sound';
 import {
+  ExamQuestion,
   EXAM_DURATION_SECONDS,
   formatTimeRemaining,
-  TOTAL_EXAM_MARKS
+  TOTAL_EXAM_MARKS,
+  TOTAL_EXAM_QUESTIONS
 } from '../utils/examGenerator';
 import { TOPICS_DATA } from '../data/topics';
 
 interface LastHourPrepExamProps {
-  questions: Question[];
+  questions: ExamQuestion[];
   onFinishExam: (userAnswers: Record<string, string>, flaggedIds: string[], timeTakenSeconds: number) => void;
   onExit: () => void;
 }
@@ -44,7 +45,6 @@ export const LastHourPrepExam: React.FC<LastHourPrepExamProps> = ({
   // Modals
   const [showSubmitModal, setShowSubmitModal] = useState(false);
   const [showTimeUpModal, setShowTimeUpModal] = useState(false);
-  const [showExitConfirmModal, setShowExitConfirmModal] = useState(false);
 
   // Auto-scroll question circles into view
   const circleRefs = useRef<(HTMLButtonElement | null)[]>([]);
@@ -76,7 +76,7 @@ export const LastHourPrepExam: React.FC<LastHourPrepExamProps> = ({
     return () => clearInterval(interval);
   }, []);
 
-  const currentQuestion: Question | undefined = questions[currentIndex];
+  const currentQuestion: ExamQuestion | undefined = questions[currentIndex];
 
   const handleSelectOption = (option: string) => {
     if (!currentQuestion) return;
@@ -147,6 +147,8 @@ export const LastHourPrepExam: React.FC<LastHourPrepExamProps> = ({
   const isLowTime = secondsRemaining <= 300; // under 5 minutes
   const isCriticalTime = secondsRemaining <= 60; // under 1 minute
 
+  const markDisplay = currentQuestion?.markValue !== undefined ? currentQuestion.markValue : 1;
+
   return (
     <div id="last-hour-prep-exam" className="min-h-[85vh] flex flex-col justify-between max-w-4xl mx-auto space-y-4 pb-28">
       {/* Top Fixed Control Bar */}
@@ -154,7 +156,7 @@ export const LastHourPrepExam: React.FC<LastHourPrepExamProps> = ({
         {/* Left: Question Counter */}
         <div className="flex items-center gap-2 min-w-0">
           <div className="px-3 py-1 rounded-xl bg-slate-800 border border-slate-700 text-xs sm:text-sm font-bold text-white font-mono shrink-0">
-            Q {currentIndex + 1} / {questions.length}
+            Question {currentIndex + 1} of {questions.length}
           </div>
           <span className="text-xs text-slate-400 font-medium hidden sm:inline truncate">
             {answeredCount} Answered
@@ -193,6 +195,7 @@ export const LastHourPrepExam: React.FC<LastHourPrepExamProps> = ({
 
           <button
             type="button"
+            id="btn-submit-exam-early"
             onClick={() => {
               soundManager.playClick();
               setShowSubmitModal(true);
@@ -208,7 +211,7 @@ export const LastHourPrepExam: React.FC<LastHourPrepExamProps> = ({
       {currentQuestion && (
         <main className="flex-1">
           <div className="glass-panel rounded-3xl p-5 sm:p-7 border border-slate-800/90 shadow-2xl space-y-6 animate-fade-in relative">
-            {/* Header: Topic Tag & Board info */}
+            {/* Header: Topic Tag, Board reference, and Marks Value Display */}
             <div className="flex items-center justify-between gap-2 flex-wrap">
               <div className="flex items-center gap-2">
                 <span className="px-3 py-1 rounded-full bg-cyan-950/80 border border-cyan-500/30 text-cyan-300 text-xs font-bold">
@@ -220,13 +223,18 @@ export const LastHourPrepExam: React.FC<LastHourPrepExamProps> = ({
                     <span>Review Marked</span>
                   </span>
                 )}
+                {currentQuestion.boardReference && (
+                  <span className="text-[11px] font-mono text-slate-400 px-2.5 py-0.5 rounded-md bg-slate-900 border border-slate-800 hidden sm:inline">
+                    {currentQuestion.boardReference}
+                  </span>
+                )}
               </div>
 
-              {currentQuestion.boardReference && (
-                <span className="text-[11px] font-mono text-slate-400 px-2.5 py-0.5 rounded-md bg-slate-900 border border-slate-800">
-                  {currentQuestion.boardReference}
-                </span>
-              )}
+              {/* Marks Display: Top-right corner of the card */}
+              <div className="flex items-center gap-1.5 px-3 py-1 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-300 text-xs font-mono font-extrabold shadow-sm">
+                <span>⭐</span>
+                <span>{markDisplay} {markDisplay === 1 ? 'Mark' : 'Marks'}</span>
+              </div>
             </div>
 
             {/* Instruction if present */}
@@ -288,10 +296,10 @@ export const LastHourPrepExam: React.FC<LastHourPrepExamProps> = ({
         </main>
       )}
 
-      {/* Fixed Bottom Navigation & Question Grid */}
+      {/* Fixed Bottom Navigation & 90-Question Grid */}
       <footer className="fixed bottom-0 left-0 right-0 z-40 bg-slate-950/95 border-t border-slate-800/90 backdrop-blur-xl p-3 sm:p-4 shadow-2xl">
         <div className="max-w-4xl mx-auto space-y-2.5">
-          {/* Horizontally Scrollable 60-Circle Question Navigator */}
+          {/* Horizontally Scrollable 90-Circle Question Navigator */}
           <div className="flex items-center gap-1.5 overflow-x-auto py-1 scrollbar-none touch-pan-x px-1">
             {questions.map((q, idx) => {
               const isAnswered = !!userAnswers[q.id];

@@ -2,43 +2,64 @@ import { Question } from '../types';
 import { QUESTIONS_DATA } from '../data/questions';
 import { TOPICS_DATA } from '../data/topics';
 
+export interface ExamTopicConfig {
+  topicId: string;
+  marks: number;
+  count: number;
+  perQuestionMark: number;
+  title: string;
+}
+
 export interface ExamTopicScore {
   topicId: string;
   topicTitle: string;
   marks: number;
-  scored: number;
+  scoredMarks: number;
+  correctCount: number;
   totalQuestions: number;
+  perQuestionMark: number;
+}
+
+export interface ExamQuestion extends Question {
+  markValue: number; // 0.5 or 1
 }
 
 export interface LastHourPrepAttempt {
   id: string;
   date: string;
-  score: number;
-  totalMarks: number;
+  score: number; // weighted marks scored out of 60
+  totalMarks: number; // 60
+  totalQuestions: number; // 90
   grade: 'A+' | 'A' | 'B' | 'C' | 'D' | 'F';
   percentage: number;
   timeTakenSeconds: number;
   questionsAttemptedCount: number;
+  rawCorrectCount: number;
   topicBreakdown: Record<string, ExamTopicScore>;
   userAnswers: Record<string, string>; // questionId -> selectedOption
   flaggedQuestionIds: string[];
-  questions: Question[];
+  questions: ExamQuestion[];
 }
 
-export const EXAM_TOPIC_CONFIG = [
-  { topicId: 'right_form_of_verbs', marks: 7, count: 7, title: 'Right Form of Verbs' },
-  { topicId: 'articles', marks: 5, count: 5, title: 'Articles' },
-  { topicId: 'preposition', marks: 7, count: 7, title: 'Prepositions' },
-  { topicId: 'completing_sentences', marks: 7, count: 7, title: 'Completing Sentences' },
-  { topicId: 'connectors', marks: 7, count: 7, title: 'Sentence Connectors' },
-  { topicId: 'synonyms_antonyms', marks: 7, count: 7, title: 'Synonyms & Antonyms' },
-  { topicId: 'punctuation', marks: 7, count: 7, title: 'Punctuation' },
-  { topicId: 'modifiers', marks: 5, count: 5, title: 'Modifiers' },
-  { topicId: 'changing_sentences', marks: 10, count: 10, title: 'Changing Sentences' },
-  { topicId: 'tag_questions_and_special', marks: 5, count: 5, title: 'Tag Questions' },
+/**
+ * Official NCTB / BOU HSC English 2nd Paper Grammar Marks Distribution
+ * Total Marks: 60 | Total Questions: 90 | Duration: 90 minutes
+ */
+export const EXAM_TOPIC_CONFIG: ExamTopicConfig[] = [
+  { topicId: 'articles', marks: 5, count: 10, perQuestionMark: 0.5, title: 'Articles' },
+  { topicId: 'preposition', marks: 5, count: 10, perQuestionMark: 0.5, title: 'Prepositions' },
+  { topicId: 'completing_sentences', marks: 5, count: 10, perQuestionMark: 0.5, title: 'Completing Sentences' },
+  { topicId: 'right_form_of_verbs', marks: 5, count: 10, perQuestionMark: 0.5, title: 'Right Form of Verbs' },
+  { topicId: 'connectors', marks: 7, count: 7, perQuestionMark: 1.0, title: 'Sentence Connectors' },
+  { topicId: 'synonyms_antonyms', marks: 7, count: 7, perQuestionMark: 1.0, title: 'Synonyms & Antonyms' },
+  { topicId: 'punctuation', marks: 5, count: 10, perQuestionMark: 0.5, title: 'Punctuation' },
+  { topicId: 'modifiers', marks: 5, count: 10, perQuestionMark: 0.5, title: 'Modifiers' },
+  { topicId: 'changing_sentences', marks: 10, count: 10, perQuestionMark: 1.0, title: 'Changing Sentences' },
+  { topicId: 'tag_questions_and_special', marks: 6, count: 6, perQuestionMark: 1.0, title: 'Tag Questions' },
 ];
 
 export const TOTAL_EXAM_MARKS = 60;
+export const TOTAL_EXAM_QUESTIONS = 90;
 export const EXAM_DURATION_SECONDS = 90 * 60; // 90 minutes = 5400 seconds
 
 /**
@@ -68,10 +89,10 @@ export function calculateExamGrade(score: number, total: number = TOTAL_EXAM_MAR
 }
 
 /**
- * Generates a full 60-question Board Exam paper following topic distribution & difficulty mix
+ * Generates a full 90-question Board Exam paper following topic distribution & difficulty mix
  */
-export function generateExamPaper(): Question[] {
-  const selectedQuestions: Question[] = [];
+export function generateExamPaper(): ExamQuestion[] {
+  const selectedQuestions: ExamQuestion[] = [];
   const usedIds = new Set<string>();
 
   for (const config of EXAM_TOPIC_CONFIG) {
@@ -93,7 +114,7 @@ export function generateExamPaper(): Question[] {
       available = topicPool;
     }
 
-    // Try difficulty mix: ~40% easy, ~40% medium, ~20% hard
+    // Difficulty mix: ~40% easy, ~40% medium, ~20% hard
     const easyPool = available.filter((q) => q.difficulty === 'easy');
     const medPool = available.filter((q) => q.difficulty === 'medium');
     const hardPool = available.filter((q) => q.difficulty === 'hard');
@@ -115,13 +136,13 @@ export function generateExamPaper(): Question[] {
 
     const pickedHard = pickRandom(hardPool.length > 0 ? hardPool.filter((q) => !pickedEasy.some((p) => p.id === q.id) && !pickedMed.some((p) => p.id === q.id)) : remainingAfterMed, targetHard);
 
-    let topicSelected = [...pickedEasy, ...pickedMed, ...pickedHard];
+    let topicSelected: Question[] = [...pickedEasy, ...pickedMed, ...pickedHard];
 
     // If still short of config.count, fill from remaining available
     if (topicSelected.length < config.count) {
       const rest = available.filter((q) => !topicSelected.some((ts) => ts.id === q.id));
       const extraNeeded = config.count - topicSelected.length;
-      topicSelected.push(...pickRandom(rest.length > 0 ? rest : QUESTIONS_DATA, extraNeeded));
+      topicSelected.push(...pickRandom(rest.length > 0 ? rest : (topicPool.length > 0 ? topicPool : QUESTIONS_DATA), extraNeeded));
     }
 
     // Trim to exact count
@@ -129,18 +150,28 @@ export function generateExamPaper(): Question[] {
 
     topicSelected.forEach((q) => {
       usedIds.add(q.id);
-      selectedQuestions.push(q);
+      selectedQuestions.push({
+        ...q,
+        markValue: config.perQuestionMark,
+      });
     });
   }
 
-  // If total is less than 60, fill with random questions from overall bank
-  if (selectedQuestions.length < TOTAL_EXAM_MARKS) {
+  // If total is less than 90 questions, fill with random questions from overall bank
+  if (selectedQuestions.length < TOTAL_EXAM_QUESTIONS) {
     const extraPool = QUESTIONS_DATA.filter((q) => !usedIds.has(q.id) && q.options && q.options.length >= 2);
     const shuffledExtra = [...extraPool].sort(() => Math.random() - 0.5);
-    selectedQuestions.push(...shuffledExtra.slice(0, TOTAL_EXAM_MARKS - selectedQuestions.length));
+    const needed = TOTAL_EXAM_QUESTIONS - selectedQuestions.length;
+    shuffledExtra.slice(0, needed).forEach((q) => {
+      const matchedConfig = EXAM_TOPIC_CONFIG.find((c) => c.topicId === q.topicId);
+      selectedQuestions.push({
+        ...q,
+        markValue: matchedConfig ? matchedConfig.perQuestionMark : 1.0,
+      });
+    });
   }
 
-  // Finally, shuffle the entire 60-question set so questions are interspersed realistically
+  // Finally, shuffle the entire 90-question set so topics are mixed
   return [...selectedQuestions].sort(() => Math.random() - 0.5);
 }
 

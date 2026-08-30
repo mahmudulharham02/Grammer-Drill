@@ -217,7 +217,7 @@ export const HomeDashboard: React.FC<HomeDashboardProps> = ({
                 </h2>
 
                 <p className="text-xs sm:text-sm text-slate-300 leading-relaxed">
-                  Full mock HSC English 2nd Paper Grammar exam. 60 questions from all 10 topics, 90-minute live timer, no hints, predicted grade, and deep section breakdown.
+                  Full mock HSC English 2nd Paper Grammar exam. 90 questions (60 marks) from all 10 topics, 90-minute live timer, no hints, predicted grade, and deep section breakdown.
                 </p>
               </div>
 

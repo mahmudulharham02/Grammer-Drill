@@ -16,16 +16,19 @@ import {
   BookOpen,
   HelpCircle,
   Copy,
-  Check
+  Check,
+  Flame,
+  FileCheck
 } from 'lucide-react';
-import { Question } from '../types';
 import { soundManager } from '../utils/sound';
 import {
   LastHourPrepAttempt,
   calculateExamGrade,
   TOTAL_EXAM_MARKS,
+  TOTAL_EXAM_QUESTIONS,
   EXAM_DURATION_SECONDS,
   ExamTopicScore,
+  ExamQuestion
 } from '../utils/examGenerator';
 import { TOPICS_DATA } from '../data/topics';
 
@@ -46,9 +49,9 @@ export const LastHourPrepResults: React.FC<LastHourPrepResultsProps> = ({
   const [copied, setCopied] = useState(false);
   const [filterReview, setFilterReview] = useState<'all' | 'wrong' | 'correct'>('all');
 
-  const gradeInfo = calculateExamGrade(attempt.score, attempt.totalMarks);
+  const gradeInfo = calculateExamGrade(attempt.score, attempt.totalMarks || TOTAL_EXAM_MARKS);
 
-  // Trigger confetti for A+ and A grades
+  // Trigger celebratory confetti for A+ and A grades
   useEffect(() => {
     if (attempt.grade === 'A+' || attempt.grade === 'A') {
       try {
@@ -59,7 +62,7 @@ export const LastHourPrepResults: React.FC<LastHourPrepResultsProps> = ({
           colors: ['#22c55e', '#06b6d4', '#eab308', '#f43f5e', '#a855f7'],
         });
       } catch (e) {
-        // Fallback gracefully if canvas is constrained
+        // Safe fallback
       }
     }
   }, [attempt.grade]);
@@ -68,12 +71,14 @@ export const LastHourPrepResults: React.FC<LastHourPrepResultsProps> = ({
   const secondsTaken = attempt.timeTakenSeconds % 60;
   const timeFormatted = `${String(minutesTaken).padStart(2, '0')}:${String(secondsTaken).padStart(2, '0')}`;
 
-  const bonusXP = attempt.score * 2;
+  const bonusXP = Math.round(attempt.score * 2);
   const bonusDiamonds = gradeInfo.diamondReward;
+
+  const displayScore = attempt.score % 1 === 0 ? attempt.score : attempt.score.toFixed(1);
 
   const handleShare = async () => {
     soundManager.playClick();
-    const shareText = `I scored ${attempt.score} out of ${attempt.totalMarks} on Gramify Last Hour Prep Test (HSC English 2nd Paper).\nPredicted Grade: ${attempt.grade} (${gradeInfo.percentage}%)\nTry it at gramify-english.vercel.app`;
+    const shareText = `I scored ${displayScore} out of 60 on Gramify Last Hour Prep Test. Grade: ${attempt.grade}. Try it at gramify-english.vercel.app`;
 
     try {
       if (navigator.clipboard && navigator.clipboard.writeText) {
@@ -97,6 +102,9 @@ export const LastHourPrepResults: React.FC<LastHourPrepResultsProps> = ({
     if (filterReview === 'correct') return isCorrect;
     return true;
   });
+
+  const wrongCount = attempt.questions.filter((q) => attempt.userAnswers[q.id] !== q.correctAnswer).length;
+  const correctCount = attempt.questions.length - wrongCount;
 
   // Calculate circular SVG progress values
   const radius = 64;
@@ -137,11 +145,11 @@ export const LastHourPrepResults: React.FC<LastHourPrepResultsProps> = ({
             Last Hour Prep Summary
           </h1>
           <p className="text-xs sm:text-sm text-slate-400">
-            60 Marks · 90 Minutes · Comprehensive Grammar Simulator
+            60 Marks · 90 Questions · 90 Minutes · Comprehensive Grammar Simulator
           </p>
         </div>
 
-        {/* Circular Ring & Big Score */}
+        {/* Circular Ring & Big Weighted Score */}
         <div className="flex flex-col sm:flex-row items-center justify-center gap-6 sm:gap-10 py-2">
           {/* Circular Progress Ring */}
           <div className="relative w-36 h-36 flex items-center justify-center shrink-0">
@@ -179,11 +187,11 @@ export const LastHourPrepResults: React.FC<LastHourPrepResultsProps> = ({
           <div className="text-left space-y-2 max-w-xs">
             <div>
               <span className="text-xs font-bold text-slate-400 uppercase tracking-wider block">
-                Total Score
+                Total Weighted Score
               </span>
               <div className="text-3xl sm:text-4xl font-extrabold text-white font-mono">
-                <span className="text-cyan-400">{attempt.score}</span>
-                <span className="text-slate-500 text-2xl sm:text-3xl"> / {attempt.totalMarks}</span>
+                <span className="text-cyan-400">{displayScore}</span>
+                <span className="text-slate-500 text-2xl sm:text-3xl"> / {attempt.totalMarks || TOTAL_EXAM_MARKS}</span>
               </div>
             </div>
 
@@ -218,7 +226,7 @@ export const LastHourPrepResults: React.FC<LastHourPrepResultsProps> = ({
           <div>
             <span className="text-[10px] uppercase font-bold text-slate-400 block">Attempted</span>
             <span className="text-sm sm:text-base font-extrabold text-cyan-400 font-mono mt-0.5 block">
-              {attempt.questionsAttemptedCount} / {attempt.totalMarks}
+              {attempt.questionsAttemptedCount} / {attempt.questions.length} Qs
             </span>
           </div>
 
@@ -241,6 +249,7 @@ export const LastHourPrepResults: React.FC<LastHourPrepResultsProps> = ({
         <div className="flex flex-wrap items-center justify-center gap-3 pt-2">
           <button
             type="button"
+            id="btn-retake-exam"
             onClick={() => {
               soundManager.playClick();
               onRetakeExam();
@@ -248,11 +257,12 @@ export const LastHourPrepResults: React.FC<LastHourPrepResultsProps> = ({
             className="px-5 py-3 rounded-2xl bg-gradient-to-r from-cyan-400 to-blue-500 text-black font-extrabold text-xs sm:text-sm flex items-center gap-2 shadow-lg shadow-cyan-500/20 hover:scale-[1.02] active:scale-95 transition-all"
           >
             <RotateCcw className="w-4 h-4" />
-            <span>Generate New Paper</span>
+            <span>Retake Exam (New Paper)</span>
           </button>
 
           <button
             type="button"
+            id="btn-share-exam-result"
             onClick={handleShare}
             className="px-5 py-3 rounded-2xl bg-slate-800 hover:bg-slate-700 text-white font-bold text-xs sm:text-sm flex items-center gap-2 border border-slate-700 active:scale-95 transition-all"
           >
@@ -277,7 +287,7 @@ export const LastHourPrepResults: React.FC<LastHourPrepResultsProps> = ({
       <div className="glass-panel rounded-2xl p-4 sm:p-5 border border-slate-800 space-y-2">
         <h3 className="text-xs sm:text-sm font-bold text-white flex items-center gap-2">
           <Award className="w-4 h-4 text-amber-400" />
-          <span>HSC Board Grading Scale Reference</span>
+          <span>HSC Board Grading Scale Reference (60 Marks Scale)</span>
         </h3>
         <div className="grid grid-cols-3 sm:grid-cols-6 gap-2 text-center text-xs pt-1">
           <div className={`p-2 rounded-xl border ${attempt.grade === 'A+' ? 'bg-emerald-500/20 border-emerald-500 text-emerald-300 font-bold' : 'bg-slate-900 border-slate-800 text-slate-400'}`}>
@@ -286,23 +296,23 @@ export const LastHourPrepResults: React.FC<LastHourPrepResultsProps> = ({
           </div>
           <div className={`p-2 rounded-xl border ${attempt.grade === 'A' ? 'bg-cyan-500/20 border-cyan-500 text-cyan-300 font-bold' : 'bg-slate-900 border-slate-800 text-slate-400'}`}>
             <span className="block font-bold">A</span>
-            <span className="text-[10px]">70-79% (42-47)</span>
+            <span className="text-[10px]">70-79% (42-47.5)</span>
           </div>
           <div className={`p-2 rounded-xl border ${attempt.grade === 'B' ? 'bg-blue-500/20 border-blue-500 text-blue-300 font-bold' : 'bg-slate-900 border-slate-800 text-slate-400'}`}>
             <span className="block font-bold">B</span>
-            <span className="text-[10px]">60-69% (36-41)</span>
+            <span className="text-[10px]">60-69% (36-41.5)</span>
           </div>
           <div className={`p-2 rounded-xl border ${attempt.grade === 'C' ? 'bg-amber-500/20 border-amber-500 text-amber-300 font-bold' : 'bg-slate-900 border-slate-800 text-slate-400'}`}>
             <span className="block font-bold">C</span>
-            <span className="text-[10px]">50-59% (30-35)</span>
+            <span className="text-[10px]">50-59% (30-35.5)</span>
           </div>
           <div className={`p-2 rounded-xl border ${attempt.grade === 'D' ? 'bg-orange-500/20 border-orange-500 text-orange-300 font-bold' : 'bg-slate-900 border-slate-800 text-slate-400'}`}>
             <span className="block font-bold">D</span>
-            <span className="text-[10px]">40-49% (24-29)</span>
+            <span className="text-[10px]">40-49% (24-29.5)</span>
           </div>
           <div className={`p-2 rounded-xl border ${attempt.grade === 'F' ? 'bg-red-500/20 border-red-500 text-red-300 font-bold' : 'bg-slate-900 border-slate-800 text-slate-400'}`}>
             <span className="block font-bold">F</span>
-            <span className="text-[10px]">&lt; 40% (0-23)</span>
+            <span className="text-[10px]">&lt; 40% (0-23.5)</span>
           </div>
         </div>
       </div>
@@ -315,7 +325,7 @@ export const LastHourPrepResults: React.FC<LastHourPrepResultsProps> = ({
               <BookOpen className="w-5 h-5 text-cyan-400" />
               <span>Topic-Wise Performance Breakdown</span>
             </h2>
-            <p className="text-xs text-slate-400">Accuracy across all 10 HSC Grammar sections</p>
+            <p className="text-xs text-slate-400">Correct count and weighted marks scored across all 10 topics</p>
           </div>
         </div>
 
@@ -323,9 +333,12 @@ export const LastHourPrepResults: React.FC<LastHourPrepResultsProps> = ({
           {(Object.values(attempt.topicBreakdown) as ExamTopicScore[]).map((topicScore) => {
             const topicMeta = TOPICS_DATA.find((t) => t.id === topicScore.topicId);
             const topicIcon = topicMeta?.icon || '📝';
+            const topicScoredMarks = topicScore.scoredMarks !== undefined ? topicScore.scoredMarks : topicScore.correctCount * (topicScore.perQuestionMark || 1);
             const topicAccPercent = topicScore.marks > 0
-              ? Math.round((topicScore.scored / topicScore.marks) * 100)
+              ? Math.round((topicScoredMarks / topicScore.marks) * 100)
               : 0;
+
+            const scoredDisplay = topicScoredMarks % 1 === 0 ? topicScoredMarks : topicScoredMarks.toFixed(1);
 
             return (
               <div
@@ -337,13 +350,23 @@ export const LastHourPrepResults: React.FC<LastHourPrepResultsProps> = ({
                     <span className="w-8 h-8 rounded-lg bg-slate-800 flex items-center justify-center text-sm shrink-0">
                       {topicIcon}
                     </span>
-                    <span className="text-xs sm:text-sm font-bold text-white truncate">
-                      {topicScore.topicTitle}
+                    <div className="min-w-0">
+                      <span className="text-xs sm:text-sm font-bold text-white truncate block">
+                        {topicScore.topicTitle}
+                      </span>
+                      <span className="text-[11px] text-slate-400">
+                        {topicScore.correctCount} / {topicScore.totalQuestions} correct
+                      </span>
+                    </div>
+                  </div>
+                  <div className="text-right shrink-0">
+                    <span className="text-xs font-mono font-extrabold text-cyan-300 block">
+                      {scoredDisplay} / {topicScore.marks} Marks
+                    </span>
+                    <span className="text-[10px] text-slate-500 font-mono">
+                      ({topicScore.perQuestionMark || 1} mark/Q)
                     </span>
                   </div>
-                  <span className="text-xs font-mono font-extrabold text-cyan-300">
-                    {topicScore.scored} / {topicScore.marks}
-                  </span>
                 </div>
 
                 {/* Progress Bar */}
@@ -387,10 +410,10 @@ export const LastHourPrepResults: React.FC<LastHourPrepResultsProps> = ({
           <div>
             <h3 className="text-base sm:text-lg font-extrabold text-white group-hover:text-cyan-300 transition-colors flex items-center gap-2">
               <HelpCircle className="w-5 h-5 text-amber-400" />
-              <span>Full Question-by-Question Review (60 Questions)</span>
+              <span>Full Question-by-Question Review (90 Questions)</span>
             </h3>
             <p className="text-xs text-slate-400">
-              Inspect your answers with board rules and explanations
+              Inspect all 90 items with your answers, correct answers, mark values, and board rule explanations
             </p>
           </div>
 
@@ -426,7 +449,7 @@ export const LastHourPrepResults: React.FC<LastHourPrepResultsProps> = ({
                     : 'bg-slate-900 text-slate-400 hover:text-white'
                 }`}
               >
-                Wrong ({attempt.questions.length - attempt.score})
+                Wrong ({wrongCount})
               </button>
               <button
                 type="button"
@@ -437,7 +460,7 @@ export const LastHourPrepResults: React.FC<LastHourPrepResultsProps> = ({
                     : 'bg-slate-900 text-slate-400 hover:text-white'
                 }`}
               >
-                Correct ({attempt.score})
+                Correct ({correctCount})
               </button>
             </div>
 
@@ -447,6 +470,7 @@ export const LastHourPrepResults: React.FC<LastHourPrepResultsProps> = ({
                 const userAns = attempt.userAnswers[q.id];
                 const isCorrect = userAns === q.correctAnswer;
                 const wasAnswered = !!userAns;
+                const markVal = q.markValue !== undefined ? q.markValue : 1;
 
                 return (
                   <div
@@ -473,11 +497,16 @@ export const LastHourPrepResults: React.FC<LastHourPrepResultsProps> = ({
                         </span>
                       </div>
 
-                      {q.boardReference && (
-                        <span className="text-[10px] font-mono text-slate-400 px-2 py-0.5 rounded bg-slate-900 border border-slate-800">
-                          {q.boardReference}
+                      <div className="flex items-center gap-2">
+                        <span className="text-[10px] font-mono font-bold text-amber-300 px-2 py-0.5 rounded bg-amber-500/10 border border-amber-500/20">
+                          {markVal} {markVal === 1 ? 'Mark' : 'Marks'}
                         </span>
-                      )}
+                        {q.boardReference && (
+                          <span className="text-[10px] font-mono text-slate-400 px-2 py-0.5 rounded bg-slate-900 border border-slate-800">
+                            {q.boardReference}
+                          </span>
+                        )}
+                      </div>
                     </div>
 
                     <p className="text-sm font-medium text-white">
@@ -495,7 +524,7 @@ export const LastHourPrepResults: React.FC<LastHourPrepResultsProps> = ({
                         }`}
                       >
                         <span className="text-[10px] uppercase font-bold block opacity-70">
-                          Your Answer
+                          Your Answer {isCorrect ? `(+${markVal} m)` : '(0 m)'}
                         </span>
                         <span className="font-semibold">
                           {wasAnswered ? userAns : 'Unanswered (0 marks)'}
