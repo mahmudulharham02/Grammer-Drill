@@ -216,7 +216,7 @@ export const HeartsShopModal: React.FC<HeartsShopModalProps> = ({
         {confirmingPack ? (
           <div className="p-5 rounded-2xl bg-slate-900 border border-pink-500/40 text-center space-y-4 animate-fade-in">
             <div className="text-3xl">
-              {confirmingPack.type === 'hearts' ? '✨💎➡️❤️' : '✨💎➡️💡'}
+              {confirmingPack.type === 'hearts' ? '💎-->❤️' : '💎-->💡'}
             </div>
             <div>
               <h3 className="text-sm font-extrabold text-white">Confirm Exchange</h3>

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Sparkles,
   Zap,
@@ -91,6 +91,16 @@ export const HomeDashboard: React.FC<HomeDashboardProps> = ({
   const currentSavedSession = state.currentDrillSession || getCurrentDrillSession();
   const weakestSubModule = getWeakestSubModule(state);
   const isZeroHearts = state.hearts <= 0;
+
+  const [isMounted, setIsMounted] = useState(false);
+
+  useEffect(() => {
+    // Trigger smooth fill animation on mount
+    const timer = setTimeout(() => {
+      setIsMounted(true);
+    }, 60);
+    return () => clearTimeout(timer);
+  }, []);
 
   return (
     <div id="home-dashboard-container" className="space-y-4 pb-12 max-w-7xl mx-auto">
@@ -552,8 +562,8 @@ export const HomeDashboard: React.FC<HomeDashboardProps> = ({
                 {/* Bottom Row: 4px progress bar */}
                 <div className="w-full h-1 bg-slate-700/60 rounded-full overflow-hidden">
                   <div
-                    className={`h-full ${barColor} rounded-full transition-all duration-300`}
-                    style={{ width: attempts === 0 ? '0%' : `${percent}%` }}
+                    className={`h-full ${barColor} rounded-full transition-[width] duration-700 ease-out`}
+                    style={{ width: isMounted && attempts > 0 ? `${percent}%` : '0%' }}
                   />
                 </div>
               </div>

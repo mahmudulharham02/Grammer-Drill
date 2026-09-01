@@ -3,26 +3,21 @@ import {
   Search,
   BookOpen,
   Zap,
-  ChevronRight,
-  FileText,
-  Lock,
-  Star,
-  Crown,
   CheckCircle2,
+  FileText,
+  Crown,
   Sliders,
   HelpCircle,
   Hash,
-  ArrowRightLeft,
   Compass,
   Sparkles,
   Layers,
-  Shuffle
+  Shuffle,
 } from 'lucide-react';
-import { AppState, TopicInfo } from '../types';
+import { AppState } from '../types';
 import { TOPICS_DATA } from '../data/topics';
 import { ALL_QUESTIONS } from '../data/questions';
 import { soundManager } from '../utils/sound';
-import { getMasteryTier } from '../utils/storage';
 
 interface TopicsLibraryProps {
   state: AppState;
@@ -30,30 +25,44 @@ interface TopicsLibraryProps {
   onOpenRules: () => void;
 }
 
-export function getTopicIcon(topicId: string) {
+// Shortened display titles for compact list presentation
+const SHORT_TITLES: Record<string, string> = {
+  right_form_of_verbs: 'Right Form of Verbs',
+  articles: 'Articles',
+  preposition: 'Prepositions',
+  completing_sentences: 'Completing Sentences',
+  connectors: 'Sentence Connectors',
+  synonyms_antonyms: 'Synonyms & Antonyms',
+  punctuation: 'Punctuation',
+  modifiers: 'Modifiers',
+  changing_sentences: 'Changing Sentences',
+  tag_questions_and_special: 'Tag Questions',
+};
+
+export function getTopicIcon(topicId: string, className = 'w-6 h-6 text-cyan-400') {
   switch (topicId) {
     case 'changing_sentences':
-      return <Crown className="w-5 h-5 text-amber-400 fill-amber-400/20" />;
+      return <Crown className={className} />;
     case 'articles':
-      return <BookOpen className="w-5 h-5 text-cyan-400" />;
+      return <BookOpen className={className} />;
     case 'preposition':
-      return <Compass className="w-5 h-5 text-cyan-400" />;
+      return <Compass className={className} />;
     case 'completing_sentences':
-      return <Sparkles className="w-5 h-5 text-cyan-400" />;
+      return <Sparkles className={className} />;
     case 'right_form_of_verbs':
-      return <Zap className="w-5 h-5 text-cyan-400" />;
+      return <Zap className={className} />;
     case 'connectors':
-      return <Layers className="w-5 h-5 text-violet-400" />;
+      return <Layers className={className} />;
     case 'synonyms_antonyms':
-      return <Shuffle className="w-5 h-5 text-violet-400" />;
+      return <Shuffle className={className} />;
     case 'punctuation':
-      return <Hash className="w-5 h-5 text-cyan-400" />;
+      return <Hash className={className} />;
     case 'modifiers':
-      return <Sliders className="w-5 h-5 text-violet-400" />;
+      return <Sliders className={className} />;
     case 'tag_questions_and_special':
-      return <HelpCircle className="w-5 h-5 text-violet-400" />;
+      return <HelpCircle className={className} />;
     default:
-      return <BookOpen className="w-5 h-5 text-cyan-400" />;
+      return <BookOpen className={className} />;
   }
 }
 
@@ -87,7 +96,8 @@ export const TopicsLibrary: React.FC<TopicsLibraryProps> = ({
       // Search query
       if (!searchQuery.trim()) return true;
       const q = searchQuery.toLowerCase();
-      const matchTitle = topic.title.toLowerCase().includes(q);
+      const shortTitle = SHORT_TITLES[topic.id] || topic.title;
+      const matchTitle = topic.title.toLowerCase().includes(q) || shortTitle.toLowerCase().includes(q);
       const matchDesc = topic.description.toLowerCase().includes(q);
       const matchSub = topic.subtopics.some(
         (s) =>
@@ -100,16 +110,16 @@ export const TopicsLibrary: React.FC<TopicsLibraryProps> = ({
   }, [searchQuery, activeFilter]);
 
   return (
-    <div id="topics-library-view" className="space-y-6 pb-16">
+    <div id="topics-library-view" className="space-y-5 pb-16 px-1 sm:px-0 max-w-7xl mx-auto">
       {/* Header & Global Search Bar */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
         <div>
-          <h1 className="text-2xl sm:text-3xl font-extrabold text-white flex items-center gap-2.5">
-            <BookOpen className="w-7 h-7 text-cyan-400" />
-            <span>HSC Grammar Topics Library</span>
+          <h1 className="text-xl sm:text-2xl font-bold text-white flex items-center gap-2">
+            <BookOpen className="w-6 h-6 text-cyan-400" />
+            <span>HSC Grammar Topics</span>
           </h1>
-          <p className="text-xs sm:text-sm text-slate-300 mt-1">
-            Complete 60-mark syllabus breakdown for Bangladesh Higher Secondary Certificate English 2nd Paper.
+          <p className="text-xs sm:text-sm text-slate-400 mt-0.5">
+            Complete 60-mark syllabus breakdown for English 2nd Paper.
           </p>
         </div>
 
@@ -120,30 +130,30 @@ export const TopicsLibrary: React.FC<TopicsLibraryProps> = ({
             soundManager.playClick();
             onOpenRules();
           }}
-          className="self-start md:self-auto px-4 py-2.5 rounded-xl bg-violet-950/60 border border-violet-500/30 hover:border-violet-400 text-violet-200 text-xs sm:text-sm font-bold flex items-center gap-2 transition-all shadow-md active:scale-95"
+          className="self-start md:self-auto px-3.5 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 border border-white/[0.08] text-slate-200 hover:text-white text-xs font-semibold flex items-center gap-2 transition-colors cursor-pointer"
         >
-          <FileText className="w-4 h-4 text-violet-400" />
-          <span>Rules & Formula Handbook</span>
+          <FileText className="w-4 h-4 text-cyan-400" />
+          <span>Rules Handbook</span>
         </button>
       </div>
 
       {/* Search Input & Category Filters */}
-      <div className="flex flex-col sm:flex-row items-center gap-3">
+      <div className="flex flex-col sm:flex-row items-center gap-2.5">
         <div className="relative w-full sm:flex-1">
-          <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
+          <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
           <input
             id="input-search-topics"
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Search rules, verbs, voice, narration, complex, lest..."
-            className="w-full bg-slate-900/90 border border-slate-700 focus:border-cyan-400 text-slate-200 pl-10 pr-4 py-2.5 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-cyan-500/20 transition-all"
+            placeholder="Search rules, verbs, voice, narration, lest..."
+            className="w-full bg-[#1e293b] border border-white/[0.08] focus:border-cyan-400 text-slate-200 pl-9 pr-8 py-2 rounded-lg text-xs sm:text-sm focus:outline-none transition-colors placeholder:text-slate-500"
           />
           {searchQuery && (
             <button
               type="button"
               onClick={() => setSearchQuery('')}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-slate-400 hover:text-white"
+              className="absolute right-2.5 top-1/2 -translate-y-1/2 text-xs text-slate-400 hover:text-white"
             >
               Clear
             </button>
@@ -154,7 +164,7 @@ export const TopicsLibrary: React.FC<TopicsLibraryProps> = ({
         <div className="flex items-center gap-1.5 self-start sm:self-auto overflow-x-auto pb-1 sm:pb-0 w-full sm:w-auto">
           {[
             { id: 'all', label: 'All Topics' },
-            { id: 'changing', label: '⭐ Changing Sentences (10M)' },
+            { id: 'changing', label: 'Transform (10M)' },
             { id: 'core', label: 'Verbs & Clauses' },
             { id: 'vocab', label: 'Modifiers & Vocab' },
           ].map((tab) => (
@@ -165,10 +175,10 @@ export const TopicsLibrary: React.FC<TopicsLibraryProps> = ({
                 soundManager.playClick();
                 setActiveFilter(tab.id as any);
               }}
-              className={`px-3 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition-all ${
+              className={`px-3 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap transition-colors cursor-pointer ${
                 activeFilter === tab.id
-                  ? 'bg-cyan-500 text-black shadow-md shadow-cyan-500/20'
-                  : 'bg-slate-800/80 text-slate-300 hover:bg-slate-700'
+                  ? 'bg-cyan-500/15 text-cyan-400 border border-cyan-500/30'
+                  : 'bg-[#1e293b] text-slate-300 hover:bg-slate-800 border border-white/[0.08]'
               }`}
             >
               {tab.label}
@@ -177,8 +187,8 @@ export const TopicsLibrary: React.FC<TopicsLibraryProps> = ({
         </div>
       </div>
 
-      {/* Topics Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+      {/* Topics Grid: 2 columns on tablet/desktop, 8px gap */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
         {filteredTopics.map((topic) => {
           const prog = state.topicProgress[topic.id] || {
             unlocked: true,
@@ -188,129 +198,78 @@ export const TopicsLibrary: React.FC<TopicsLibraryProps> = ({
             mastery: 0,
           };
 
-          const mastery = getMasteryTier(prog);
-          const isChanging = topic.id === 'changing_sentences';
+          const attempts = prog.attempts || 0;
+          const percent = prog.mastery || (attempts > 0 ? Math.round((prog.correct / attempts) * 100) : 0);
+          const isMastered = attempts >= 5 && percent >= 80;
+          const isInProgress = attempts > 0 && !isMastered;
+
+          const questionCount = ALL_QUESTIONS.filter((q) => q.topicId === topic.id).length || 50;
+          const shortTitle = SHORT_TITLES[topic.id] || topic.title;
 
           return (
             <div
               key={topic.id}
               id={`topic-item-${topic.id}`}
-              className={`rounded-3xl border p-5 sm:p-6 transition-all flex flex-col justify-between ${
-                mastery.isMastered
-                  ? 'bg-slate-900/90 border-amber-500/50 shadow-lg shadow-amber-500/10'
-                  : isChanging
-                  ? 'bg-gradient-to-br from-amber-950/25 via-slate-900 to-slate-900 border-amber-500/40 shadow-xl'
-                  : 'glass-panel border-slate-800 hover:border-cyan-500/40'
-              }`}
+              onClick={() => {
+                soundManager.playClick();
+                onSelectTopic(topic.id);
+              }}
+              className="h-[116px] p-3 rounded-xl bg-[#1e293b] border border-white/[0.08] hover:border-cyan-500/40 hover:bg-slate-800/80 transition-all flex flex-col justify-between cursor-pointer select-none group"
             >
-              <div>
-                <div className="flex items-start justify-between gap-3 mb-3">
-                  <div className="flex items-center gap-3">
-                    <div className="p-2.5 rounded-2xl bg-slate-800 border border-slate-700 shadow-inner flex items-center justify-center">
-                      {getTopicIcon(topic.id)}
-                    </div>
-                    <div>
-                      <div className="flex items-center gap-2">
-                        <span className="text-[11px] font-bold uppercase tracking-wider text-cyan-400">
-                          Topic {topic.number} of 10
-                        </span>
-                        {isChanging && (
-                          <span className="text-[10px] font-extrabold uppercase px-1.5 py-0.2 rounded bg-amber-500/20 text-amber-300 border border-amber-500/40">
-                            Highest Weight (10M)
-                          </span>
-                        )}
-                      </div>
-                      <h2 className="text-lg sm:text-xl font-bold text-white leading-tight">
-                        {topic.title}
-                      </h2>
-                    </div>
-                  </div>
+              {/* Top micro row: 10px font, uppercase, muted slate */}
+              <div className="flex items-center justify-between text-[10px] uppercase tracking-wider font-semibold text-slate-400 font-mono leading-none">
+                <span>Topic {topic.number} of 10</span>
+                <span>{questionCount} MCQs</span>
+                <span className="text-cyan-400">{topic.marks} Marks</span>
+              </div>
 
-                  <div className="flex items-center gap-2 shrink-0">
-                    <span className="text-[11px] font-bold px-2 py-0.5 rounded-lg bg-slate-800 text-cyan-300 border border-cyan-500/20">
-                      {ALL_QUESTIONS.filter((q) => q.topicId === topic.id).length || '10+'} MCQs
-                    </span>
-                    <span className="text-xs font-extrabold px-2.5 py-1 rounded-xl bg-cyan-950 text-cyan-300 border border-cyan-500/30">
-                      {topic.marks} Marks
-                    </span>
-                  </div>
+              {/* Main content row: 36x36 icon + nowrap title + 1-line description */}
+              <div className="flex items-center gap-2.5 min-w-0">
+                <div className="w-9 h-9 shrink-0 flex items-center justify-center text-cyan-400">
+                  {getTopicIcon(topic.id, 'w-6 h-6 text-cyan-400')}
                 </div>
-
-                <p className="text-xs sm:text-sm text-slate-300 leading-relaxed mb-4">
-                  {topic.description}
-                </p>
-
-                {/* Subtopic Chips */}
-                <div className="space-y-2 mb-5">
-                  <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
-                    Included Subtopics:
-                  </span>
-                  <div className="flex flex-wrap gap-1.5">
-                    {topic.subtopics.map((sub) => (
-                      <button
-                        key={sub.id}
-                        id={`subtopic-btn-${sub.id}`}
-                        type="button"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          soundManager.playClick();
-                          onSelectTopic(topic.id, sub.id);
-                        }}
-                        className="px-2.5 py-1 rounded-lg bg-slate-800/90 hover:bg-cyan-950 hover:border-cyan-500/40 border border-slate-700 text-[11px] font-semibold text-slate-300 hover:text-cyan-300 transition-all flex items-center gap-1"
-                      >
-                        <span>{sub.title}</span>
-                        <ChevronRight className="w-3 h-3 text-slate-400" />
-                      </button>
-                    ))}
-                  </div>
+                <div className="min-w-0 flex-1">
+                  <h2 className="text-base font-semibold text-white truncate leading-tight">
+                    {shortTitle}
+                  </h2>
+                  <p className="text-xs text-slate-400 truncate mt-0.5 leading-tight">
+                    {topic.description}
+                  </p>
                 </div>
               </div>
 
-              {/* Progress & Launch Button with Tiered Mastery Visuals */}
-              <div className="pt-4 border-t border-slate-800/80 flex items-center justify-between gap-4">
-                <div className="flex-1 max-w-[200px]">
-                  <div className="flex items-center justify-between text-[11px] font-bold mb-1.5">
-                    <span className="text-slate-400 flex items-center gap-1">
-                      {mastery.hasLock && <Lock className="w-3 h-3 text-slate-400" />}
-                      {mastery.hasStar && <Star className="w-3 h-3 text-violet-400 fill-violet-400/30" />}
-                      {mastery.hasCrown && <Crown className="w-3 h-3 text-amber-400 fill-amber-400/30" />}
-                      {mastery.hasCheck && <CheckCircle2 className="w-3.5 h-3.5 text-amber-400" />}
-                      <span className={mastery.textColor}>{mastery.label}</span>
+              {/* Bottom action row: Status badge on left + compact button on right */}
+              <div className="flex items-center justify-between pt-1.5 border-t border-white/[0.06]">
+                <div>
+                  {isMastered ? (
+                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-950/80 text-emerald-400 border border-emerald-500/30 font-mono">
+                      <CheckCircle2 className="w-3 h-3 text-emerald-400" />
+                      Mastered ({percent}%)
                     </span>
-                    {mastery.tier > 0 && (
-                      <span className={`font-mono ${mastery.textColor}`}>
-                        {mastery.percent}%
-                      </span>
-                    )}
-                  </div>
-                  {mastery.tier > 0 ? (
-                    <div className="w-full h-2 bg-slate-800 rounded-full overflow-hidden border border-slate-700/50">
-                      <div
-                        className={`h-full ${mastery.barColor} rounded-full transition-all duration-500`}
-                        style={{ width: `${mastery.percent}%` }}
-                      />
-                    </div>
+                  ) : isInProgress ? (
+                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-cyan-950/80 text-cyan-300 border border-cyan-500/30 font-mono">
+                      <span className="w-1.5 h-1.5 rounded-full bg-cyan-400" />
+                      In Progress ({percent}%)
+                    </span>
                   ) : (
-                    <div className="text-[10px] text-slate-400 italic">No drills attempted yet</div>
+                    <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-slate-800 text-slate-400 border border-white/[0.08] font-mono">
+                      Not Started
+                    </span>
                   )}
                 </div>
 
                 <button
                   id={`btn-launch-topic-${topic.id}`}
                   type="button"
-                  onClick={() => {
+                  onClick={(e) => {
+                    e.stopPropagation();
                     soundManager.playClick();
                     onSelectTopic(topic.id);
                   }}
-                  className={`px-4 py-2.5 rounded-xl text-xs sm:text-sm font-extrabold flex items-center gap-1.5 transition-all shadow-md ${
-                    isChanging
-                      ? 'bg-amber-400 hover:bg-amber-300 text-black shadow-amber-500/20'
-                      : 'bg-cyan-500 hover:bg-cyan-400 text-black shadow-cyan-500/20'
-                  }`}
+                  className="h-8 px-3 rounded-lg bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold text-xs flex items-center gap-1 transition-colors shadow-sm active:scale-95 cursor-pointer"
                 >
-                  <Zap className="w-3.5 h-3.5 fill-black" />
-                  <span>{isChanging ? 'Launch 10M Hub' : 'Start Lesson'}</span>
-                  <ChevronRight className="w-4 h-4" />
+                  <Zap className="w-3.5 h-3.5 fill-current" />
+                  <span>Start</span>
                 </button>
               </div>
             </div>
