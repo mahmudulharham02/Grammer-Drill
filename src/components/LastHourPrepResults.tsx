@@ -21,6 +21,7 @@ import {
   FileCheck
 } from 'lucide-react';
 import { soundManager } from '../utils/sound';
+import { hasFeedbackBeenSentRecently } from '../utils/storage';
 import {
   LastHourPrepAttempt,
   calculateExamGrade,
@@ -34,16 +35,20 @@ import { TOPICS_DATA } from '../data/topics';
 
 interface LastHourPrepResultsProps {
   attempt: LastHourPrepAttempt;
+  lastFeedbackDate?: string | null;
   onRetakeExam: () => void;
   onBackToDashboard: () => void;
   onToast?: (msg: string) => void;
+  onOpenFeedback?: () => void;
 }
 
 export const LastHourPrepResults: React.FC<LastHourPrepResultsProps> = ({
   attempt,
+  lastFeedbackDate,
   onRetakeExam,
   onBackToDashboard,
   onToast,
+  onOpenFeedback,
 }) => {
   const [showQuestionReview, setShowQuestionReview] = useState(false);
   const [copied, setCopied] = useState(false);
@@ -281,6 +286,26 @@ export const LastHourPrepResults: React.FC<LastHourPrepResultsProps> = ({
             Back to Dashboard
           </button>
         </div>
+
+        {/* Feedback Nudge (Only if not sent in last 7 days) */}
+        {!hasFeedbackBeenSentRecently(lastFeedbackDate, 7) && (
+          <div className="pt-4 mt-2 border-t border-slate-800/80 flex items-center justify-center gap-2 text-xs text-slate-400 flex-wrap">
+            <span>How was your exam experience?</span>
+            <button
+              id="btn-exam-share-feedback"
+              type="button"
+              onClick={() => {
+                soundManager.playClick();
+                if (onOpenFeedback) {
+                  onOpenFeedback();
+                }
+              }}
+              className="text-cyan-400 hover:text-cyan-300 font-semibold underline underline-offset-2 transition-colors cursor-pointer"
+            >
+              Share feedback
+            </button>
+          </div>
+        )}
       </div>
 
       {/* Grade Scale Reference Card */}

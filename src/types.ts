@@ -251,4 +251,7 @@ export interface AppState {
   authTeaserDismissedForever?: boolean;
   cacheWarningCollapsed?: boolean;
   dailyRuleIndex?: number;
+  feedbackCount?: number;
+  lastFeedbackDate?: string | null;
+  feedbackPromptLevel5?: boolean;
 }

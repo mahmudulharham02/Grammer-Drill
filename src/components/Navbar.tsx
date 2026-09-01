@@ -1,12 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import {
-  Sparkles,
   Heart,
   Lightbulb,
   Flame,
-  Volume2,
-  VolumeX,
-  ShoppingBag,
   Settings,
   BookOpen,
   Award,
@@ -17,9 +13,10 @@ import {
   Bookmark,
   Menu,
   X,
-  FileText,
   User,
   Zap,
+  MessageSquare,
+  ChevronRight,
 } from 'lucide-react';
 import { AppState } from '../types';
 import { getNextHeartRegenSeconds, formatHMS } from '../utils/storage';
@@ -34,6 +31,7 @@ interface NavbarProps {
   onOpenSettings: () => void;
   onOpenRules: () => void;
   onToggleSound: () => void;
+  onOpenFeedback?: () => void;
 }
 
 export const Navbar: React.FC<NavbarProps> = ({
@@ -45,6 +43,7 @@ export const Navbar: React.FC<NavbarProps> = ({
   onOpenSettings,
   onOpenRules,
   onToggleSound,
+  onOpenFeedback,
 }) => {
   const [regenSecs, setRegenSecs] = useState<number>(0);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -65,8 +64,8 @@ export const Navbar: React.FC<NavbarProps> = ({
   const navItems = [
     { id: 'home', label: 'Home', icon: Home },
     { id: 'topics', label: 'Topics', icon: BookOpen },
-    { id: 'practice_hub', label: 'Drills', icon: Zap, badge: 'Voice & Narration' },
-    { id: 'changing_sentences', label: 'Transformations', icon: Layers, badge: '⭐ 10M' },
+    { id: 'practice_hub', label: 'Drills', icon: Zap },
+    { id: 'changing_sentences', label: 'Transform', icon: Layers, badge: '10M' },
     { id: 'review_wrong', label: 'Errors', icon: RotateCcw, count: state.wrongQuestionReviewPool.length },
     { id: 'bookmarks', label: 'Saved', icon: Bookmark, count: state.bookmarkedQuestionIds.length },
     { id: 'achievements', label: 'Badges', icon: Award, count: state.unclaimedBadges?.length || 0 },
@@ -78,10 +77,10 @@ export const Navbar: React.FC<NavbarProps> = ({
 
   return (
     <>
-      {/* Fix #3: Fixed Mobile Header (max 64px height, z-index 20) */}
+      {/* Top Header */}
       <header
         id="main-navbar"
-        className="fixed top-0 left-0 right-0 z-20 h-16 w-full border-b border-slate-800/80 bg-[#0a0e1a]/95 backdrop-blur-xl transition-all select-none"
+        className="fixed top-0 left-0 right-0 z-20 h-16 w-full border-b border-white/[0.08] bg-[#0f172a] select-none"
       >
         <div className="max-w-7xl mx-auto px-3 sm:px-6 h-full flex items-center justify-between">
           {/* Brand Logo */}
@@ -94,18 +93,16 @@ export const Navbar: React.FC<NavbarProps> = ({
               }}
               className="flex items-center gap-2.5 cursor-pointer group"
             >
-              <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-gradient-to-tr from-cyan-500 via-violet-600 to-pink-500 p-0.5 shadow-md shadow-cyan-500/20 group-hover:scale-105 transition-transform overflow-hidden">
-                <div className="w-full h-full bg-[#0a0e1a] rounded-[10px] flex items-center justify-center p-1">
-                  <img
-                    src="/logo1.png"
-                    alt="Gramify"
-                    className="w-full h-full object-contain"
-                    referrerPolicy="no-referrer"
-                  />
-                </div>
+              <div className="w-8 h-8 rounded-lg bg-cyan-500/10 border border-cyan-500/30 flex items-center justify-center p-1 group-hover:border-cyan-400 transition-colors">
+                <img
+                  src="/logo1.png"
+                  alt="Gramify"
+                  className="w-full h-full object-contain"
+                  referrerPolicy="no-referrer"
+                />
               </div>
               <div className="flex flex-col">
-                <span className="font-black text-base sm:text-lg tracking-tight bg-gradient-to-r from-cyan-300 via-violet-200 to-pink-300 bg-clip-text text-transparent leading-tight">
+                <span className="font-bold text-base text-white leading-tight">
                   Gramify
                 </span>
                 <p className="text-[10px] text-slate-400 truncate max-w-[140px] hidden sm:block leading-none mt-0.5">
@@ -128,21 +125,21 @@ export const Navbar: React.FC<NavbarProps> = ({
                     soundManager.playClick();
                     onNavigate(item.id);
                   }}
-                  className={`relative px-2.5 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-all ${
+                  className={`relative px-2.5 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-colors ${
                     isActive
-                      ? 'bg-cyan-500/15 text-cyan-300 border border-cyan-500/30'
-                      : 'text-slate-300 hover:text-white hover:bg-slate-800/60'
+                      ? 'bg-cyan-500/15 text-cyan-400 border border-cyan-500/30'
+                      : 'text-slate-300 hover:text-white hover:bg-slate-800/80'
                   }`}
                 >
                   <Icon className="w-3.5 h-3.5" />
                   <span>{item.label}</span>
                   {item.badge && (
-                    <span className="text-[8px] bg-lime-500/20 text-lime-300 px-1 py-0.2 rounded font-bold">
+                    <span className="text-[9px] bg-amber-950/80 text-amber-300 border border-amber-500/30 px-1 py-0.2 rounded font-semibold font-mono">
                       {item.badge}
                     </span>
                   )}
                   {item.count !== undefined && item.count > 0 && (
-                    <span className="px-1.5 py-0.2 text-[9px] rounded-full bg-rose-500/20 text-rose-300 border border-rose-500/40 font-bold">
+                    <span className="px-1.5 py-0.2 text-[9px] rounded-full bg-red-950 text-red-400 border border-red-500/40 font-semibold font-mono">
                       {item.count}
                     </span>
                   )}
@@ -152,57 +149,57 @@ export const Navbar: React.FC<NavbarProps> = ({
           </nav>
 
           {/* Right Status Stats Bar */}
-          <div id="stats-header-bar" className="flex items-center gap-1.5 sm:gap-2.5">
-            {/* Hearts (Lives) - Tap to open Hearts Shop */}
+          <div id="stats-header-bar" className="flex items-center gap-1.5 sm:gap-2">
+            {/* Hearts */}
             <button
               id="stat-hearts-badge"
               onClick={() => {
                 soundManager.playClick();
                 onOpenHeartsShop('hearts');
               }}
-              className="flex items-center gap-1 px-2.5 py-1.5 rounded-xl bg-rose-500/15 border border-rose-500/30 text-rose-400 font-extrabold text-xs hover:bg-rose-500/25 transition-all cursor-pointer group"
+              className="flex items-center gap-1 px-2 py-1 rounded-lg bg-red-950/50 border border-red-500/30 text-red-400 font-semibold text-xs hover:bg-red-950/80 transition-colors cursor-pointer"
               title={
                 isRefilling
-                  ? `Hearts refilling (+1 per 3 hours). Next in ${formatRegenTime(regenSecs)}. Tap to open Shop.`
-                  : 'Hearts full (20/20). Tap to open Shop.'
+                  ? `Hearts refilling (+1 per 3h). Next in ${formatRegenTime(regenSecs)}.`
+                  : 'Hearts full (20/20).'
               }
             >
               <Heart
-                className={`w-3.5 h-3.5 fill-rose-500 text-rose-500 ${
+                className={`w-3.5 h-3.5 fill-red-500 text-red-500 ${
                   isRefilling ? 'heart-pulse' : ''
                 }`}
               />
               <span className="font-mono text-xs">{state.hearts}</span>
               {isRefilling && (
-                <span className="text-[9px] text-rose-300/80 font-mono hidden md:inline ml-0.5">
+                <span className="text-[9px] text-red-300/70 font-mono hidden md:inline ml-0.5">
                   ({formatRegenTime(regenSecs)})
                 </span>
               )}
             </button>
 
-            {/* Diamonds (💎) - Tap to open Shop */}
+            {/* Diamonds */}
             <button
               id="stat-diamonds-badge"
               onClick={() => {
                 soundManager.playCoin();
                 onOpenHeartsShop('hearts');
               }}
-              className="flex items-center gap-1 px-2.5 py-1.5 rounded-xl bg-cyan-500/15 border border-cyan-500/30 text-cyan-300 font-extrabold text-xs hover:bg-cyan-500/25 transition-all cursor-pointer"
-              title="Diamonds Balance. Tap to open Shop."
+              className="flex items-center gap-1 px-2 py-1 rounded-lg bg-cyan-950/50 border border-cyan-500/30 text-cyan-300 font-semibold text-xs hover:bg-cyan-950/80 transition-colors cursor-pointer"
+              title="Diamonds Balance"
             >
               <span className="text-xs">💎</span>
               <span className="font-mono text-xs">{state.diamonds ?? 20}</span>
             </button>
 
-            {/* Hints (💡) - Tap to open Hint Shop */}
+            {/* Hints */}
             <button
               id="stat-hints-badge"
               onClick={() => {
                 soundManager.playClick();
                 onOpenHeartsShop('hints');
               }}
-              className="flex items-center gap-1 px-2.5 py-1.5 rounded-xl bg-amber-500/15 border border-amber-500/30 text-amber-300 font-extrabold text-xs hover:bg-amber-500/25 transition-all cursor-pointer"
-              title="50/50 Hints Inventory (Max 8). Tap to open Hint Shop."
+              className="flex items-center gap-1 px-2 py-1 rounded-lg bg-amber-950/50 border border-amber-500/30 text-amber-300 font-semibold text-xs hover:bg-amber-950/80 transition-colors cursor-pointer"
+              title="Hints Inventory"
             >
               <Lightbulb className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
               <span className="font-mono text-xs">{state.inventory?.hints ?? 3}</span>
@@ -211,7 +208,7 @@ export const Navbar: React.FC<NavbarProps> = ({
             {/* Streak */}
             <div
               id="stat-streak-badge"
-              className="hidden sm:flex items-center gap-1 px-2 py-1.5 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-400 font-extrabold text-xs"
+              className="hidden sm:flex items-center gap-1 px-2 py-1 rounded-lg bg-amber-950/40 border border-amber-500/20 text-amber-400 font-semibold text-xs"
               title="Daily Streak"
             >
               <Flame className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
@@ -224,19 +221,19 @@ export const Navbar: React.FC<NavbarProps> = ({
                 soundManager.playClick();
                 onOpenSettings();
               }}
-              className="p-2 rounded-xl bg-slate-800/80 hover:bg-slate-700 text-slate-300 border border-slate-700 transition-colors"
-              title="Settings & Backup"
+              className="p-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 border border-white/[0.08] transition-colors"
+              title="Settings"
               aria-label="Settings"
             >
               <Settings className="w-3.5 h-3.5" />
             </button>
 
-            {/* Mobile Navigation Drawer Toggle */}
+            {/* Mobile Drawer Toggle */}
             <button
               id="mobile-menu-toggle-btn"
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="lg:hidden p-2 rounded-xl bg-slate-800/80 hover:bg-slate-700 text-slate-300 border border-slate-700 transition-colors"
-              aria-label="Toggle navigation drawer"
+              className="lg:hidden p-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 border border-white/[0.08] transition-colors"
+              aria-label="Toggle navigation menu"
             >
               {mobileMenuOpen ? <X className="w-4 h-4" /> : <Menu className="w-4 h-4" />}
             </button>
@@ -244,18 +241,18 @@ export const Navbar: React.FC<NavbarProps> = ({
         </div>
       </header>
 
-      {/* Hamburger Menu Drawer (z-index 30) */}
+      {/* Mobile Drawer (z-index 30) */}
       {mobileMenuOpen && (
         <div
           id="mobile-drawer"
-          className="fixed inset-0 z-30 bg-black/80 backdrop-blur-md lg:hidden pt-20 px-4 pb-24 overflow-y-auto animate-fade-in"
+          className="fixed inset-0 z-30 bg-black/80 lg:hidden pt-20 px-4 pb-24 overflow-y-auto animate-fade-in"
         >
-          <div className="glass-panel rounded-3xl p-4 border border-slate-800 space-y-2">
-            <div className="p-3 rounded-2xl bg-slate-900/90 border border-slate-800 flex items-center justify-between mb-3">
+          <div className="bg-[#1e293b] rounded-2xl p-4 border border-white/[0.08] space-y-2">
+            <div className="p-3 rounded-xl bg-slate-900 border border-white/[0.06] flex items-center justify-between mb-3">
               <div className="flex items-center gap-2.5">
                 <span className="text-2xl">{state.user.avatar || '🧑‍🎓'}</span>
                 <div>
-                  <span className="text-xs font-bold text-white block">
+                  <span className="text-xs font-semibold text-white block">
                     {state.user.name || 'HSC Aspirant'}
                   </span>
                   <span className="text-[10px] text-slate-400">
@@ -268,7 +265,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                   setMobileMenuOpen(false);
                   onNavigate('profile');
                 }}
-                className="text-[11px] font-bold text-cyan-400 bg-cyan-500/10 px-2.5 py-1 rounded-lg border border-cyan-500/20"
+                className="text-[11px] font-semibold text-cyan-400 bg-cyan-500/10 px-2.5 py-1 rounded-lg border border-cyan-500/20"
               >
                 Profile
               </button>
@@ -285,9 +282,9 @@ export const Navbar: React.FC<NavbarProps> = ({
                     setMobileMenuOpen(false);
                     onNavigate(item.id);
                   }}
-                  className={`w-full p-3 rounded-2xl flex items-center justify-between text-left text-xs font-bold transition-all ${
+                  className={`w-full p-2.5 rounded-xl flex items-center justify-between text-left text-xs font-semibold transition-colors ${
                     isActive
-                      ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/30'
+                      ? 'bg-cyan-500/15 text-cyan-400 border border-cyan-500/30'
                       : 'text-slate-300 hover:bg-slate-800'
                   }`}
                 >
@@ -296,12 +293,12 @@ export const Navbar: React.FC<NavbarProps> = ({
                     <span>{item.label}</span>
                   </div>
                   {item.badge && (
-                    <span className="text-[9px] bg-lime-500/20 text-lime-300 px-1.5 py-0.5 rounded font-bold">
+                    <span className="text-[9px] bg-amber-950/80 text-amber-300 border border-amber-500/30 px-1.5 py-0.5 rounded font-semibold font-mono">
                       {item.badge}
                     </span>
                   )}
                   {item.count !== undefined && item.count > 0 && (
-                    <span className="px-2 py-0.5 text-[9px] rounded-full bg-rose-500/20 text-rose-300 border border-rose-500/40 font-bold">
+                    <span className="px-2 py-0.5 text-[9px] rounded-full bg-red-950 text-red-400 border border-red-500/40 font-semibold font-mono">
                       {item.count}
                     </span>
                   )}
@@ -309,24 +306,48 @@ export const Navbar: React.FC<NavbarProps> = ({
               );
             })}
 
-            {/* ARHAM credit in hamburger menu drawer at bottom */}
-            <div className="pt-4 mt-3 border-t border-slate-800/80 text-center space-y-1">
-              <div className="text-xs font-medium text-slate-400">
-                Made with <span className="text-rose-400 animate-pulse">❤️</span> by{' '}
-                <strong className="text-pink-400 font-extrabold">ARHAM</strong>
+            {/* Send Feedback Entry */}
+            <div className="pt-2">
+              <div className="border-t border-white/[0.08] my-2" />
+              <button
+                id="drawer-send-feedback-btn"
+                type="button"
+                onClick={() => {
+                  soundManager.playClick();
+                  setMobileMenuOpen(false);
+                  if (onOpenFeedback) {
+                    onOpenFeedback();
+                  }
+                }}
+                className="w-full p-2.5 rounded-xl flex items-center justify-between text-left text-xs font-semibold text-white bg-slate-900 hover:bg-slate-800 border border-white/[0.08] hover:border-cyan-500/40 transition-colors"
+              >
+                <div className="flex items-center gap-3">
+                  <div className="p-1.5 rounded-lg bg-cyan-500/10 text-cyan-400">
+                    <MessageSquare className="w-4 h-4" />
+                  </div>
+                  <span className="text-white font-semibold">Send Feedback</span>
+                </div>
+                <ChevronRight className="w-4 h-4 text-slate-400" />
+              </button>
+            </div>
+
+            {/* Footer credit in drawer */}
+            <div className="pt-3 mt-1 border-t border-white/[0.08] text-center space-y-0.5">
+              <div className="text-xs text-slate-400">
+                Created by <strong className="text-cyan-400 font-semibold">ARHAM</strong>
               </div>
               <p className="text-[10px] text-slate-500">
-                Gramify · HSC Board Edition
+                Gramify · HSC English 2nd Paper
               </p>
             </div>
           </div>
         </div>
       )}
 
-      {/* Mobile Bottom Fixed Nav Bar (z-index 40) */}
+      {/* Mobile Bottom Navigation Bar (Fix 6: 56px height, solid dark background, cyan active indicator) */}
       <div
         id="mobile-bottom-bar"
-        className="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-[#0a0e1a]/95 backdrop-blur-lg border-t border-slate-800 px-2 pt-1.5 pb-[10px] flex items-center justify-around select-none"
+        className="lg:hidden fixed bottom-0 left-0 right-0 z-40 h-14 bg-[#0f172a] border-t border-white/[0.08] px-2 flex items-center justify-around select-none"
       >
         <button
           id="mobile-tab-home"
@@ -335,14 +356,14 @@ export const Navbar: React.FC<NavbarProps> = ({
             soundManager.playClick();
             onNavigate('home');
           }}
-          className={`flex flex-col items-center py-1 px-2.5 rounded-xl transition-all relative ${
-            currentRoute === 'home' ? 'text-cyan-300 font-bold' : 'text-slate-400 hover:text-slate-200'
+          className={`flex flex-col items-center justify-center py-1 px-2 transition-colors relative ${
+            currentRoute === 'home' ? 'text-cyan-400 font-semibold' : 'text-slate-400 hover:text-slate-200'
           }`}
         >
-          <Home className={`w-5 h-5 transition-transform ${currentRoute === 'home' ? 'scale-110 drop-shadow-[0_0_8px_rgba(6,182,212,0.7)]' : ''}`} />
-          <span className="text-[9px] mt-0.5">Home</span>
+          <Home className="w-5 h-5" />
+          <span className="text-[10px] mt-0.5">Home</span>
           {currentRoute === 'home' && (
-            <span className="absolute -bottom-1 w-1.5 h-1.5 rounded-full bg-cyan-400 shadow-[0_0_6px_rgba(6,182,212,1)]" />
+            <span className="absolute bottom-0 w-3 h-0.5 rounded-full bg-cyan-400" />
           )}
         </button>
 
@@ -353,14 +374,14 @@ export const Navbar: React.FC<NavbarProps> = ({
             soundManager.playClick();
             onNavigate('topics');
           }}
-          className={`flex flex-col items-center py-1 px-2.5 rounded-xl transition-all relative ${
-            currentRoute === 'topics' ? 'text-cyan-300 font-bold' : 'text-slate-400 hover:text-slate-200'
+          className={`flex flex-col items-center justify-center py-1 px-2 transition-colors relative ${
+            currentRoute === 'topics' ? 'text-cyan-400 font-semibold' : 'text-slate-400 hover:text-slate-200'
           }`}
         >
-          <BookOpen className={`w-5 h-5 transition-transform ${currentRoute === 'topics' ? 'scale-110 drop-shadow-[0_0_8px_rgba(6,182,212,0.7)]' : ''}`} />
-          <span className="text-[9px] mt-0.5">Topics</span>
+          <BookOpen className="w-5 h-5" />
+          <span className="text-[10px] mt-0.5">Topics</span>
           {currentRoute === 'topics' && (
-            <span className="absolute -bottom-1 w-1.5 h-1.5 rounded-full bg-cyan-400 shadow-[0_0_6px_rgba(6,182,212,1)]" />
+            <span className="absolute bottom-0 w-3 h-0.5 rounded-full bg-cyan-400" />
           )}
         </button>
 
@@ -371,14 +392,14 @@ export const Navbar: React.FC<NavbarProps> = ({
             soundManager.playClick();
             onNavigate('practice_hub');
           }}
-          className={`flex flex-col items-center py-1 px-2.5 rounded-xl transition-all relative ${
-            currentRoute === 'practice_hub' ? 'text-cyan-300 font-bold' : 'text-slate-400 hover:text-slate-200'
+          className={`flex flex-col items-center justify-center py-1 px-2 transition-colors relative ${
+            currentRoute === 'practice_hub' ? 'text-cyan-400 font-semibold' : 'text-slate-400 hover:text-slate-200'
           }`}
         >
-          <Zap className={`w-5 h-5 transition-transform ${currentRoute === 'practice_hub' ? 'scale-110 drop-shadow-[0_0_8px_rgba(6,182,212,0.7)]' : ''}`} />
-          <span className="text-[9px] mt-0.5">Drills</span>
+          <Zap className="w-5 h-5" />
+          <span className="text-[10px] mt-0.5">Drills</span>
           {currentRoute === 'practice_hub' && (
-            <span className="absolute -bottom-1 w-1.5 h-1.5 rounded-full bg-cyan-400 shadow-[0_0_6px_rgba(6,182,212,1)]" />
+            <span className="absolute bottom-0 w-3 h-0.5 rounded-full bg-cyan-400" />
           )}
         </button>
 
@@ -389,17 +410,14 @@ export const Navbar: React.FC<NavbarProps> = ({
             soundManager.playClick();
             onNavigate('changing_sentences');
           }}
-          className={`flex flex-col items-center py-1 px-2.5 rounded-xl transition-all relative ${
-            currentRoute === 'changing_sentences' ? 'text-amber-300 font-bold' : 'text-slate-400 hover:text-slate-200'
+          className={`flex flex-col items-center justify-center py-1 px-2 transition-colors relative ${
+            currentRoute === 'changing_sentences' ? 'text-cyan-400 font-semibold' : 'text-slate-400 hover:text-slate-200'
           }`}
         >
-          <div className="absolute -top-1 px-1 py-0.2 bg-amber-400 text-black text-[7px] font-extrabold rounded-full">
-            10M
-          </div>
-          <Layers className={`w-5 h-5 transition-transform ${currentRoute === 'changing_sentences' ? 'scale-110 drop-shadow-[0_0_8px_rgba(251,191,36,0.7)]' : ''}`} />
-          <span className="text-[9px] mt-0.5">Transform</span>
+          <Layers className="w-5 h-5" />
+          <span className="text-[10px] mt-0.5">Transform</span>
           {currentRoute === 'changing_sentences' && (
-            <span className="absolute -bottom-1 w-1.5 h-1.5 rounded-full bg-amber-400 shadow-[0_0_6px_rgba(251,191,36,1)]" />
+            <span className="absolute bottom-0 w-3 h-0.5 rounded-full bg-cyan-400" />
           )}
         </button>
 
@@ -410,14 +428,14 @@ export const Navbar: React.FC<NavbarProps> = ({
             soundManager.playClick();
             onNavigate('profile');
           }}
-          className={`flex flex-col items-center py-1 px-2.5 rounded-xl transition-all relative ${
-            currentRoute === 'profile' ? 'text-violet-300 font-bold' : 'text-slate-400 hover:text-slate-200'
+          className={`flex flex-col items-center justify-center py-1 px-2 transition-colors relative ${
+            currentRoute === 'profile' ? 'text-cyan-400 font-semibold' : 'text-slate-400 hover:text-slate-200'
           }`}
         >
-          <User className={`w-5 h-5 transition-transform ${currentRoute === 'profile' ? 'scale-110 drop-shadow-[0_0_8px_rgba(167,139,250,0.7)]' : ''}`} />
-          <span className="text-[9px] mt-0.5">Profile</span>
+          <User className="w-5 h-5" />
+          <span className="text-[10px] mt-0.5">Profile</span>
           {currentRoute === 'profile' && (
-            <span className="absolute -bottom-1 w-1.5 h-1.5 rounded-full bg-violet-400 shadow-[0_0_6px_rgba(167,139,250,1)]" />
+            <span className="absolute bottom-0 w-3 h-0.5 rounded-full bg-cyan-400" />
           )}
         </button>
       </div>

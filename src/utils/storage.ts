@@ -103,10 +103,10 @@ export function getMasteryTier(prog?: TopicProgressItem): MasteryTierInfo {
     };
   }
 
-  if (percent < 25) {
+  if (percent < 50) {
     return {
       tier: 1,
-      label: 'Just Started',
+      label: 'In Progress',
       percent,
       textColor: 'text-cyan-400',
       barColor: 'bg-cyan-500',
@@ -120,49 +120,15 @@ export function getMasteryTier(prog?: TopicProgressItem): MasteryTierInfo {
     };
   }
 
-  if (percent < 50) {
-    return {
-      tier: 2,
-      label: 'Getting There',
-      percent,
-      textColor: 'text-cyan-300',
-      barColor: 'bg-cyan-400',
-      glowColor: 'shadow-cyan-500/30',
-      badgeBg: 'bg-cyan-900/60 text-cyan-300 border-cyan-400/40',
-      hasLock: false,
-      hasStar: false,
-      hasCrown: false,
-      hasCheck: false,
-      isMastered: false,
-    };
-  }
-
-  if (percent < 75) {
-    return {
-      tier: 3,
-      label: 'Strong',
-      percent,
-      textColor: 'text-violet-300',
-      barColor: 'bg-violet-500',
-      glowColor: 'shadow-violet-500/30',
-      badgeBg: 'bg-violet-950/60 text-violet-300 border-violet-500/40',
-      hasLock: false,
-      hasStar: true,
-      hasCrown: false,
-      hasCheck: false,
-      isMastered: false,
-    };
-  }
-
   if (percent < 100) {
     return {
-      tier: 4,
+      tier: 2,
       label: 'Almost Mastered',
       percent,
-      textColor: 'text-amber-300',
-      barColor: 'bg-amber-400',
-      glowColor: 'shadow-amber-500/40 shadow-lg',
-      badgeBg: 'bg-amber-950/60 text-amber-300 border-amber-500/50',
+      textColor: 'text-amber-400',
+      barColor: 'bg-amber-500',
+      glowColor: 'shadow-amber-500/30',
+      badgeBg: 'bg-amber-950/60 text-amber-300 border-amber-500/40',
       hasLock: false,
       hasStar: false,
       hasCrown: true,
@@ -172,13 +138,13 @@ export function getMasteryTier(prog?: TopicProgressItem): MasteryTierInfo {
   }
 
   return {
-    tier: 5,
+    tier: 3,
     label: 'Mastered',
     percent: 100,
-    textColor: 'text-amber-300 font-extrabold',
-    barColor: 'bg-amber-400',
-    glowColor: 'shadow-amber-400/50',
-    badgeBg: 'bg-amber-500/20 text-amber-300 border-amber-400',
+    textColor: 'text-green-400 font-bold',
+    barColor: 'bg-green-500',
+    glowColor: 'shadow-green-500/30',
+    badgeBg: 'bg-green-950/60 text-green-300 border-green-500/40',
     hasLock: false,
     hasStar: false,
     hasCrown: false,
@@ -369,6 +335,9 @@ export function getDefaultState(): AppState {
     authTeaserDismissedForever: false,
     cacheWarningCollapsed: false,
     dailyRuleIndex: 0,
+    feedbackCount: 0,
+    lastFeedbackDate: null,
+    feedbackPromptLevel5: false,
     smartPracticeStats: {
       totalSmartSessions: 0,
       totalWeakSpotQuestions: 0,
@@ -939,3 +908,27 @@ export function importStateFromJSON(jsonString: string): AppState | null {
     return null;
   }
 }
+
+export function recordFeedbackSubmission(state: AppState): AppState {
+  const updated: AppState = {
+    ...state,
+    feedbackCount: (state.feedbackCount || 0) + 1,
+    lastFeedbackDate: new Date().toISOString(),
+    feedbackPromptLevel5: true,
+  };
+  saveAppState(updated);
+  return updated;
+}
+
+export function hasFeedbackBeenSentRecently(lastFeedbackDate?: string | null, days = 7): boolean {
+  if (!lastFeedbackDate) return false;
+  try {
+    const lastDate = new Date(lastFeedbackDate).getTime();
+    const now = Date.now();
+    const daysDiff = (now - lastDate) / (1000 * 60 * 60 * 24);
+    return daysDiff < days;
+  } catch {
+    return false;
+  }
+}
+

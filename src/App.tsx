@@ -15,12 +15,14 @@ import {
   getDefaultState,
   exportStateAsJSON,
   importStateFromJSON,
+  recordFeedbackSubmission,
 } from './utils/storage';
 import { ALL_QUESTIONS } from './data/questions';
 import { VOICE_CHANGE_QUESTIONS } from './data/voiceChangeQuestions';
 import { NARRATION_QUESTIONS } from './data/narrationQuestions';
 import { TOPICS_DATA } from './data/topics';
 import { soundManager } from './utils/sound';
+import { X as CloseIcon } from 'lucide-react';
 
 // Components
 import { Navbar } from './components/Navbar';
@@ -57,6 +59,7 @@ import { OutOfHeartsModal } from './components/OutOfHeartsModal';
 import { SettingsModal } from './components/SettingsModal';
 import { CertificateModal } from './components/CertificateModal';
 import { StudentIntroModal } from './components/StudentIntroModal';
+import { FeedbackModal } from './components/FeedbackModal';
 
 export function App() {
   const [state, setState] = useState<AppState>(() => loadAppState());
@@ -81,6 +84,7 @@ export function App() {
   const [showSettingsModal, setShowSettingsModal] = useState(false);
   const [showCertModal, setShowCertModal] = useState(false);
   const [showIntroModal, setShowIntroModal] = useState<boolean>(state.firstTimeUser);
+  const [showFeedbackModal, setShowFeedbackModal] = useState(false);
 
   const handleOpenHeartsShop = useCallback((tab: 'hearts' | 'hints' = 'hearts') => {
     setHeartsShopTab(tab);
@@ -115,6 +119,11 @@ export function App() {
       return next;
     });
   }, []);
+
+  const handleFeedbackSuccess = useCallback(() => {
+    updateState((prev) => recordFeedbackSubmission(prev));
+    showToast('Feedback sent! Thank you.');
+  }, [updateState, showToast]);
 
   // History-aware navigation handler
   const navigate = (newPage: string, params?: { topicId?: string; subtopicId?: string }) => {
@@ -657,6 +666,7 @@ export function App() {
         onOpenHeartsShop={(tab) => handleOpenHeartsShop(tab || 'hearts')}
         onOpenSettings={() => setShowSettingsModal(true)}
         onOpenRules={() => setShowRulesModal(true)}
+        onOpenFeedback={() => setShowFeedbackModal(true)}
         onToggleSound={() => {
           const nextSound = !state.settings.sound;
           soundManager.setEnabled(nextSound);
@@ -735,9 +745,11 @@ export function App() {
         {currentRoute === 'last_hour_prep_results' && currentExamAttempt && (
           <LastHourPrepResults
             attempt={currentExamAttempt}
+            lastFeedbackDate={state.lastFeedbackDate}
             onRetakeExam={startLastHourPrepExam}
             onBackToDashboard={() => navigate('home')}
             onToast={showToast}
+            onOpenFeedback={() => setShowFeedbackModal(true)}
           />
         )}
 
@@ -867,7 +879,74 @@ export function App() {
           onUpdateState={(newState) => updateState(newState)}
           onResetProgress={handleResetProgress}
           onClose={() => setShowSettingsModal(false)}
+          onOpenFeedback={() => setShowFeedbackModal(true)}
         />
+      )}
+
+      {showFeedbackModal && (
+        <FeedbackModal
+          isOpen={showFeedbackModal}
+          onClose={() => setShowFeedbackModal(false)}
+          onSuccess={handleFeedbackSuccess}
+        />
+      )}
+
+      {/* Level 5 Milestone Feedback Prompt Toast */}
+      {state.level >= 5 && !state.feedbackPromptLevel5 && (
+        <div
+          id="level-5-feedback-banner"
+          className="fixed bottom-20 sm:bottom-6 right-4 left-4 sm:left-auto sm:max-w-md z-40 p-4 rounded-2xl bg-[#0d121f]/95 border border-cyan-500/40 shadow-2xl backdrop-blur-md animate-fade-in space-y-2.5"
+          style={{ boxShadow: '0 20px 40px -10px rgba(0,0,0,0.8), 0 0 25px rgba(6,182,212,0.15)' }}
+        >
+          <div className="flex items-start justify-between gap-3">
+            <div className="flex items-center gap-2.5">
+              <div className="w-8 h-8 rounded-xl bg-cyan-500/20 text-cyan-400 flex items-center justify-center font-bold text-xs shrink-0 border border-cyan-500/30">
+                Lv.5
+              </div>
+              <div className="text-xs font-bold text-white">
+                Milestone Reached!
+              </div>
+            </div>
+            <button
+              type="button"
+              onClick={() => {
+                soundManager.playClick();
+                updateState((prev) => ({ ...prev, feedbackPromptLevel5: true }));
+              }}
+              className="text-slate-400 hover:text-white p-1 rounded-lg hover:bg-slate-800 transition-colors cursor-pointer"
+              aria-label="Dismiss feedback prompt"
+            >
+              <CloseIcon className="w-4 h-4" />
+            </button>
+          </div>
+          <p className="text-xs text-slate-300 leading-relaxed">
+            You are leveling up fast. Mind sharing what you think of Gramify so far?
+          </p>
+          <div className="flex items-center gap-2 pt-1">
+            <button
+              type="button"
+              id="btn-level-5-send-feedback"
+              onClick={() => {
+                soundManager.playClick();
+                updateState((prev) => ({ ...prev, feedbackPromptLevel5: true }));
+                setShowFeedbackModal(true);
+              }}
+              className="px-3.5 py-1.5 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-black font-extrabold text-xs transition-all shadow cursor-pointer active:scale-95"
+            >
+              Send Feedback
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                soundManager.playClick();
+                updateState((prev) => ({ ...prev, feedbackPromptLevel5: true }));
+              }}
+              className="px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold transition-colors cursor-pointer"
+            >
+              Maybe Later
+            </button>
+          </div>
+        </div>
       )}
 
       {showCertModal && (

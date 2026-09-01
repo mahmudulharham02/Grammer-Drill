@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { X, Volume2, VolumeX, Download, Upload, Trash2, AlertTriangle, User, ShieldCheck } from 'lucide-react';
+import { X, Volume2, VolumeX, Download, Upload, Trash2, AlertTriangle, User, ShieldCheck, MessageSquare } from 'lucide-react';
 import { AppState } from '../types';
 import { soundManager } from '../utils/sound';
 import { exportStateAsJSON, importStateFromJSON } from '../utils/storage';
@@ -9,6 +9,7 @@ interface SettingsModalProps {
   onUpdateState: (newState: AppState) => void;
   onResetProgress: () => void;
   onClose: () => void;
+  onOpenFeedback?: () => void;
 }
 
 export const SettingsModal: React.FC<SettingsModalProps> = ({
@@ -16,6 +17,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
   onUpdateState,
   onResetProgress,
   onClose,
+  onOpenFeedback,
 }) => {
   const [name, setName] = useState(state.user.name);
   const [avatar, setAvatar] = useState(state.user.avatar);
@@ -213,6 +215,39 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
               </label>
             </div>
             {importError && <p className="text-xs text-rose-400">{importError}</p>}
+          </div>
+
+          {/* Feedback Section */}
+          <div className="space-y-3 bg-slate-900/80 p-4 rounded-2xl border border-slate-800">
+            <div className="flex items-center justify-between">
+              <h3 className="text-xs font-bold uppercase tracking-wider text-cyan-400 flex items-center gap-2">
+                <MessageSquare className="w-3.5 h-3.5 text-cyan-400" />
+                <span>Feedback</span>
+              </h3>
+              <span className="text-[11px] font-mono text-slate-400">
+                {state.lastFeedbackDate
+                  ? `Last feedback sent: ${new Date(state.lastFeedbackDate).toLocaleDateString()}`
+                  : 'Last feedback sent: Never'}
+              </span>
+            </div>
+            <p className="text-xs text-slate-400 leading-relaxed">
+              Found a bug or have a suggestion? We would love to hear from you.
+            </p>
+
+            <button
+              id="btn-settings-send-feedback"
+              type="button"
+              onClick={() => {
+                soundManager.playClick();
+                if (onOpenFeedback) {
+                  onOpenFeedback();
+                }
+              }}
+              className="w-full sm:w-auto py-2.5 px-5 bg-gradient-to-r from-cyan-500/20 to-violet-500/20 hover:from-cyan-500/30 hover:to-violet-500/30 border border-cyan-500/30 text-cyan-300 hover:text-white rounded-xl text-xs font-bold flex items-center justify-center gap-2 transition-all cursor-pointer shadow-sm active:scale-[0.98]"
+            >
+              <MessageSquare className="w-4 h-4 text-cyan-400" />
+              <span>Send Feedback</span>
+            </button>
           </div>
 
           {/* Danger Zone: Reset Progress */}
