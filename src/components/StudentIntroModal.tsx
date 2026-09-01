@@ -129,15 +129,17 @@ export const StudentIntroModal: React.FC<StudentIntroModalProps> = ({
       id="modal-student-intro"
       className="fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex items-center justify-center p-3 sm:p-4 overflow-y-auto"
     >
-      <div className="glass-panel w-full max-w-lg rounded-3xl p-5 sm:p-7 border border-cyan-500/30 shadow-2xl relative my-auto animate-fade-in">
+      <div className="w-full max-w-lg rounded-2xl p-5 sm:p-6 border border-white/[0.08] bg-[#0f172a] shadow-2xl relative my-auto animate-fade-in">
         {step === 'form' ? (
-          <form onSubmit={handleFormSubmit} className="space-y-4">
+          <form onSubmit={handleFormSubmit} className="space-y-3.5">
             <div className="text-center space-y-1">
-              <div className="text-5xl animate-bounce">🦉</div>
-              <h2 className="text-xl sm:text-2xl font-extrabold text-white">
+              <div className="w-12 h-12 rounded-xl bg-cyan-500/10 border border-cyan-500/20 text-2xl flex items-center justify-center mx-auto mb-1">
+                🦉
+              </div>
+              <h2 className="text-lg sm:text-xl font-bold text-white">
                 {isEditing ? 'Edit Student Profile' : 'Welcome to Gramify!'}
               </h2>
-              <p className="text-xs sm:text-sm text-cyan-300">
+              <p className="text-xs text-slate-400">
                 {isEditing
                   ? 'Update your details for personalized certificate & analytics'
                   : 'Enter your details to initialize your Grammar Quest'}
@@ -145,9 +147,9 @@ export const StudentIntroModal: React.FC<StudentIntroModalProps> = ({
             </div>
 
             {/* Avatar picker */}
-            <div className="space-y-1.5 pt-1">
+            <div className="space-y-1 pt-0.5">
               <label className="text-xs font-semibold text-slate-300 block">Choose Avatar</label>
-              <div className="flex flex-wrap gap-2 justify-center py-1">
+              <div className="flex flex-wrap gap-1.5 justify-center py-0.5">
                 {avatarOptions.map((emoji) => (
                   <button
                     key={emoji}
@@ -156,10 +158,10 @@ export const StudentIntroModal: React.FC<StudentIntroModalProps> = ({
                       soundManager.playClick();
                       setAvatar(emoji);
                     }}
-                    className={`w-10 h-10 rounded-2xl flex items-center justify-center text-xl transition-all ${
+                    className={`w-9 h-9 rounded-lg flex items-center justify-center text-lg transition-all ${
                       avatar === emoji
-                        ? 'bg-cyan-500/30 border-2 border-cyan-400 scale-110 shadow-lg shadow-cyan-500/20'
-                        : 'bg-slate-800/80 border border-slate-700 hover:bg-slate-700'
+                        ? 'bg-cyan-500/20 border-2 border-cyan-400 scale-105'
+                        : 'bg-slate-800/80 border border-white/[0.06] hover:bg-slate-700'
                     }`}
                   >
                     {emoji}
@@ -171,7 +173,7 @@ export const StudentIntroModal: React.FC<StudentIntroModalProps> = ({
             {/* Name Input */}
             <div className="space-y-1">
               <label className="text-xs font-semibold text-slate-300 block">
-                Student Full Name <span className="text-rose-400">*</span>
+                Student Full Name <span className="text-red-400">*</span>
               </label>
               <input
                 id="input-student-name"
@@ -181,14 +183,14 @@ export const StudentIntroModal: React.FC<StudentIntroModalProps> = ({
                 placeholder="e.g. Albert Arham"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                className="w-full px-3.5 py-2.5 rounded-xl bg-slate-900/90 border border-slate-700 text-white text-sm font-normal focus:outline-none focus:border-cyan-400 transition-colors"
+                className="w-full px-3 py-2 rounded-lg bg-slate-950 border border-white/[0.08] text-white text-xs sm:text-sm font-normal focus:outline-none focus:border-cyan-400 transition-colors"
               />
             </div>
 
             {/* Roll / Student ID */}
             <div className="space-y-1">
               <label className="text-xs font-semibold text-slate-300 block">
-                Roll / Student ID <span className="text-rose-400">*</span>
+                Roll / Student ID <span className="text-red-400">*</span>
               </label>
               <input
                 id="input-student-roll"
@@ -198,16 +200,16 @@ export const StudentIntroModal: React.FC<StudentIntroModalProps> = ({
                 placeholder="e.g. 108425"
                 value={roll}
                 onChange={(e) => setRoll(e.target.value)}
-                className="w-full px-3.5 py-2.5 rounded-xl bg-slate-900/90 border border-slate-700 text-white text-sm focus:outline-none focus:border-cyan-400 transition-colors font-mono"
+                className="w-full px-3 py-2 rounded-lg bg-slate-950 border border-white/[0.08] text-white text-xs sm:text-sm focus:outline-none focus:border-cyan-400 transition-colors font-mono"
               />
             </div>
 
             {/* Gender Selector (2 Options Only: Male & Female) */}
             <div className="space-y-1">
               <label className="text-xs font-semibold text-slate-300 block">
-                Gender <span className="text-rose-400">*</span>
+                Gender <span className="text-red-400">*</span>
               </label>
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-2 gap-2.5">
                 {[
                   { value: 'male', label: 'Male', emoji: '🚹' },
                   { value: 'female', label: 'Female', emoji: '🚺' },
@@ -220,34 +222,34 @@ export const StudentIntroModal: React.FC<StudentIntroModalProps> = ({
                       setGender(opt.value as 'male' | 'female');
                     }}
                     className={`
-                      flex flex-col items-center justify-center gap-2
-                      p-4 rounded-2xl border-2 transition-all
-                      min-h-[100px] text-base font-semibold
+                      flex flex-col items-center justify-center gap-1
+                      p-3 rounded-xl border transition-all
+                      text-xs sm:text-sm font-semibold
                       ${
                         gender === opt.value
-                          ? 'border-cyan-400 bg-cyan-500/10 text-cyan-200 shadow-lg shadow-cyan-500/30 scale-[1.02]'
-                          : 'border-white/10 bg-slate-800/50 text-slate-300 hover:border-white/30 active:scale-95'
+                          ? 'border-cyan-400 bg-cyan-500/10 text-cyan-200 shadow-sm'
+                          : 'border-white/[0.08] bg-slate-800/60 text-slate-300 hover:border-slate-600 active:scale-95'
                       }
                     `}
                   >
-                    <span className="text-4xl">{opt.emoji}</span>
+                    <span className="text-2xl">{opt.emoji}</span>
                     <span>{opt.label}</span>
                   </button>
                 ))}
               </div>
               {gender === null && submitAttempted && (
-                <p className="text-xs text-rose-400 mt-2">Please select your gender to continue.</p>
+                <p className="text-xs text-red-400 mt-1">Please select your gender to continue.</p>
               )}
             </div>
 
             {/* Group & Board Grid */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 pt-0.5">
               <div className="space-y-1">
                 <label className="text-xs font-semibold text-slate-300 block">Academic Group</label>
                 <select
                   value={group}
                   onChange={(e) => setGroup(e.target.value)}
-                  className="w-full px-3 py-2.5 rounded-xl bg-slate-900/90 border border-slate-700 text-white text-xs sm:text-sm focus:outline-none focus:border-cyan-400"
+                  className="w-full px-3 py-2 rounded-lg bg-slate-950 border border-white/[0.08] text-white text-xs focus:outline-none focus:border-cyan-400"
                 >
                   <option value="Science">Science</option>
                   <option value="Humanities">Humanities / Arts</option>
@@ -260,7 +262,7 @@ export const StudentIntroModal: React.FC<StudentIntroModalProps> = ({
                 <select
                   value={board}
                   onChange={(e) => setBoard(e.target.value)}
-                  className="w-full px-3 py-2.5 rounded-xl bg-slate-900/90 border border-slate-700 text-white text-xs sm:text-sm focus:outline-none focus:border-cyan-400"
+                  className="w-full px-3 py-2 rounded-lg bg-slate-950 border border-white/[0.08] text-white text-xs focus:outline-none focus:border-cyan-400"
                 >
                   <option value="Dhaka">Dhaka Board</option>
                   <option value="Rajshahi">Rajshahi Board</option>
@@ -277,12 +279,12 @@ export const StudentIntroModal: React.FC<StudentIntroModalProps> = ({
             </div>
 
             {/* Action Buttons */}
-            <div className="pt-3 flex gap-2">
+            <div className="pt-2 flex gap-2">
               {isEditing && onClose && (
                 <button
                   type="button"
                   onClick={onClose}
-                  className="w-1/3 py-3 rounded-2xl bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-xs"
+                  className="w-1/3 py-2.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold text-xs transition-colors"
                 >
                   Cancel
                 </button>
@@ -291,9 +293,9 @@ export const StudentIntroModal: React.FC<StudentIntroModalProps> = ({
                 id="btn-submit-intro"
                 type="submit"
                 disabled={!isFormValid}
-                className={`flex-1 py-3.5 rounded-2xl font-extrabold text-sm flex items-center justify-center gap-2 transition-all ${
+                className={`flex-1 py-2.5 rounded-lg font-bold text-xs sm:text-sm flex items-center justify-center gap-2 transition-all shadow-md ${
                   isFormValid
-                    ? 'bg-gradient-to-r from-cyan-400 to-blue-500 text-black shadow-lg shadow-cyan-500/25 hover:scale-[1.02] active:scale-[0.98]'
+                    ? 'bg-cyan-500 hover:bg-cyan-400 text-slate-950 active:scale-95'
                     : 'bg-slate-800 text-slate-500 cursor-not-allowed'
                 }`}
               >
@@ -303,14 +305,16 @@ export const StudentIntroModal: React.FC<StudentIntroModalProps> = ({
           </form>
         ) : (
           /* 4-Slide Carousel */
-          <div className="space-y-6 text-center">
+          <div className="space-y-4 text-center">
             {slides[carouselSlide].isCredit ? (
-              <div className="p-5 rounded-3xl bg-gradient-to-b from-pink-500/20 to-purple-900/30 border border-pink-500/40 shadow-xl shadow-pink-500/10 space-y-3 animate-fade-in">
-                <div className="text-6xl heart-pulse">❤️</div>
-                <h2 className="text-2xl font-extrabold text-pink-400 tracking-tight drop-shadow-[0_0_15px_rgba(244,114,182,0.4)]">
+              <div className="p-4 rounded-xl bg-slate-800/80 border border-cyan-500/30 text-center space-y-2 animate-fade-in">
+                <div className="w-12 h-12 rounded-xl bg-cyan-500/10 border border-cyan-500/20 text-2xl flex items-center justify-center mx-auto">
+                  ❤️
+                </div>
+                <h2 className="text-lg font-bold text-white">
                   Made with ❤️ by ARHAM
                 </h2>
-                <h3 className="text-sm font-semibold text-slate-200">
+                <h3 className="text-xs font-semibold text-cyan-400">
                   {slides[carouselSlide].subtitle}
                 </h3>
                 <p className="text-xs text-slate-300 leading-relaxed max-w-sm mx-auto">
@@ -318,19 +322,21 @@ export const StudentIntroModal: React.FC<StudentIntroModalProps> = ({
                 </p>
               </div>
             ) : (
-              <div className="space-y-3">
-                <div className="text-6xl animate-bounce">{slides[carouselSlide].icon}</div>
-                <div className="space-y-2">
+              <div className="space-y-2">
+                <div className="w-14 h-14 rounded-2xl bg-cyan-500/10 border border-cyan-500/20 text-3xl flex items-center justify-center mx-auto mb-2 shadow-sm">
+                  {slides[carouselSlide].icon}
+                </div>
+                <div className="space-y-1">
                   <span className="text-[11px] font-bold uppercase tracking-wider text-cyan-400">
                     Step {carouselSlide + 1} of {slides.length}
                   </span>
-                  <h2 className="text-lg sm:text-xl font-extrabold text-white">
+                  <h2 className="text-base sm:text-lg font-bold text-white">
                     {slides[carouselSlide].title}
                   </h2>
-                  <h3 className="text-xs sm:text-sm font-semibold text-violet-300">
+                  <h3 className="text-xs font-semibold text-cyan-300">
                     {slides[carouselSlide].subtitle}
                   </h3>
-                  <p className="text-xs sm:text-sm text-slate-300 leading-relaxed pt-1">
+                  <p className="text-xs text-slate-300 leading-relaxed pt-0.5 max-w-sm mx-auto">
                     {slides[carouselSlide].description}
                   </p>
                 </div>
@@ -338,27 +344,23 @@ export const StudentIntroModal: React.FC<StudentIntroModalProps> = ({
             )}
 
             {/* Carousel Dots */}
-            <div className="flex justify-center gap-1.5">
+            <div className="flex justify-center gap-1.5 pt-1">
               {slides.map((_, i) => (
                 <div
                   key={i}
                   className={`h-1.5 rounded-full transition-all ${
-                    carouselSlide === i
-                      ? slides[i].isCredit
-                        ? 'w-6 bg-pink-400'
-                        : 'w-6 bg-cyan-400'
-                      : 'w-2 bg-slate-700'
+                    carouselSlide === i ? 'w-6 bg-cyan-400' : 'w-2 bg-slate-700'
                   }`}
                 />
               ))}
             </div>
 
-            <div className="flex gap-2 pt-2">
+            <div className="flex gap-2 pt-1">
               {carouselSlide < slides.length - 1 && (
                 <button
                   type="button"
                   onClick={handleFinishOnboarding}
-                  className="w-1/3 py-3 rounded-2xl bg-slate-800/80 hover:bg-slate-700 text-slate-400 text-xs font-semibold"
+                  className="w-1/3 py-2.5 rounded-lg bg-slate-800/80 hover:bg-slate-700 text-slate-400 text-xs font-semibold transition-colors"
                 >
                   Skip
                 </button>
@@ -374,11 +376,7 @@ export const StudentIntroModal: React.FC<StudentIntroModalProps> = ({
                     handleFinishOnboarding();
                   }
                 }}
-                className={`flex-1 rounded-2xl font-extrabold text-sm shadow-lg flex items-center justify-center gap-2 transition-all ${
-                  slides[carouselSlide].isCredit
-                    ? 'py-4 min-h-[56px] bg-gradient-to-r from-pink-500 to-violet-600 text-white shadow-pink-500/30 hover:scale-[1.02] active:scale-[0.98]'
-                    : 'py-3.5 bg-gradient-to-r from-cyan-400 to-blue-500 text-black shadow-cyan-500/25'
-                }`}
+                className="flex-1 py-2.5 rounded-lg bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold text-xs sm:text-sm shadow-md flex items-center justify-center gap-1.5 transition-all active:scale-95"
               >
                 <span>{carouselSlide === slides.length - 1 ? "Let's Go 🚀" : 'Continue'}</span>
                 {carouselSlide < slides.length - 1 && <ChevronRight className="w-4 h-4" />}

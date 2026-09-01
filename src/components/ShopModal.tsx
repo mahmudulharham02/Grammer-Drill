@@ -1,6 +1,6 @@
 import React from 'react';
 import confetti from 'canvas-confetti';
-import { X, ShoppingBag, Heart, Sparkles, Check, Lock } from 'lucide-react';
+import { X } from 'lucide-react';
 import { AppState, ShopItem } from '../types';
 import { SHOP_ITEMS } from '../data/shopItems';
 import { soundManager } from '../utils/sound';
@@ -29,7 +29,7 @@ export const ShopModal: React.FC<ShopModalProps> = ({
         particleCount: 30,
         spread: 50,
         origin: { y: 0.6 },
-        colors: ['#fbbf24', '#22d3ee'],
+        colors: ['#f59e0b', '#0ea5e9'],
       });
     } catch {
       // ignore
@@ -60,25 +60,25 @@ export const ShopModal: React.FC<ShopModalProps> = ({
   return (
     <div
       id="modal-shop"
-      className="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4 animate-fade-in"
+      className="fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex items-center justify-center p-3 sm:p-4 animate-fade-in"
     >
-      <div className="glass-panel w-full max-w-2xl rounded-3xl border border-amber-500/30 flex flex-col max-h-[90vh] overflow-hidden shadow-2xl">
+      <div className="w-full max-w-2xl bg-slate-900 border border-white/[0.08] rounded-xl flex flex-col max-h-[90vh] overflow-hidden shadow-2xl">
         {/* Header */}
-        <div className="p-5 border-b border-slate-800 flex items-center justify-between bg-slate-950/80">
+        <div className="p-4 border-b border-white/[0.08] flex items-center justify-between bg-slate-950/80">
           <div className="flex items-center gap-2.5">
-            <div className="w-10 h-10 rounded-2xl bg-amber-500/20 text-amber-300 flex items-center justify-center text-xl">
+            <div className="w-9 h-9 rounded-lg bg-amber-500/10 border border-amber-500/30 text-amber-400 flex items-center justify-center text-lg">
               💎
             </div>
             <div>
-              <h2 className="text-lg font-bold text-white">Grammar Quest Shop</h2>
+              <h2 className="text-base font-bold text-white">Grammar Quest Shop</h2>
               <p className="text-xs text-slate-400">
                 Spend coins earned through drills on power-ups, themes & frames!
               </p>
             </div>
           </div>
 
-          <div className="flex items-center gap-3">
-            <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-amber-950/60 border border-amber-500/30 text-amber-300 font-bold text-sm">
+          <div className="flex items-center gap-2.5">
+            <div className="flex items-center gap-1 px-2.5 py-1 rounded-md bg-amber-500/10 border border-amber-500/30 text-amber-400 font-bold text-xs font-mono">
               <span>💎</span>
               <span>{state.coins} Coins</span>
             </div>
@@ -89,16 +89,16 @@ export const ShopModal: React.FC<ShopModalProps> = ({
                 soundManager.playClick();
                 onClose();
               }}
-              className="p-2 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800"
+              className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-colors"
             >
-              <X className="w-5 h-5" />
+              <X className="w-4 h-4" />
             </button>
           </div>
         </div>
 
         {/* Item List */}
-        <div className="flex-1 overflow-y-auto p-5 space-y-4">
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div className="flex-1 overflow-y-auto p-4 space-y-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             {SHOP_ITEMS.map((item) => {
               const owned = isItemOwned(item);
               const equipped = isItemEquipped(item);
@@ -107,11 +107,11 @@ export const ShopModal: React.FC<ShopModalProps> = ({
               return (
                 <div
                   key={item.id}
-                  className="bg-slate-900/90 border border-slate-800 rounded-2xl p-4 flex flex-col justify-between space-y-3 hover:border-amber-500/30 transition-all"
+                  className="bg-slate-800/80 border border-white/[0.08] rounded-xl p-3.5 flex flex-col justify-between space-y-2.5 hover:border-amber-500/30 transition-all"
                 >
                   <div>
-                    <div className="flex items-center justify-between mb-2">
-                      <span className="text-3xl p-2 rounded-xl bg-slate-800 border border-slate-700">
+                    <div className="flex items-center justify-between mb-1.5">
+                      <span className="text-2xl p-1.5 rounded-lg bg-slate-900 border border-white/[0.06]">
                         {item.icon}
                       </span>
                       <span className="text-xs font-mono font-bold text-amber-400">
@@ -119,18 +119,18 @@ export const ShopModal: React.FC<ShopModalProps> = ({
                       </span>
                     </div>
 
-                    <h3 className="text-sm font-bold text-white">{item.name || item.title}</h3>
-                    <p className="text-xs text-slate-400 mt-1 leading-relaxed">
+                    <h3 className="text-sm font-semibold text-white">{item.name || item.title}</h3>
+                    <p className="text-xs text-slate-400 mt-0.5 line-clamp-2 leading-relaxed">
                       {item.description}
                     </p>
                   </div>
 
-                  <div className="pt-2 border-t border-slate-800/80 flex items-center justify-between">
+                  <div className="pt-2 border-t border-white/[0.06] flex items-center justify-between">
                     {item.category === 'hearts' || item.category === 'hints' || item.category === 'boost' ? (
                       <button
                         onClick={() => handlePurchase(item)}
                         disabled={!canAfford}
-                        className="w-full py-2 rounded-xl bg-amber-400 hover:bg-amber-300 disabled:opacity-40 text-black font-extrabold text-xs shadow-md transition-transform active:scale-95"
+                        className="w-full py-1.5 rounded-md bg-amber-400 hover:bg-amber-300 disabled:opacity-40 text-slate-950 font-bold text-xs shadow transition-transform active:scale-95"
                       >
                         Buy for {item.cost} 💎
                       </button>
@@ -140,10 +140,10 @@ export const ShopModal: React.FC<ShopModalProps> = ({
                           soundManager.playClick();
                           onEquipItem(item.category, item.id);
                         }}
-                        className={`w-full py-2 rounded-xl font-bold text-xs transition-all ${
+                        className={`w-full py-1.5 rounded-md font-semibold text-xs transition-all ${
                           equipped
-                            ? 'bg-lime-950 text-lime-400 border border-lime-500/40'
-                            : 'bg-slate-800 hover:bg-slate-700 text-slate-200'
+                            ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/30'
+                            : 'bg-slate-700 hover:bg-slate-600 text-slate-200'
                         }`}
                       >
                         {equipped ? '✓ Equipped' : 'Equip'}
@@ -152,7 +152,7 @@ export const ShopModal: React.FC<ShopModalProps> = ({
                       <button
                         onClick={() => handlePurchase(item)}
                         disabled={!canAfford}
-                        className="w-full py-2 rounded-xl bg-amber-400 hover:bg-amber-300 disabled:opacity-40 text-black font-extrabold text-xs shadow-md transition-transform active:scale-95"
+                        className="w-full py-1.5 rounded-md bg-amber-400 hover:bg-amber-300 disabled:opacity-40 text-slate-950 font-bold text-xs shadow transition-transform active:scale-95"
                       >
                         Unlock for {item.cost} 💎
                       </button>

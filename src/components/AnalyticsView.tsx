@@ -1,5 +1,5 @@
 import React from 'react';
-import { BarChart3, TrendingUp, CheckCircle2, XCircle, Award, Download, BookOpen } from 'lucide-react';
+import { BarChart3, Award } from 'lucide-react';
 import { AppState, TopicProgressItem } from '../types';
 import { TOPICS_DATA } from '../data/topics';
 import { soundManager } from '../utils/sound';
@@ -34,15 +34,15 @@ export const AnalyticsView: React.FC<AnalyticsViewProps> = ({
   );
 
   return (
-    <div id="analytics-view" className="space-y-6 pb-16">
+    <div id="analytics-view" className="space-y-4 pb-16">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
-          <h1 className="text-2xl sm:text-3xl font-extrabold text-white flex items-center gap-2.5">
-            <BarChart3 className="w-7 h-7 text-cyan-400" />
+          <h1 className="text-xl sm:text-2xl font-bold text-white flex items-center gap-2">
+            <BarChart3 className="w-5 h-5 text-cyan-400" />
             <span>Learning Analytics & Progress</span>
           </h1>
-          <p className="text-xs sm:text-sm text-slate-400 mt-1">
+          <p className="text-xs text-slate-400 mt-0.5">
             Real-time syllabus coverage, accuracy rates, and topic mastery breakdown.
           </p>
         </div>
@@ -53,7 +53,7 @@ export const AnalyticsView: React.FC<AnalyticsViewProps> = ({
             soundManager.playClick();
             onOpenCertificate();
           }}
-          className="px-4 py-2.5 rounded-2xl bg-cyan-400 hover:bg-cyan-300 text-black font-extrabold text-xs sm:text-sm flex items-center gap-2 shadow-md shadow-cyan-500/20 self-start sm:self-auto transition-all"
+          className="px-3.5 py-1.5 rounded-lg bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold text-xs flex items-center gap-1.5 shadow self-start sm:self-auto transition-all"
         >
           <Award className="w-4 h-4" />
           <span>View Mastery Certificate</span>
@@ -61,50 +61,50 @@ export const AnalyticsView: React.FC<AnalyticsViewProps> = ({
       </div>
 
       {/* Top Stat Metrics Grid */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="bg-slate-900/80 border border-slate-800 rounded-2xl p-4 sm:p-5 space-y-1">
-          <span className="text-xs font-bold text-slate-400">Total Practice XP</span>
-          <div className="text-2xl sm:text-3xl font-extrabold text-cyan-400 font-mono">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5">
+        <div className="bg-slate-800/80 border border-white/[0.08] rounded-xl p-3.5 space-y-0.5">
+          <span className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider block">Total Practice XP</span>
+          <div className="text-xl sm:text-2xl font-bold text-cyan-400 font-mono">
             {state.xp}
           </div>
-          <span className="text-[11px] text-slate-500">Level {state.level} Scholar</span>
+          <span className="text-[10px] text-slate-400">Level {state.level} Scholar</span>
         </div>
 
-        <div className="bg-slate-900/80 border border-slate-800 rounded-2xl p-4 sm:p-5 space-y-1">
-          <span className="text-xs font-bold text-slate-400">Accuracy Rate</span>
-          <div className="text-2xl sm:text-3xl font-extrabold text-lime-400 font-mono">
+        <div className="bg-slate-800/80 border border-white/[0.08] rounded-xl p-3.5 space-y-0.5">
+          <span className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider block">Accuracy Rate</span>
+          <div className="text-xl sm:text-2xl font-bold text-emerald-400 font-mono">
             {overallAccuracy}%
           </div>
-          <span className="text-[11px] text-slate-500">{totalCorrect} correct of {totalAttempts}</span>
+          <span className="text-[10px] text-slate-400">{totalCorrect} correct of {totalAttempts}</span>
         </div>
 
-        <div className="bg-slate-900/80 border border-slate-800 rounded-2xl p-4 sm:p-5 space-y-1">
-          <span className="text-xs font-bold text-slate-400">Syllabus Mastery</span>
-          <div className="text-2xl sm:text-3xl font-extrabold text-violet-400 font-mono">
+        <div className="bg-slate-800/80 border border-white/[0.08] rounded-xl p-3.5 space-y-0.5">
+          <span className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider block">Syllabus Mastery</span>
+          <div className="text-xl sm:text-2xl font-bold text-cyan-300 font-mono">
             {avgMastery}%
           </div>
-          <span className="text-[11px] text-slate-500">Across 10 Board Topics</span>
+          <span className="text-[10px] text-slate-400">Across 10 Board Topics</span>
         </div>
 
-        <div className="bg-slate-900/80 border border-slate-800 rounded-2xl p-4 sm:p-5 space-y-1">
-          <span className="text-xs font-bold text-slate-400">Study Streak</span>
-          <div className="text-2xl sm:text-3xl font-extrabold text-amber-400 font-mono">
+        <div className="bg-slate-800/80 border border-white/[0.08] rounded-xl p-3.5 space-y-0.5">
+          <span className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider block">Study Streak</span>
+          <div className="text-xl sm:text-2xl font-bold text-amber-400 font-mono">
             {state.streak} Days 🔥
           </div>
-          <span className="text-[11px] text-slate-500">Active streak</span>
+          <span className="text-[10px] text-slate-400">Active streak</span>
         </div>
       </div>
 
       {/* 10-Topic Mastery Breakdown Bars */}
-      <div className="glass-panel rounded-3xl p-5 sm:p-7 border border-slate-800 space-y-5">
+      <div className="rounded-xl p-4 border border-white/[0.08] bg-slate-800/80 space-y-3">
         <div>
-          <h2 className="text-lg font-bold text-white">Curriculum Topic Mastery Matrix</h2>
-          <p className="text-xs text-slate-400 mt-0.5">
-            Color coded: Green (&ge;80% Strong), Amber (50-79% Progressing), Rose (&lt;50% Needs Practice)
+          <h2 className="text-xs sm:text-sm font-bold text-white">Curriculum Topic Mastery Matrix</h2>
+          <p className="text-[11px] text-slate-400 mt-0.5">
+            Green (≥80% Strong), Amber (50-79% Progressing), Red (&lt;50% Needs Practice)
           </p>
         </div>
 
-        <div className="space-y-4">
+        <div className="space-y-2">
           {TOPICS_DATA.map((topic) => {
             const prog = state.topicProgress[topic.id] || {
               unlocked: true,
@@ -116,10 +116,10 @@ export const AnalyticsView: React.FC<AnalyticsViewProps> = ({
 
             const masteryColor =
               prog.mastery >= 80
-                ? 'bg-lime-400 text-lime-400'
+                ? 'bg-emerald-400 text-emerald-400'
                 : prog.mastery >= 50
                 ? 'bg-amber-400 text-amber-400'
-                : 'bg-rose-400 text-rose-400';
+                : 'bg-red-400 text-red-400';
 
             return (
               <div
@@ -128,30 +128,30 @@ export const AnalyticsView: React.FC<AnalyticsViewProps> = ({
                   soundManager.playClick();
                   onNavigateTopic(topic.id);
                 }}
-                className="p-3 rounded-2xl bg-slate-950/60 border border-slate-800/80 hover:border-slate-700 cursor-pointer transition-all space-y-2"
+                className="p-2.5 rounded-lg bg-slate-900/60 border border-white/[0.04] hover:border-white/[0.12] cursor-pointer transition-all space-y-1.5"
               >
-                <div className="flex items-center justify-between text-xs sm:text-sm">
-                  <div className="flex items-center gap-2">
-                    <span>{topic.icon}</span>
-                    <span className="font-bold text-white">
+                <div className="flex items-center justify-between text-xs">
+                  <div className="flex items-center gap-2 min-w-0">
+                    <span className="shrink-0">{topic.icon}</span>
+                    <span className="font-semibold text-white truncate">
                       {topic.number}. {topic.title}
                     </span>
-                    <span className="text-[10px] text-slate-500 hidden sm:inline">
+                    <span className="text-[10px] text-slate-500 hidden sm:inline shrink-0">
                       ({topic.marks} Marks)
                     </span>
                   </div>
 
-                  <div className="flex items-center gap-3">
-                    <span className="text-xs font-mono text-slate-400">
+                  <div className="flex items-center gap-3 shrink-0">
+                    <span className="text-[11px] font-mono text-slate-400">
                       {prog.correct}/{prog.attempts} Correct
                     </span>
-                    <span className={`font-mono font-bold ${masteryColor.split(' ')[1]}`}>
+                    <span className={`font-mono font-bold text-xs ${masteryColor.split(' ')[1]}`}>
                       {prog.mastery}%
                     </span>
                   </div>
                 </div>
 
-                <div className="w-full h-2 bg-slate-800 rounded-full overflow-hidden">
+                <div className="w-full h-1.5 bg-slate-950 rounded-full overflow-hidden">
                   <div
                     className={`h-full ${masteryColor.split(' ')[0]} rounded-full transition-all`}
                     style={{ width: `${prog.mastery}%` }}

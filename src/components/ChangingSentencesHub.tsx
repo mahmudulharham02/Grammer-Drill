@@ -229,17 +229,17 @@ export const ChangingSentencesHub: React.FC<ChangingSentencesHubProps> = ({
   return (
     <div id="changing-sentences-hub-view" className="space-y-6 pb-16">
       {/* Star Module Hero Header */}
-      <section className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-lime-950/40 via-slate-900 to-indigo-950/40 border border-lime-500/30 p-6 sm:p-8 shadow-2xl backdrop-blur-xl">
-        <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
-          <div className="space-y-2">
-            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl bg-lime-500/15 border border-lime-500/30 text-lime-300 text-xs font-extrabold">
-              <span>⭐ STAR MODULE • 10 MARKS FULL WEIGHTAGE</span>
+      <section className="relative overflow-hidden rounded-xl bg-slate-800/80 border border-white/[0.08] p-4 sm:p-5 shadow-lg">
+        <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+          <div className="space-y-1">
+            <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-md bg-cyan-500/10 border border-cyan-500/20 text-cyan-400 text-[11px] font-bold">
+              <span>⭐ STAR MODULE • 10 MARKS WEIGHTAGE</span>
             </div>
-            <h1 className="text-2xl sm:text-4xl font-extrabold text-white tracking-tight">
+            <h1 className="text-xl sm:text-2xl font-bold text-white tracking-tight">
               Changing Sentences (Transformation)
             </h1>
-            <p className="text-xs sm:text-sm text-slate-300 max-w-2xl leading-relaxed">
-              The highest-scoring and most crucial single grammar item in the Bangladesh HSC English 2nd Paper. Master all 8 sub-categories with formula tables and drills.
+            <p className="text-xs text-slate-300 max-w-2xl leading-relaxed">
+              Master all 8 sentence transformation sub-categories with board formula tables and interactive drills.
             </p>
           </div>
 
@@ -249,16 +249,16 @@ export const ChangingSentencesHub: React.FC<ChangingSentencesHubProps> = ({
               soundManager.playClick();
               onOpenRules();
             }}
-            className="px-4 py-2.5 rounded-2xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-200 text-xs sm:text-sm font-bold flex items-center gap-2 transition-all shrink-0"
+            className="px-3.5 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 border border-white/[0.08] text-slate-200 text-xs font-semibold flex items-center gap-2 transition-colors shrink-0"
           >
-            <BookOpen className="w-4 h-4 text-lime-400" />
+            <BookOpen className="w-3.5 h-3.5 text-cyan-400" />
             <span>Full Rule Matrices</span>
           </button>
         </div>
       </section>
 
       {/* Subtopic Selector Tabs */}
-      <section className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 sm:gap-3">
+      <section className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-2.5">
         {changingTopic.subtopics.map((sub) => {
           const isSelected = selectedSubtopic === sub.id;
           const details = subtopicDetails[sub.id];
@@ -271,38 +271,38 @@ export const ChangingSentencesHub: React.FC<ChangingSentencesHubProps> = ({
                 soundManager.playClick();
                 setSelectedSubtopic(sub.id);
               }}
-              className={`p-3 sm:p-4 rounded-2xl border text-left transition-all relative flex flex-col justify-between ${
+              className={`p-3 rounded-xl border text-left transition-all relative flex flex-col justify-between ${
                 isSelected
-                  ? 'bg-lime-950/40 border-lime-400 text-white shadow-lg shadow-lime-500/15 ring-2 ring-lime-400/20'
-                  : 'bg-slate-900/80 border-slate-800 text-slate-400 hover:text-slate-200 hover:border-slate-700'
+                  ? 'bg-cyan-500/10 border-cyan-400 text-white shadow-sm ring-1 ring-cyan-400/20'
+                  : 'bg-slate-800/60 border-white/[0.08] text-slate-400 hover:text-slate-200 hover:border-slate-700'
               }`}
             >
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-xl">{details?.icon || '📝'}</span>
+              <div className="flex items-center justify-between mb-1.5">
+                <span className="text-lg">{details?.icon || '📝'}</span>
                 {isSelected && (
-                  <span className="w-2 h-2 rounded-full bg-lime-400 animate-ping" />
+                  <span className="w-2 h-2 rounded-full bg-cyan-400" />
                 )}
               </div>
-              <h2 className="font-bold text-xs sm:text-sm text-white line-clamp-1">
+              <h2 className="font-semibold text-xs text-white truncate">
                 {sub.title}
               </h2>
-              <p className="text-[10px] text-slate-400 mt-0.5 line-clamp-1">{sub.bengaliTitle}</p>
+              <p className="text-[10px] text-slate-400 mt-0.5 truncate">{sub.bengaliTitle}</p>
             </button>
           );
         })}
       </section>
 
       {/* Active Subtopic Interactive Breakdown & Formula Deck */}
-      <section className="rounded-3xl bg-slate-900/90 border border-slate-800 p-5 sm:p-8 backdrop-blur-md shadow-xl space-y-6">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-800">
-          <div>
+      <section className="rounded-xl bg-slate-800/80 border border-white/[0.08] p-4 sm:p-5 shadow-lg space-y-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3.5 border-b border-white/[0.08]">
+          <div className="min-w-0">
             <div className="flex items-center gap-2">
-              <span className="text-2xl">{activeSubDetails.icon}</span>
-              <h2 className="text-xl sm:text-2xl font-bold text-white">
+              <span className="text-xl">{activeSubDetails.icon}</span>
+              <h2 className="text-base sm:text-lg font-bold text-white truncate">
                 {activeSubDetails.title}
               </h2>
             </div>
-            <p className="text-xs sm:text-sm text-slate-400 mt-1">
+            <p className="text-xs text-slate-400 mt-0.5 truncate">
               {activeSubDetails.description}
             </p>
           </div>
@@ -313,35 +313,36 @@ export const ChangingSentencesHub: React.FC<ChangingSentencesHubProps> = ({
               soundManager.playClick();
               onStartDrill(selectedSubtopic);
             }}
-            className="px-6 py-3 rounded-2xl bg-gradient-to-r from-lime-400 to-emerald-400 hover:from-lime-300 hover:to-emerald-300 text-black font-extrabold text-sm shadow-lg shadow-lime-500/20 hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center gap-2 shrink-0"
+            className="px-4 py-2 rounded-lg bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold text-xs shadow-md transition-all flex items-center justify-center gap-1.5 shrink-0 active:scale-95"
           >
-            <Zap className="w-4 h-4 fill-black" />
-            <span>Launch {activeSubDetails.title} Drills</span>
-            <ChevronRight className="w-4 h-4" />
+            <Zap className="w-3.5 h-3.5 fill-current" />
+            <span>Launch Drills</span>
+            <ChevronRight className="w-3.5 h-3.5" />
           </button>
         </div>
 
         {/* Formula Cards Grid */}
         <div>
-          <h3 className="text-xs font-bold uppercase tracking-wider text-lime-400 mb-3 flex items-center gap-1.5">
+          <h3 className="text-xs font-bold uppercase tracking-wider text-cyan-400 mb-2.5 flex items-center gap-1.5">
             <Sparkles className="w-3.5 h-3.5" />
             <span>Core Board Formulas & Patterns</span>
           </h3>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-2.5">
             {activeSubDetails.coreFormulas.map((f, i) => (
               <div
                 key={i}
-                className="bg-slate-950/70 border border-slate-800/90 rounded-2xl p-4 space-y-2 hover:border-lime-500/30 transition-all"
+                className="bg-slate-900/60 border border-white/[0.06] rounded-lg p-3 space-y-1.5 hover:border-cyan-500/30 transition-colors"
               >
-                <span className="text-xs font-bold text-slate-300 px-2 py-0.5 rounded bg-slate-800 border border-slate-700">
+                <span className="text-[10px] font-bold text-cyan-300 px-2 py-0.5 rounded bg-cyan-950/80 border border-cyan-500/20">
                   {f.direction}
                 </span>
-                <div className="text-xs font-mono font-semibold text-lime-300 bg-lime-950/30 p-2.5 rounded-xl border border-lime-500/20">
+                <div className="text-xs font-mono font-medium text-cyan-200 bg-slate-950/80 p-2 rounded-md border border-white/[0.05]">
                   {f.formula}
                 </div>
-                <p className="text-xs text-slate-400 italic">
-                  Example: <span className="text-slate-200 font-medium">{f.example}</span>
+                <p className="text-xs text-slate-400">
+                  <span className="text-slate-500 mr-1">Example:</span>
+                  <span className="text-slate-200">{f.example}</span>
                 </p>
               </div>
             ))}

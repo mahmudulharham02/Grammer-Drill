@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import confetti from 'canvas-confetti';
-import { Award, Sparkles, CheckCircle2, Lock, Flame } from 'lucide-react';
+import { Award, CheckCircle2, Lock } from 'lucide-react';
 import { AppState, Badge } from '../types';
 import { ALL_BADGES } from '../data/badges';
 import { soundManager } from '../utils/sound';
@@ -30,7 +30,7 @@ export const AchievementsView: React.FC<AchievementsViewProps> = ({ state, onCla
         particleCount: 40,
         spread: 60,
         origin: { y: 0.6 },
-        colors: ['#fbbf24', '#a78bfa', '#22d3ee'],
+        colors: ['#f59e0b', '#0ea5e9', '#22c55e'],
       });
     } catch {
       // ignore
@@ -39,21 +39,21 @@ export const AchievementsView: React.FC<AchievementsViewProps> = ({ state, onCla
   };
 
   return (
-    <div id="achievements-view" className="space-y-6 pb-16">
+    <div id="achievements-view" className="space-y-4 pb-16">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
-          <h1 className="text-2xl sm:text-3xl font-extrabold text-white flex items-center gap-2.5">
-            <Award className="w-7 h-7 text-violet-400" />
+          <h1 className="text-xl sm:text-2xl font-bold text-white flex items-center gap-2">
+            <Award className="w-5 h-5 text-amber-400" />
             <span>Badges & Achievements</span>
           </h1>
-          <p className="text-xs sm:text-sm text-slate-400 mt-1">
+          <p className="text-xs text-slate-400 mt-0.5">
             Unlock trophies by maintaining study streaks, mastering topics, and leveling up.
           </p>
         </div>
 
         {/* Filter Tabs */}
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1.5">
           {[
             { id: 'all', label: `All (${ALL_BADGES.length})` },
             { id: 'unlocked', label: `Unlocked (${unlockedSet.size})` },
@@ -65,10 +65,10 @@ export const AchievementsView: React.FC<AchievementsViewProps> = ({ state, onCla
                 soundManager.playClick();
                 setFilter(tab.id as any);
               }}
-              className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${
+              className={`px-2.5 py-1 rounded-md text-xs font-semibold transition-all ${
                 filter === tab.id
-                  ? 'bg-violet-500 text-black shadow-md shadow-violet-500/20'
-                  : 'bg-slate-800 text-slate-400 hover:text-white'
+                  ? 'bg-cyan-500 text-slate-950 font-bold'
+                  : 'bg-slate-800 text-slate-400 hover:text-white border border-white/[0.04]'
               }`}
             >
               {tab.label}
@@ -78,7 +78,7 @@ export const AchievementsView: React.FC<AchievementsViewProps> = ({ state, onCla
       </div>
 
       {/* Badges Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
         {filteredBadges.map((badge) => {
           const isUnlocked = unlockedSet.has(badge.id);
           const isUnclaimed = unclaimedSet.has(badge.id);
@@ -86,56 +86,56 @@ export const AchievementsView: React.FC<AchievementsViewProps> = ({ state, onCla
           return (
             <div
               key={badge.id}
-              className={`rounded-3xl p-5 border transition-all flex flex-col justify-between relative ${
+              className={`rounded-xl p-3.5 border transition-all flex flex-col justify-between relative ${
                 isUnlocked
-                  ? 'bg-gradient-to-br from-violet-950/40 via-slate-900 to-slate-900 border-violet-500/40 shadow-xl'
-                  : 'bg-slate-900/60 border-slate-800 opacity-60'
+                  ? 'bg-slate-800/90 border-cyan-500/30 shadow-md'
+                  : 'bg-slate-900/60 border-white/[0.04] opacity-60'
               }`}
             >
               {isUnclaimed && (
-                <div className="absolute -top-2 -right-2 px-2.5 py-0.5 bg-amber-400 text-black font-extrabold text-[10px] rounded-full shadow-lg animate-pulse">
+                <div className="absolute -top-2 -right-2 px-2 py-0.5 bg-amber-400 text-slate-950 font-bold text-[10px] rounded-full shadow animate-pulse">
                   Claim Reward! 🎁
                 </div>
               )}
 
               <div>
-                <div className="flex items-center justify-between mb-3">
-                  <span className="text-3xl p-2.5 rounded-2xl bg-slate-800/90 border border-slate-700">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-2xl p-1.5 rounded-lg bg-slate-900 border border-white/[0.06]">
                     {badge.icon}
                   </span>
                   <span
-                    className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${
+                    className={`text-[10px] font-semibold px-2 py-0.5 rounded border ${
                       isUnlocked
-                        ? 'bg-lime-950 text-lime-400 border-lime-500/30'
-                        : 'bg-slate-800 text-slate-500 border-slate-700'
+                        ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30'
+                        : 'bg-slate-900 text-slate-500 border-white/[0.04]'
                     }`}
                   >
                     {isUnlocked ? 'Unlocked' : 'Locked'}
                   </span>
                 </div>
 
-                <h3 className="text-base font-bold text-white">{badge.title}</h3>
-                <p className="text-xs text-slate-300 mt-1 leading-relaxed">
+                <h3 className="text-sm font-semibold text-white truncate">{badge.title}</h3>
+                <p className="text-xs text-slate-400 mt-0.5 line-clamp-2 leading-relaxed">
                   {badge.description}
                 </p>
               </div>
 
-              <div className="mt-4 pt-3 border-t border-slate-800/80 flex items-center justify-between">
-                <span className="text-xs font-mono font-bold text-amber-400">
+              <div className="mt-3 pt-2.5 border-t border-white/[0.06] flex items-center justify-between">
+                <span className="text-xs font-mono font-semibold text-amber-400">
                   +{badge.xpReward} XP • +{badge.coinReward} 💎
                 </span>
 
                 {isUnclaimed ? (
                   <button
                     onClick={() => handleClaim(badge)}
-                    className="px-3 py-1.5 rounded-xl bg-amber-400 hover:bg-amber-300 text-black font-extrabold text-xs shadow-md transition-transform hover:scale-105"
+                    className="px-2.5 py-1 rounded-md bg-amber-400 hover:bg-amber-300 text-slate-950 font-bold text-xs shadow transition-transform hover:scale-105"
                   >
                     Claim 🎁
                   </button>
                 ) : isUnlocked ? (
-                  <CheckCircle2 className="w-5 h-5 text-lime-400" />
+                  <CheckCircle2 className="w-4 h-4 text-emerald-400" />
                 ) : (
-                  <Lock className="w-4 h-4 text-slate-600" />
+                  <Lock className="w-3.5 h-3.5 text-slate-600" />
                 )}
               </div>
             </div>

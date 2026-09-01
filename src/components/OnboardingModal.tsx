@@ -46,26 +46,28 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({ onFinish }) =>
       id="modal-onboarding"
       className="fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex items-center justify-center p-4 animate-fade-in"
     >
-      <div className="glass-panel max-w-lg w-full rounded-3xl p-6 sm:p-8 text-center space-y-6 border-cyan-500/30 shadow-2xl">
-        <div className="text-6xl animate-bounce">{currentSlide.icon}</div>
+      <div className="w-full max-w-md rounded-2xl p-5 sm:p-6 text-center space-y-4 border border-white/[0.08] bg-[#0f172a] shadow-2xl">
+        <div className="w-14 h-14 rounded-2xl bg-cyan-500/10 border border-cyan-500/20 text-3xl flex items-center justify-center mx-auto shadow-sm">
+          {currentSlide.icon}
+        </div>
 
-        <div className="space-y-2">
+        <div className="space-y-1.5">
           <span className="text-[11px] font-bold uppercase tracking-wider text-cyan-400">
             Step {slide + 1} of {slides.length}
           </span>
-          <h2 className="text-xl sm:text-2xl font-extrabold text-white">
+          <h2 className="text-lg sm:text-xl font-bold text-white">
             {currentSlide.title}
           </h2>
-          <h3 className="text-xs sm:text-sm font-semibold text-violet-300">
+          <h3 className="text-xs sm:text-sm font-semibold text-cyan-300">
             {currentSlide.subtitle}
           </h3>
-          <p className="text-xs sm:text-sm text-slate-300 leading-relaxed pt-2">
+          <p className="text-xs text-slate-300 leading-relaxed pt-1 max-w-sm mx-auto">
             {currentSlide.body}
           </p>
         </div>
 
         {/* Indicators */}
-        <div className="flex justify-center gap-1.5 pt-2">
+        <div className="flex justify-center gap-1.5 pt-1">
           {slides.map((_, i) => (
             <div
               key={i}
@@ -79,7 +81,7 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({ onFinish }) =>
         <div className="pt-2">
           <button
             onClick={handleNext}
-            className="w-full py-3.5 rounded-2xl bg-gradient-to-r from-cyan-400 to-blue-500 hover:from-cyan-300 hover:to-blue-400 text-black font-extrabold text-sm shadow-lg shadow-cyan-500/25 flex items-center justify-center gap-2 transition-all hover:scale-[1.02] active:scale-[0.98]"
+            className="w-full py-2.5 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold text-xs sm:text-sm shadow-md flex items-center justify-center gap-2 transition-all active:scale-95"
           >
             <span>{slide + 1 < slides.length ? 'Continue' : 'Begin My Quest!'}</span>
             <ChevronRight className="w-4 h-4" />

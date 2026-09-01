@@ -65,18 +65,18 @@ export const PracticeHub: React.FC<PracticeHubProps> = ({
   return (
     <div id="view-practice-hub" className="space-y-6 pb-24 max-w-6xl mx-auto">
       {/* Title & Tabs */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
           <div className="flex items-center gap-2">
-            <span className="px-2.5 py-0.5 rounded-full bg-cyan-500/20 text-cyan-300 text-[11px] font-extrabold uppercase tracking-wider">
+            <span className="px-2 py-0.5 rounded-md bg-cyan-500/10 text-cyan-400 text-[10px] font-bold uppercase tracking-wider border border-cyan-500/20">
               ⭐ Core 10-Mark Mastery
             </span>
             <span className="text-xs text-slate-400">Official Board Drills</span>
           </div>
-          <h1 className="text-xl sm:text-2xl font-extrabold text-white mt-1">
+          <h1 className="text-xl sm:text-2xl font-bold text-white mt-1">
             Grammar Drill Center
           </h1>
-          <p className="text-xs sm:text-sm text-slate-300">
+          <p className="text-xs text-slate-400">
             Specialized deep-drill submodules for Voice Change & Narration Change.
           </p>
         </div>
@@ -86,23 +86,23 @@ export const PracticeHub: React.FC<PracticeHubProps> = ({
             soundManager.playClick();
             onOpenRules();
           }}
-          className="self-start sm:self-auto px-4 py-2 rounded-xl bg-slate-800/90 hover:bg-slate-700 text-cyan-300 text-xs font-bold border border-cyan-500/30 flex items-center gap-1.5 transition-colors"
+          className="self-start sm:self-auto px-3.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-cyan-300 text-xs font-semibold border border-white/[0.08] flex items-center gap-1.5 transition-colors"
         >
-          <BookOpen className="w-4 h-4" />
+          <BookOpen className="w-3.5 h-3.5" />
           <span>Rules Cheat Sheet</span>
         </button>
       </div>
 
       {/* Segmented Controller Tabs */}
-      <div className="flex p-1 rounded-2xl bg-slate-900/90 border border-slate-800 max-w-md">
+      <div className="flex p-1 rounded-xl bg-slate-900/90 border border-white/[0.08] max-w-xs">
         <button
           onClick={() => {
             soundManager.playClick();
             setActiveTab('voice');
           }}
-          className={`flex-1 py-2.5 rounded-xl font-extrabold text-xs sm:text-sm flex items-center justify-center gap-2 transition-all ${
+          className={`flex-1 py-1.5 rounded-lg font-bold text-xs flex items-center justify-center gap-1.5 transition-all ${
             activeTab === 'voice'
-              ? 'bg-gradient-to-r from-cyan-500 to-blue-600 text-black shadow-lg shadow-cyan-500/25'
+              ? 'bg-cyan-500 text-slate-950 shadow-sm'
               : 'text-slate-400 hover:text-white'
           }`}
         >
@@ -114,9 +114,9 @@ export const PracticeHub: React.FC<PracticeHubProps> = ({
             soundManager.playClick();
             setActiveTab('narration');
           }}
-          className={`flex-1 py-2.5 rounded-xl font-extrabold text-xs sm:text-sm flex items-center justify-center gap-2 transition-all ${
+          className={`flex-1 py-1.5 rounded-lg font-bold text-xs flex items-center justify-center gap-1.5 transition-all ${
             activeTab === 'narration'
-              ? 'bg-gradient-to-r from-violet-500 to-fuchsia-600 text-white shadow-lg shadow-violet-500/25'
+              ? 'bg-cyan-500 text-slate-950 shadow-sm'
               : 'text-slate-400 hover:text-white'
           }`}
         >
@@ -126,18 +126,18 @@ export const PracticeHub: React.FC<PracticeHubProps> = ({
 
       {/* Voice Change Sub-Modules */}
       {activeTab === 'voice' && (
-        <div className="space-y-4">
-          <div className="p-3.5 rounded-2xl bg-cyan-950/30 border border-cyan-500/20 flex items-center justify-between">
+        <div className="space-y-3">
+          <div className="px-3.5 py-2 rounded-xl bg-cyan-950/40 border border-cyan-500/20 flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <Zap className="w-4 h-4 text-cyan-400" />
-              <span className="text-xs text-cyan-200 font-medium">
-                Active ↔ Passive Mastery: Master all 12 tenses, modal auxiliaries, imperatives, and interrogatives.
+              <Zap className="w-3.5 h-3.5 text-cyan-400 shrink-0" />
+              <span className="text-xs text-cyan-200">
+                Active ↔ Passive: Master all 12 tenses, modal auxiliaries, imperatives, and interrogatives.
               </span>
             </div>
-            <span className="text-xs font-bold text-cyan-400 hidden sm:inline">120+ Questions</span>
+            <span className="text-xs font-mono font-bold text-cyan-400 hidden sm:inline shrink-0 ml-2">120+ Qs</span>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5">
             {voiceSubModules.map((sub, index) => {
               const subStat = voiceSubStats[sub.id] || { attempts: 0, correct: 0, mastery: 0 };
               const qCount = VOICE_CHANGE_QUESTIONS.filter((q) => q.subModule === sub.id).length;
@@ -145,45 +145,37 @@ export const PracticeHub: React.FC<PracticeHubProps> = ({
               return (
                 <div
                   key={sub.id}
-                  className="glass-card rounded-2xl p-4 sm:p-5 flex flex-col justify-between hover:border-cyan-400/40 transition-all group"
+                  className="bg-slate-800/80 border border-white/[0.08] rounded-xl p-3.5 flex flex-col justify-between hover:border-cyan-500/30 transition-colors"
                 >
-                  <div className="space-y-2">
-                    <div className="flex items-center justify-between">
-                      <span className="text-[11px] font-bold uppercase tracking-wider text-cyan-400 bg-cyan-500/10 px-2 py-0.5 rounded-md">
+                  <div className="space-y-1.5">
+                    <div className="flex items-center justify-between gap-1">
+                      <span className="text-[10px] font-bold text-cyan-300 bg-cyan-950/80 px-1.5 py-0.5 rounded border border-cyan-500/20">
                         Part {index + 1}
                       </span>
-                      <span className="text-[11px] font-mono text-slate-400">
-                        {qCount > 0 ? `${qCount} Questions` : 'Curriculum Pool'}
+                      <span className="text-[10px] font-mono text-slate-400">
+                        {qCount > 0 ? `${qCount} Qs` : 'Curriculum Pool'}
                       </span>
                     </div>
 
-                    <h3 className="text-base font-bold text-white group-hover:text-cyan-300 transition-colors">
+                    <h3 className="text-sm font-semibold text-white truncate">
                       {sub.name}
                     </h3>
-                    <div className="inline-block text-[11px] font-mono font-bold text-violet-300 bg-violet-500/10 px-2 py-0.5 rounded border border-violet-500/20">
+                    <div className="text-[10px] font-mono font-medium text-cyan-300 bg-slate-900/80 px-2 py-0.5 rounded border border-white/[0.04] inline-block truncate max-w-full">
                       {sub.tag}
                     </div>
-                    <p className="text-xs text-slate-400 leading-relaxed">
-                      {sub.description}
-                    </p>
                   </div>
 
                   {/* Progress Meter & Action */}
-                  <div className="pt-4 mt-3 border-t border-slate-800/80 flex items-center justify-between">
-                    <div className="space-y-1">
-                      <div className="flex items-center gap-1.5">
-                        <div className="w-14 h-1.5 rounded-full bg-slate-800 overflow-hidden">
-                          <div
-                            className="h-full bg-cyan-400 rounded-full transition-all"
-                            style={{ width: `${subStat.mastery || 0}%` }}
-                          />
-                        </div>
-                        <span className="text-[11px] font-bold text-slate-300">
-                          {subStat.mastery || 0}%
-                        </span>
+                  <div className="pt-2.5 mt-2.5 border-t border-white/[0.06] flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <div className="w-12 h-1.5 rounded-full bg-slate-900 overflow-hidden">
+                        <div
+                          className="h-full bg-cyan-400 rounded-full transition-all"
+                          style={{ width: `${subStat.mastery || 0}%` }}
+                        />
                       </div>
-                      <span className="text-[10px] text-slate-500 block">
-                        {subStat.attempts || 0} attempts
+                      <span className="text-[11px] font-mono font-bold text-slate-300">
+                        {subStat.mastery || 0}%
                       </span>
                     </div>
 
@@ -192,10 +184,10 @@ export const PracticeHub: React.FC<PracticeHubProps> = ({
                         soundManager.playClick();
                         onStartVoiceDrill(sub.id);
                       }}
-                      className="px-3.5 py-2 rounded-xl bg-cyan-500/20 hover:bg-cyan-400 hover:text-black text-cyan-300 text-xs font-bold transition-all flex items-center gap-1 active:scale-95"
+                      className="px-2.5 py-1 rounded-lg bg-cyan-600 hover:bg-cyan-500 text-white text-xs font-semibold transition-all flex items-center gap-1 active:scale-95"
                     >
                       <span>Drill</span>
-                      <ArrowRight className="w-3.5 h-3.5" />
+                      <ArrowRight className="w-3 h-3" />
                     </button>
                   </div>
                 </div>
@@ -207,49 +199,50 @@ export const PracticeHub: React.FC<PracticeHubProps> = ({
 
       {/* Narration Change Sub-Modules */}
       {activeTab === 'narration' && (
-        <div className="space-y-4">
-          <div className="p-3.5 rounded-2xl bg-violet-950/30 border border-violet-500/20 flex items-center justify-between">
+        <div className="space-y-3">
+          <div className="px-3.5 py-2 rounded-xl bg-cyan-950/40 border border-cyan-500/20 flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <Zap className="w-4 h-4 text-violet-400" />
-              <span className="text-xs text-violet-200 font-medium">
+              <Zap className="w-3.5 h-3.5 text-cyan-400 shrink-0" />
+              <span className="text-xs text-cyan-200">
                 Direct ↔ Indirect Narration: Master tense back-shifts, time/place adverbs, reporting verbs, and optatives.
               </span>
             </div>
-            <span className="text-xs font-bold text-violet-400 hidden sm:inline">60+ Questions</span>
+            <span className="text-xs font-mono font-bold text-cyan-400 hidden sm:inline shrink-0 ml-2">60+ Qs</span>
           </div>
 
           {/* Quick Tense Backshift Reference Table Card */}
-          <div className="glass-panel rounded-2xl p-4 sm:p-5 border border-violet-500/20 space-y-3">
+          <div className="bg-slate-800/80 rounded-xl p-3.5 border border-white/[0.08] space-y-2">
             <div className="flex items-center justify-between">
-              <h3 className="text-sm font-bold text-violet-300 flex items-center gap-2">
-                <span>📖 HSC Tense Back-Shift & Time Rule Reference</span>
+              <h3 className="text-xs font-bold text-cyan-300 flex items-center gap-1.5">
+                <BookOpen className="w-3.5 h-3.5" />
+                <span>HSC Tense Back-Shift & Time Rule Reference</span>
               </h3>
-              <span className="text-[10px] text-slate-400 bg-slate-800 px-2 py-0.5 rounded">
+              <span className="text-[10px] text-slate-400 bg-slate-900 px-2 py-0.5 rounded border border-white/[0.04]">
                 Official Rule
               </span>
             </div>
 
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-[11px]">
-              <div className="p-2 rounded-xl bg-slate-900/80 border border-slate-800">
-                <span className="text-slate-400 block">Present Simple</span>
-                <span className="text-cyan-300 font-bold">→ Past Simple</span>
+              <div className="p-2 rounded-lg bg-slate-900/80 border border-white/[0.04]">
+                <span className="text-slate-400 block text-[10px]">Present Simple</span>
+                <span className="text-cyan-300 font-semibold">→ Past Simple</span>
               </div>
-              <div className="p-2 rounded-xl bg-slate-900/80 border border-slate-800">
-                <span className="text-slate-400 block">Present Continuous</span>
-                <span className="text-cyan-300 font-bold">→ Past Continuous</span>
+              <div className="p-2 rounded-lg bg-slate-900/80 border border-white/[0.04]">
+                <span className="text-slate-400 block text-[10px]">Present Continuous</span>
+                <span className="text-cyan-300 font-semibold">→ Past Continuous</span>
               </div>
-              <div className="p-2 rounded-xl bg-slate-900/80 border border-slate-800">
-                <span className="text-slate-400 block">Present / Past Simple</span>
-                <span className="text-cyan-300 font-bold">→ Past Perfect</span>
+              <div className="p-2 rounded-lg bg-slate-900/80 border border-white/[0.04]">
+                <span className="text-slate-400 block text-[10px]">Present / Past Simple</span>
+                <span className="text-cyan-300 font-semibold">→ Past Perfect</span>
               </div>
-              <div className="p-2 rounded-xl bg-slate-900/80 border border-slate-800">
-                <span className="text-slate-400 block">today / yesterday</span>
-                <span className="text-amber-300 font-bold">→ that day / prev. day</span>
+              <div className="p-2 rounded-lg bg-slate-900/80 border border-white/[0.04]">
+                <span className="text-slate-400 block text-[10px]">today / yesterday</span>
+                <span className="text-amber-300 font-semibold">→ that day / prev. day</span>
               </div>
             </div>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5">
             {narrationSubModules.map((sub, index) => {
               const subStat = voiceSubStats[sub.id] || { attempts: 0, correct: 0, mastery: 0 };
               const qCount = NARRATION_QUESTIONS.filter((q) => q.subModule === sub.id).length;
@@ -257,45 +250,37 @@ export const PracticeHub: React.FC<PracticeHubProps> = ({
               return (
                 <div
                   key={sub.id}
-                  className="glass-card rounded-2xl p-4 sm:p-5 flex flex-col justify-between hover:border-violet-400/40 transition-all group"
+                  className="bg-slate-800/80 border border-white/[0.08] rounded-xl p-3.5 flex flex-col justify-between hover:border-cyan-500/30 transition-colors"
                 >
-                  <div className="space-y-2">
-                    <div className="flex items-center justify-between">
-                      <span className="text-[11px] font-bold uppercase tracking-wider text-violet-400 bg-violet-500/10 px-2 py-0.5 rounded-md">
+                  <div className="space-y-1.5">
+                    <div className="flex items-center justify-between gap-1">
+                      <span className="text-[10px] font-bold text-cyan-300 bg-cyan-950/80 px-1.5 py-0.5 rounded border border-cyan-500/20">
                         Part {index + 1}
                       </span>
-                      <span className="text-[11px] font-mono text-slate-400">
-                        {qCount > 0 ? `${qCount} Questions` : 'Curriculum Pool'}
+                      <span className="text-[10px] font-mono text-slate-400">
+                        {qCount > 0 ? `${qCount} Qs` : 'Curriculum Pool'}
                       </span>
                     </div>
 
-                    <h3 className="text-base font-bold text-white group-hover:text-violet-300 transition-colors">
+                    <h3 className="text-sm font-semibold text-white truncate">
                       {sub.name}
                     </h3>
-                    <div className="inline-block text-[11px] font-mono font-bold text-pink-300 bg-pink-500/10 px-2 py-0.5 rounded border border-pink-500/20">
+                    <div className="text-[10px] font-mono font-medium text-cyan-300 bg-slate-900/80 px-2 py-0.5 rounded border border-white/[0.04] inline-block truncate max-w-full">
                       {sub.tag}
                     </div>
-                    <p className="text-xs text-slate-400 leading-relaxed">
-                      {sub.description}
-                    </p>
                   </div>
 
                   {/* Progress Meter & Action */}
-                  <div className="pt-4 mt-3 border-t border-slate-800/80 flex items-center justify-between">
-                    <div className="space-y-1">
-                      <div className="flex items-center gap-1.5">
-                        <div className="w-14 h-1.5 rounded-full bg-slate-800 overflow-hidden">
-                          <div
-                            className="h-full bg-violet-400 rounded-full transition-all"
-                            style={{ width: `${subStat.mastery || 0}%` }}
-                          />
-                        </div>
-                        <span className="text-[11px] font-bold text-slate-300">
-                          {subStat.mastery || 0}%
-                        </span>
+                  <div className="pt-2.5 mt-2.5 border-t border-white/[0.06] flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <div className="w-12 h-1.5 rounded-full bg-slate-900 overflow-hidden">
+                        <div
+                          className="h-full bg-cyan-400 rounded-full transition-all"
+                          style={{ width: `${subStat.mastery || 0}%` }}
+                        />
                       </div>
-                      <span className="text-[10px] text-slate-500 block">
-                        {subStat.attempts || 0} attempts
+                      <span className="text-[11px] font-mono font-bold text-slate-300">
+                        {subStat.mastery || 0}%
                       </span>
                     </div>
 
@@ -304,10 +289,10 @@ export const PracticeHub: React.FC<PracticeHubProps> = ({
                         soundManager.playClick();
                         onStartNarrationDrill(sub.id);
                       }}
-                      className="px-3.5 py-2 rounded-xl bg-violet-500/20 hover:bg-violet-400 hover:text-black text-violet-300 text-xs font-bold transition-all flex items-center gap-1 active:scale-95"
+                      className="px-2.5 py-1 rounded-lg bg-cyan-600 hover:bg-cyan-500 text-white text-xs font-semibold transition-all flex items-center gap-1 active:scale-95"
                     >
                       <span>Drill</span>
-                      <ArrowRight className="w-3.5 h-3.5" />
+                      <ArrowRight className="w-3 h-3" />
                     </button>
                   </div>
                 </div>

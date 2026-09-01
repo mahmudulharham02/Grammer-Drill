@@ -520,9 +520,9 @@ export const GameScreen: React.FC<GameScreenProps> = ({
               <button
                 id="btn-check-answer"
                 onClick={handleSubmitAnswer}
-                className="w-full min-h-[48px] sm:min-h-[56px] rounded-2xl bg-gradient-to-r from-cyan-500 to-violet-500 hover:from-cyan-400 hover:to-violet-400 text-white font-bold text-sm sm:text-base shadow-lg shadow-cyan-500/30 active:scale-[0.98] transition-all duration-200 flex items-center justify-center gap-2 px-3 py-2 text-center"
+                className="w-full min-h-[48px] sm:min-h-[52px] rounded-xl bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold text-sm sm:text-base shadow-md active:scale-[0.98] transition-all duration-200 flex items-center justify-center gap-2 px-3 py-2 text-center"
               >
-                <span>✅ Check Answer</span>
+                <span>Check Answer</span>
               </button>
             )}
 
@@ -530,7 +530,7 @@ export const GameScreen: React.FC<GameScreenProps> = ({
               <button
                 id="btn-next-question"
                 onClick={handleNextQuestion}
-                className="w-full min-h-[48px] sm:min-h-[56px] rounded-2xl bg-gradient-to-r from-lime-400 via-emerald-400 to-cyan-400 hover:opacity-95 text-slate-950 font-extrabold text-sm sm:text-base shadow-lg shadow-lime-500/30 active:scale-[0.98] transition-all duration-200 flex items-center justify-center gap-2 px-3 py-2 text-center"
+                className="w-full min-h-[48px] sm:min-h-[52px] rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-sm sm:text-base shadow-md active:scale-[0.98] transition-all duration-200 flex items-center justify-center gap-2 px-3 py-2 text-center"
               >
                 <span>{currentIndex + 1 < questions.length ? 'Next Question →' : 'Finish Session 🏆'}</span>
               </button>
@@ -541,32 +541,32 @@ export const GameScreen: React.FC<GameScreenProps> = ({
           {isAnswered && (
             <div
               id="feedback-card"
-              className={`rounded-2xl p-3 sm:p-4 md:p-5 border space-y-3 animate-fade-in w-full min-w-0 overflow-hidden ${
+              className={`rounded-xl p-3 sm:p-4 border space-y-2.5 animate-fade-in w-full min-w-0 overflow-hidden ${
                 isCorrect
-                  ? 'bg-lime-950/30 border-lime-500/40 text-lime-200'
-                  : 'bg-rose-950/30 border-rose-500/40 text-rose-200'
+                  ? 'bg-emerald-950/40 border-emerald-500/40 text-emerald-200'
+                  : 'bg-red-950/40 border-red-500/40 text-red-200'
               }`}
             >
               <div className="flex flex-col xs:flex-row xs:items-center justify-between gap-1.5 sm:gap-2">
                 <div className="flex items-center gap-2 min-w-0">
                   {isCorrect ? (
-                    <CheckCircle2 className="w-5 h-5 text-lime-400 shrink-0" />
+                    <CheckCircle2 className="w-5 h-5 text-emerald-400 shrink-0" />
                   ) : (
-                    <XCircle className="w-5 h-5 text-rose-400 shrink-0" />
+                    <XCircle className="w-5 h-5 text-red-400 shrink-0" />
                   )}
-                  <span className="text-xs sm:text-sm md:text-base font-extrabold text-white">
+                  <span className="text-xs sm:text-sm md:text-base font-bold text-white">
                     {isCorrect ? 'Correct! +10 XP' : 'Incorrect (-1 Heart ❤️)'}
                   </span>
                 </div>
 
-                <span className="text-[10px] sm:text-[11px] font-bold px-2 py-0.5 rounded bg-slate-900 text-slate-300 border border-slate-700 break-words self-start xs:self-auto max-w-full">
+                <span className="text-[10px] sm:text-[11px] font-semibold px-2 py-0.5 rounded bg-slate-900 text-slate-300 border border-slate-700 break-words self-start xs:self-auto max-w-full">
                   {currentQ.explanation.rule}
                 </span>
               </div>
 
               {/* Grammar Formula */}
               {currentQ.explanation.formula && (
-                <div className="bg-slate-950/80 p-2.5 rounded-xl border border-slate-800 text-[11px] sm:text-xs font-mono text-cyan-300 break-words overflow-x-auto">
+                <div className="bg-slate-950/80 p-2.5 rounded-lg border border-slate-800 text-[11px] sm:text-xs font-mono text-cyan-300 break-words overflow-x-auto">
                   <span className="text-slate-400 font-bold block text-[10px] uppercase">Rule Formula:</span>
                   {currentQ.explanation.formula}
                 </div>
@@ -576,21 +576,21 @@ export const GameScreen: React.FC<GameScreenProps> = ({
               {(currentQ.explanation.tenseShift || currentQ.explanation.timeShift || currentQ.explanation.pronounShift) && (
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-1.5 sm:gap-2 text-[10px] sm:text-[11px]">
                   {currentQ.explanation.tenseShift && (
-                    <div className="p-2 rounded-xl bg-slate-900/90 border border-slate-800 min-w-0">
+                    <div className="p-2 rounded-lg bg-slate-900/90 border border-slate-800 min-w-0">
                       <span className="text-slate-400 block text-[10px]">Tense Back-Shift:</span>
                       <span className="text-cyan-300 font-bold break-words">{currentQ.explanation.tenseShift}</span>
                     </div>
                   )}
                   {currentQ.explanation.timeShift && (
-                    <div className="p-2 rounded-xl bg-slate-900/90 border border-slate-800 min-w-0">
+                    <div className="p-2 rounded-lg bg-slate-900/90 border border-slate-800 min-w-0">
                       <span className="text-slate-400 block text-[10px]">Time/Place Shift:</span>
                       <span className="text-amber-300 font-bold break-words">{currentQ.explanation.timeShift}</span>
                     </div>
                   )}
                   {currentQ.explanation.pronounShift && (
-                    <div className="p-2 rounded-xl bg-slate-900/90 border border-slate-800 min-w-0">
+                    <div className="p-2 rounded-lg bg-slate-900/90 border border-slate-800 min-w-0">
                       <span className="text-slate-400 block text-[10px]">Pronoun Shift:</span>
-                      <span className="text-violet-300 font-bold break-words">{currentQ.explanation.pronounShift}</span>
+                      <span className="text-cyan-300 font-bold break-words">{currentQ.explanation.pronounShift}</span>
                     </div>
                   )}
                 </div>
@@ -602,7 +602,7 @@ export const GameScreen: React.FC<GameScreenProps> = ({
               </p>
 
               {currentQ.explanation.tip && (
-                <div className="p-2 rounded-xl bg-slate-900/60 text-xs text-amber-300 font-medium break-words">
+                <div className="p-2 rounded-lg bg-slate-900/60 text-xs text-amber-300 font-medium break-words border border-amber-500/20">
                   {currentQ.explanation.tip}
                 </div>
               )}
@@ -622,23 +622,23 @@ export const GameScreen: React.FC<GameScreenProps> = ({
           id="modal-game-over"
           className="fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex items-center justify-center p-3 sm:p-4 overflow-y-auto"
         >
-          <div className="glass-panel max-w-sm sm:max-w-md w-full rounded-3xl p-4 sm:p-6 text-center space-y-3.5 sm:space-y-4 border-rose-500/40 shadow-2xl my-auto animate-fade-in max-h-[92vh] overflow-y-auto">
-            <div className="text-3xl sm:text-4xl animate-bounce">💔</div>
+          <div className="w-full max-w-sm sm:max-w-md rounded-2xl p-4 sm:p-5 text-center space-y-3.5 border border-white/[0.08] bg-[#0f172a] shadow-2xl my-auto animate-fade-in max-h-[92vh] overflow-y-auto">
+            <div className="text-3xl sm:text-4xl">💔</div>
             <div>
-              <h3 className="text-lg sm:text-2xl font-extrabold text-white">Out of Hearts!</h3>
-              <p className="text-xs text-slate-300 mt-1">
+              <h3 className="text-lg sm:text-xl font-bold text-white">Out of Hearts</h3>
+              <p className="text-xs text-slate-400 mt-1">
                 You need at least 1 ❤️ to continue your drill session.
               </p>
             </div>
 
             {/* 1. PRIMARY: Trade Diamonds (1 💎 = 3 ❤️) */}
-            <div className="p-3 sm:p-3.5 rounded-2xl bg-gradient-to-b from-slate-900 to-slate-950 border-2 border-rose-500/50 text-left space-y-2">
+            <div className="p-3 rounded-xl bg-slate-900/90 border border-red-500/30 text-left space-y-2">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-1.5">
                   <span className="text-sm">💎</span>
                   <span className="text-xs font-bold text-white">Instant Refill (1 💎 = 3 ❤️)</span>
                 </div>
-                <span className="text-xs font-mono font-bold text-cyan-300">
+                <span className="text-xs font-mono font-bold text-cyan-400">
                   {state.diamonds} 💎
                 </span>
               </div>
@@ -655,14 +655,14 @@ export const GameScreen: React.FC<GameScreenProps> = ({
                       }
                     }
                   }}
-                  className={`p-2 rounded-xl border flex flex-col items-center justify-center text-center transition-all ${
+                  className={`p-2 rounded-lg border flex flex-col items-center justify-center text-center transition-all ${
                     state.diamonds >= 1
-                      ? 'bg-rose-500/20 hover:bg-rose-500/30 border-rose-500/50 text-white'
+                      ? 'bg-red-500/20 hover:bg-red-500/30 border-red-500/50 text-white'
                       : 'bg-slate-800/40 border-slate-800 text-slate-500 cursor-not-allowed'
                   }`}
                 >
-                  <span className="text-xs font-bold text-rose-300">+3 ❤️</span>
-                  <span className="text-[10px] font-mono text-cyan-300">1 💎</span>
+                  <span className="text-xs font-bold text-red-300">+3 ❤️</span>
+                  <span className="text-[10px] font-mono text-cyan-400">1 💎</span>
                 </button>
 
                 <button
@@ -676,14 +676,14 @@ export const GameScreen: React.FC<GameScreenProps> = ({
                       }
                     }
                   }}
-                  className={`p-2 rounded-xl border flex flex-col items-center justify-center text-center transition-all ${
+                  className={`p-2 rounded-lg border flex flex-col items-center justify-center text-center transition-all ${
                     state.diamonds >= 3
-                      ? 'bg-purple-500/20 hover:bg-purple-500/30 border-purple-500/50 text-white'
+                      ? 'bg-red-500/20 hover:bg-red-500/30 border-red-500/50 text-white'
                       : 'bg-slate-800/40 border-slate-800 text-slate-500 cursor-not-allowed'
                   }`}
                 >
-                  <span className="text-xs font-bold text-rose-300">+9 ❤️</span>
-                  <span className="text-[10px] font-mono text-cyan-300">3 💎</span>
+                  <span className="text-xs font-bold text-red-300">+9 ❤️</span>
+                  <span className="text-[10px] font-mono text-cyan-400">3 💎</span>
                 </button>
 
                 <button
@@ -697,9 +697,9 @@ export const GameScreen: React.FC<GameScreenProps> = ({
                       }
                     }
                   }}
-                  className={`p-2 rounded-xl border flex flex-col items-center justify-center text-center transition-all ${
+                  className={`p-2 rounded-lg border flex flex-col items-center justify-center text-center transition-all ${
                     state.diamonds >= 7
-                      ? 'bg-gradient-to-br from-amber-500/20 to-rose-500/20 hover:scale-105 border-amber-400 text-white shadow-md'
+                      ? 'bg-amber-500/20 hover:bg-amber-500/30 border-amber-500/50 text-white'
                       : 'bg-slate-800/40 border-slate-800 text-slate-500 cursor-not-allowed'
                   }`}
                 >
@@ -714,13 +714,13 @@ export const GameScreen: React.FC<GameScreenProps> = ({
               id="btn-watch-ad-refill"
               disabled={isWatchingAd}
               onClick={handleWatchMockAd}
-              className="w-full py-2.5 rounded-xl bg-purple-600/80 hover:bg-purple-600 text-white font-bold text-xs shadow-md transition-all flex items-center justify-center gap-2"
+              className="w-full py-2.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-cyan-400 border border-cyan-500/30 font-semibold text-xs transition-colors flex items-center justify-center gap-2"
             >
               <span>{isWatchingAd ? 'Refilling Hearts...' : '📺 Watch Sponsor Clip (+5 ❤️)'}</span>
             </button>
 
             {/* 3. TERTIARY: Wait 3 Hours */}
-            <div className="p-2.5 sm:p-3 rounded-2xl bg-slate-900/60 border border-slate-800 flex items-center justify-between text-left">
+            <div className="p-2.5 rounded-xl bg-slate-900/60 border border-white/[0.08] flex items-center justify-between text-left">
               <div>
                 <span className="text-xs font-semibold text-slate-400 block">Wait for Auto-Refill</span>
                 <span className="text-[10px] text-slate-500">Each heart takes 3 hours to refill</span>
@@ -736,7 +736,7 @@ export const GameScreen: React.FC<GameScreenProps> = ({
                 setShowGameOverModal(false);
                 onExit();
               }}
-              className="w-full py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-bold transition-colors"
+              className="w-full py-2.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold transition-colors"
             >
               Return to Dashboard
             </button>
@@ -750,29 +750,29 @@ export const GameScreen: React.FC<GameScreenProps> = ({
           id="modal-session-summary"
           className="fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex items-center justify-center p-3 sm:p-4 overflow-y-auto"
         >
-          <div className="glass-panel max-w-sm sm:max-w-md w-full rounded-3xl p-5 sm:p-8 text-center space-y-4 sm:space-y-6 border-cyan-500/40 shadow-2xl my-auto animate-fade-in max-h-[92vh] overflow-y-auto">
-            <div className="text-4xl sm:text-5xl">🎉</div>
+          <div className="w-full max-w-sm sm:max-w-md rounded-2xl p-5 sm:p-6 text-center space-y-4 border border-white/[0.08] bg-[#0f172a] shadow-2xl my-auto animate-fade-in max-h-[92vh] overflow-y-auto">
+            <div className="text-4xl">🎉</div>
             <div>
-              <h3 className="text-xl sm:text-2xl font-extrabold text-white">Drill Completed!</h3>
-              <p className="text-xs sm:text-sm text-slate-400 mt-1">{title}</p>
+              <h3 className="text-lg sm:text-xl font-bold text-white">Drill Completed</h3>
+              <p className="text-xs text-slate-400 mt-1">{title}</p>
             </div>
 
-            <div className="grid grid-cols-3 gap-2 sm:gap-3 bg-slate-950/70 p-3 sm:p-4 rounded-2xl border border-slate-800">
-              <div className="space-y-1">
+            <div className="grid grid-cols-3 gap-2 bg-slate-950/70 p-3 rounded-xl border border-white/[0.08]">
+              <div className="space-y-0.5">
                 <span className="text-[10px] uppercase font-bold text-slate-400">Score</span>
-                <span className="text-base sm:text-lg font-extrabold text-lime-400 block">
+                <span className="text-base font-bold text-emerald-400 block">
                   {sessionCorrectCount}/{questions.length}
                 </span>
               </div>
-              <div className="space-y-1">
-                <span className="text-[10px] uppercase font-bold text-slate-400">XP Earned</span>
-                <span className="text-base sm:text-lg font-extrabold text-cyan-400 block">
+              <div className="space-y-0.5">
+                <span className="text-[10px] uppercase font-bold text-slate-400">XP</span>
+                <span className="text-base font-bold text-cyan-400 block">
                   +{sessionTotalXp}
                 </span>
               </div>
-              <div className="space-y-1">
+              <div className="space-y-0.5">
                 <span className="text-[10px] uppercase font-bold text-slate-400">Coins</span>
-                <span className="text-base sm:text-lg font-extrabold text-amber-400 block">
+                <span className="text-base font-bold text-amber-400 block">
                   +{sessionTotalCoins}
                 </span>
               </div>
@@ -783,7 +783,7 @@ export const GameScreen: React.FC<GameScreenProps> = ({
                 setShowSessionSummary(false);
                 onExit();
               }}
-              className="w-full py-3 sm:py-3.5 rounded-2xl bg-gradient-to-r from-cyan-400 to-blue-500 text-black font-extrabold text-xs sm:text-sm shadow-lg shadow-cyan-500/25 transition-all"
+              className="w-full py-2.5 rounded-lg bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold text-xs sm:text-sm shadow-md transition-all active:scale-95"
             >
               Continue to Dashboard
             </button>

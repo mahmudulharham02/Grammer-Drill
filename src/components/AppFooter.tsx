@@ -27,7 +27,7 @@ export const AppFooter: React.FC<AppFooterProps> = ({ hidden = false, onToast })
           title="Click for creator note"
         >
           <span>Made with love by</span>
-          <strong className="text-pink-400 font-extrabold hover:underline tracking-wide">
+          <strong className="text-cyan-400 font-bold hover:underline tracking-wide">
             ARHAM
           </strong>
           <span className="text-slate-400 text-[11px] hidden sm:inline">• HSC English 2nd Paper Quest</span>
