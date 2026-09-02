@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { AppState, Question, ShopItem, VoiceSubModuleId, NarrationSubModuleId } from './types';
+import { AppState, Question, ShopItem, VoiceSubModuleId, NarrationSubModuleId, DrillMode } from './types';
 import {
   loadAppState,
   saveAppState,
@@ -22,6 +22,7 @@ import { VOICE_CHANGE_QUESTIONS } from './data/voiceChangeQuestions';
 import { NARRATION_QUESTIONS } from './data/narrationQuestions';
 import { TOPICS_DATA } from './data/topics';
 import { soundManager } from './utils/sound';
+import { getDrillModePreference, setDrillModePreference } from './utils/modePreferences';
 import { X as CloseIcon } from 'lucide-react';
 
 // Components
@@ -60,6 +61,7 @@ import { SettingsModal } from './components/SettingsModal';
 import { CertificateModal } from './components/CertificateModal';
 import { StudentIntroModal } from './components/StudentIntroModal';
 import { FeedbackModal } from './components/FeedbackModal';
+import { ModeSelectionModal } from './components/ModeSelectionModal';
 
 export function App() {
   const [state, setState] = useState<AppState>(() => loadAppState());
@@ -70,6 +72,16 @@ export function App() {
   const [activeQuestions, setActiveQuestions] = useState<Question[]>([]);
   const [gameTitle, setGameTitle] = useState<string>('Grammar Practice');
   const [gameSubTitle, setGameSubTitle] = useState<string | undefined>();
+  const [gameInitialMode, setGameInitialMode] = useState<DrillMode>('mcq');
+
+  // Pre-drill mode selection overlay state
+  const [pendingModeSelection, setPendingModeSelection] = useState<{
+    topicId: string;
+    subModuleId?: string;
+    topicTitle: string;
+    subModuleTitle?: string;
+    onLaunch: (mode: DrillMode) => void;
+  } | null>(null);
 
   // Last Hour Prep Test (Board Exam Simulator) session state
   const [examQuestions, setExamQuestions] = useState<ExamQuestion[]>([]);
@@ -185,7 +197,7 @@ export function App() {
   }, []);
 
   // Launch a standard topic lesson
-  const startTopicLesson = (topicId: string, subtopicId?: string) => {
+  const launchTopicLessonWithMode = (topicId: string, subtopicId: string | undefined, mode: DrillMode) => {
     let matchedQuestions = ALL_QUESTIONS.filter((q) => q.topicId === topicId);
     if (subtopicId) {
       const subMatches = matchedQuestions.filter((q) => q.subtopicId === subtopicId);
@@ -203,9 +215,34 @@ export function App() {
     const topic = TOPICS_DATA.find((t) => t.id === topicId);
     setGameTitle(topic ? topic.title : 'Grammar Drill');
     setGameSubTitle(subtopicId ? `Module: ${subtopicId.replace(/_/g, ' ')}` : undefined);
+    setGameInitialMode(mode);
     setActiveQuestions(shuffled);
     window.history.pushState({ page: 'game' }, '', '#game');
     setCurrentRoute('game');
+  };
+
+  const startTopicLesson = (topicId: string, subtopicId?: string, forcedMode?: DrillMode) => {
+    if (forcedMode) {
+      launchTopicLessonWithMode(topicId, subtopicId, forcedMode);
+      return;
+    }
+
+    const savedPref = getDrillModePreference(topicId, subtopicId);
+    if (savedPref) {
+      launchTopicLessonWithMode(topicId, subtopicId, savedPref);
+      return;
+    }
+
+    const topic = TOPICS_DATA.find((t) => t.id === topicId);
+    setPendingModeSelection({
+      topicId,
+      subModuleId: subtopicId,
+      topicTitle: topic ? topic.title : 'Grammar Practice',
+      subModuleTitle: subtopicId ? `Module: ${subtopicId.replace(/_/g, ' ')}` : undefined,
+      onLaunch: (mode: DrillMode) => {
+        launchTopicLessonWithMode(topicId, subtopicId, mode);
+      },
+    });
   };
 
   // Launch Daily Challenge (1 question from each of the 10 topics)
@@ -225,18 +262,22 @@ export function App() {
 
     setGameTitle('Daily Board Challenge (10 Topics)');
     setGameSubTitle('Mixed 10-Topic Board Standard Test');
+    setGameInitialMode('mcq');
     setActiveQuestions(selected);
     window.history.pushState({ page: 'game' }, '', '#game');
     setCurrentRoute('game');
   };
 
   // Launch Smart Practice (Adaptive Weak-Spot 10-Question Drill)
-  const startSmartPractice = (weakSpot: {
-    topicId: string;
-    subModuleId: string;
-    subModuleName: string;
-    accuracy: number;
-  }) => {
+  const launchSmartPracticeWithMode = (
+    weakSpot: {
+      topicId: string;
+      subModuleId: string;
+      subModuleName: string;
+      accuracy: number;
+    },
+    mode: DrillMode
+  ) => {
     let pool: Question[] = [];
 
     if (weakSpot.topicId === 'changing_sentences') {
@@ -271,9 +312,33 @@ export function App() {
     const shuffled = [...pool].sort(() => Math.random() - 0.5).slice(0, 10);
     setGameTitle(`Smart Practice: ${weakSpot.subModuleName}`);
     setGameSubTitle(`Targeting ${weakSpot.accuracy}% Accuracy Weak Area`);
+    setGameInitialMode(mode);
     setActiveQuestions(shuffled);
     window.history.pushState({ page: 'game' }, '', '#game');
     setCurrentRoute('game');
+  };
+
+  const startSmartPractice = (weakSpot: {
+    topicId: string;
+    subModuleId: string;
+    subModuleName: string;
+    accuracy: number;
+  }) => {
+    const savedPref = getDrillModePreference(weakSpot.topicId, weakSpot.subModuleId);
+    if (savedPref) {
+      launchSmartPracticeWithMode(weakSpot, savedPref);
+      return;
+    }
+
+    setPendingModeSelection({
+      topicId: weakSpot.topicId,
+      subModuleId: weakSpot.subModuleId,
+      topicTitle: `Smart Practice: ${weakSpot.subModuleName}`,
+      subModuleTitle: `Targeting ${weakSpot.accuracy}% Accuracy Weak Area`,
+      onLaunch: (mode: DrillMode) => {
+        launchSmartPracticeWithMode(weakSpot, mode);
+      },
+    });
   };
 
   // Resume saved drill session
@@ -290,6 +355,7 @@ export function App() {
       if (restored.length > 0) {
         setGameTitle(session.title || 'Resumed Drill');
         setGameSubTitle(session.subTitle);
+        setGameInitialMode(session.mode || 'mcq');
         setActiveQuestions(restored);
         window.history.pushState({ page: 'game' }, '', '#game');
         setCurrentRoute('game');
@@ -304,55 +370,102 @@ export function App() {
     const shuffled = [...questions].sort(() => Math.random() - 0.5);
     setGameTitle(title);
     setGameSubTitle(undefined);
+    setGameInitialMode('mcq');
     setActiveQuestions(shuffled);
     window.history.pushState({ page: 'game' }, '', '#game');
     setCurrentRoute('game');
+  };
+
+  const subModuleVoiceNames: Record<string, string> = {
+    simple_present: 'Simple Present Voice',
+    present_continuous: 'Present Continuous Voice',
+    present_perfect: 'Present Perfect Voice',
+    simple_past: 'Simple Past Voice',
+    past_continuous: 'Past Continuous Voice',
+    past_perfect: 'Past Perfect Voice',
+    simple_future: 'Simple Future Voice',
+    future_perfect: 'Future Perfect Voice',
+    modals: 'Modal Verbs Voice',
+    imperatives: 'Imperative Voice',
+    interrogatives: 'Interrogative Voice',
+    negatives: 'Negatives & Intransitive',
   };
 
   // Launch specialized Voice Change Drill
-  const startVoiceDrill = (subModule: VoiceSubModuleId) => {
+  const launchVoiceDrillWithMode = (subModule: VoiceSubModuleId, mode: DrillMode) => {
     const matched = VOICE_CHANGE_QUESTIONS.filter((q) => q.subModule === subModule);
     const questionsToUse = matched.length > 0 ? matched : VOICE_CHANGE_QUESTIONS;
     const shuffled = [...questionsToUse].sort(() => Math.random() - 0.5).slice(0, 10);
-    const subModuleNames: Record<string, string> = {
-      simple_present: 'Simple Present Voice',
-      present_continuous: 'Present Continuous Voice',
-      present_perfect: 'Present Perfect Voice',
-      simple_past: 'Simple Past Voice',
-      past_continuous: 'Past Continuous Voice',
-      past_perfect: 'Past Perfect Voice',
-      simple_future: 'Simple Future Voice',
-      future_perfect: 'Future Perfect Voice',
-      modals: 'Modal Verbs Voice',
-      imperatives: 'Imperative Voice',
-      interrogatives: 'Interrogative Voice',
-      negatives: 'Negatives & Intransitive',
-    };
-    setGameTitle(`Voice Change: ${subModuleNames[subModule] || subModule}`);
+    setGameTitle(`Voice Change: ${subModuleVoiceNames[subModule] || subModule}`);
     setGameSubTitle('Active ↔ Passive Transformation Drill');
+    setGameInitialMode(mode);
     setActiveQuestions(shuffled);
     window.history.pushState({ page: 'game' }, '', '#game');
     setCurrentRoute('game');
   };
 
+  const startVoiceDrill = (subModule: VoiceSubModuleId, forcedMode?: DrillMode) => {
+    if (forcedMode) {
+      launchVoiceDrillWithMode(subModule, forcedMode);
+      return;
+    }
+    const savedPref = getDrillModePreference('voice_change', subModule);
+    if (savedPref) {
+      launchVoiceDrillWithMode(subModule, savedPref);
+      return;
+    }
+    setPendingModeSelection({
+      topicId: 'voice_change',
+      subModuleId: subModule,
+      topicTitle: `Voice Change: ${subModuleVoiceNames[subModule] || subModule}`,
+      subModuleTitle: 'Active ↔ Passive Transformation Drill',
+      onLaunch: (mode: DrillMode) => {
+        launchVoiceDrillWithMode(subModule, mode);
+      },
+    });
+  };
+
+  const subModuleNarrationNames: Record<string, string> = {
+    assertive: 'Assertive Sentences',
+    interrogative: 'Interrogative Sentences',
+    imperative: 'Imperative Sentences',
+    exclamatory: 'Exclamatory Sentences',
+    optative: 'Optative Sentences',
+    mixed: 'Mixed Board Narration',
+  };
+
   // Launch specialized Narration Change Drill
-  const startNarrationDrill = (subModule: NarrationSubModuleId) => {
+  const launchNarrationDrillWithMode = (subModule: NarrationSubModuleId, mode: DrillMode) => {
     const matched = NARRATION_QUESTIONS.filter((q) => q.subModule === subModule);
     const questionsToUse = matched.length > 0 ? matched : NARRATION_QUESTIONS;
     const shuffled = [...questionsToUse].sort(() => Math.random() - 0.5).slice(0, 10);
-    const subModuleNames: Record<string, string> = {
-      assertive: 'Assertive Sentences',
-      interrogative: 'Interrogative Sentences',
-      imperative: 'Imperative Sentences',
-      exclamatory: 'Exclamatory Sentences',
-      optative: 'Optative Sentences',
-      mixed: 'Mixed Board Narration',
-    };
-    setGameTitle(`Narration: ${subModuleNames[subModule] || subModule}`);
+    setGameTitle(`Narration: ${subModuleNarrationNames[subModule] || subModule}`);
     setGameSubTitle('Direct ↔ Indirect Speech Drill');
+    setGameInitialMode(mode);
     setActiveQuestions(shuffled);
     window.history.pushState({ page: 'game' }, '', '#game');
     setCurrentRoute('game');
+  };
+
+  const startNarrationDrill = (subModule: NarrationSubModuleId, forcedMode?: DrillMode) => {
+    if (forcedMode) {
+      launchNarrationDrillWithMode(subModule, forcedMode);
+      return;
+    }
+    const savedPref = getDrillModePreference('narration', subModule);
+    if (savedPref) {
+      launchNarrationDrillWithMode(subModule, savedPref);
+      return;
+    }
+    setPendingModeSelection({
+      topicId: 'narration',
+      subModuleId: subModule,
+      topicTitle: `Narration: ${subModuleNarrationNames[subModule] || subModule}`,
+      subModuleTitle: 'Direct ↔ Indirect Speech Drill',
+      onLaunch: (mode: DrillMode) => {
+        launchNarrationDrillWithMode(subModule, mode);
+      },
+    });
   };
 
   // Launch Last Hour Prep Test (Board Exam Simulator)
@@ -759,6 +872,7 @@ export function App() {
             questions={activeQuestions}
             title={gameTitle}
             subTitle={gameSubTitle}
+            initialMode={gameInitialMode}
             onComplete={(stats) => {
               const todayStr = new Date().toISOString().split('T')[0];
               if (gameTitle.includes('Daily Board Challenge')) {
@@ -888,6 +1002,31 @@ export function App() {
           isOpen={showFeedbackModal}
           onClose={() => setShowFeedbackModal(false)}
           onSuccess={handleFeedbackSuccess}
+        />
+      )}
+
+      {/* Mode Selection Pre-Drill Modal */}
+      {pendingModeSelection && (
+        <ModeSelectionModal
+          isOpen={!!pendingModeSelection}
+          topicTitle={pendingModeSelection.topicTitle}
+          subModuleTitle={pendingModeSelection.subModuleTitle}
+          topicId={pendingModeSelection.topicId}
+          subModuleId={pendingModeSelection.subModuleId}
+          initialMode="mcq"
+          onSelectMode={(mode, remember) => {
+            if (remember) {
+              setDrillModePreference(
+                pendingModeSelection.topicId,
+                pendingModeSelection.subModuleId,
+                mode
+              );
+            }
+            const launch = pendingModeSelection.onLaunch;
+            setPendingModeSelection(null);
+            launch(mode);
+          }}
+          onClose={() => setPendingModeSelection(null)}
         />
       )}
 

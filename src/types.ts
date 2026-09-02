@@ -65,6 +65,7 @@ export interface Question {
   targetTransformation?: string; // e.g. "(Make it Passive)" or "(Make it Complex)"
   options?: string[]; // 4 options for MCQ
   correctAnswer: string | string[] | number | boolean; // Answer or index
+  acceptedAnswers?: string[]; // Multiple valid answers for Write Mode
   correctIndex?: number;
   rearrangeWords?: string[]; // For sentence rearrange
   errorTokens?: { text: string; isError: boolean }[]; // For spot error

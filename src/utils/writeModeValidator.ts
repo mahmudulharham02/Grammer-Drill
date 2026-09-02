@@ -179,9 +179,13 @@ export function validateWriteAnswer(
 ): WriteValidationResult {
   const isSentence = isSentenceTopic(topicId, subModule);
 
-  const targets = Array.isArray(targetAnswer) ? targetAnswer : [String(targetAnswer)];
+  const rawTargets = Array.isArray(targetAnswer) ? targetAnswer : [String(targetAnswer)];
+  const targets = rawTargets.map((t) => String(t).trim()).filter(Boolean);
+  if (targets.length === 0) {
+    targets.push('');
+  }
 
-  // Check exact match against all possible targets
+  // 1. Check exact match against all possible targets
   for (const t of targets) {
     if (!isSentence) {
       const uNorm = normalizeSingleWord(userInput);
@@ -191,7 +195,7 @@ export function validateWriteAnswer(
           status: 'correct',
           scoreRatio: 1.0,
           userNormalized: userInput.trim(),
-          targetNormalized: t.trim(),
+          targetNormalized: t,
           diffBreakdown: ['Perfect match! Exactly right according to board standard.'],
           ruleSummary: ruleHint || 'Exact match with official board answer key.',
         };
@@ -204,7 +208,7 @@ export function validateWriteAnswer(
           status: 'correct',
           scoreRatio: 1.0,
           userNormalized: userInput.trim(),
-          targetNormalized: t.trim(),
+          targetNormalized: t,
           diffBreakdown: ['All words and structure matched precisely.'],
           ruleSummary: ruleHint || 'Transformed structure follows board grammatical rules.',
         };
@@ -212,119 +216,158 @@ export function validateWriteAnswer(
     }
   }
 
-  // If not sentence topic -> single-word exact match only
+  // 2. If not sentence topic -> single-word fuzzy match against closest target
   if (!isSentence) {
-    const primaryTarget = targets[0];
     const uNorm = normalizeSingleWord(userInput);
-    const tNorm = normalizeSingleWord(primaryTarget);
+    let bestSim = 0;
+    let bestTarget = targets[0];
 
-    const sim = calculateSimilarity(uNorm, tNorm);
+    for (const t of targets) {
+      const tNorm = normalizeSingleWord(t);
+      const sim = calculateSimilarity(uNorm, tNorm);
+      if (sim > bestSim) {
+        bestSim = sim;
+        bestTarget = t;
+      }
+    }
+
     const breakdown: string[] = [];
 
-    if (sim >= 0.85 && uNorm.length > 3) {
-      breakdown.push(`Minor spelling difference: You typed "${userInput.trim()}", correct form is "${primaryTarget.trim()}".`);
+    if (bestSim >= 0.85 && uNorm.length > 3) {
+      breakdown.push(`Minor spelling difference: You typed "${userInput.trim()}", expected form is "${bestTarget}".`);
       return {
         status: 'almost_correct',
         scoreRatio: 0.85,
         userNormalized: userInput.trim(),
-        targetNormalized: primaryTarget.trim(),
+        targetNormalized: bestTarget,
         diffBreakdown: breakdown,
         ruleSummary: ruleHint || 'Check spelling and exact morphological suffix.',
       };
     }
 
-    breakdown.push(`Expected "${primaryTarget.trim()}" but received "${userInput.trim() || '(empty)'}".`);
+    breakdown.push(`Expected "${targets[0]}" but received "${userInput.trim() || '(empty)'}".`);
     return {
       status: 'wrong',
       scoreRatio: 0,
       userNormalized: userInput.trim() || '(blank)',
-      targetNormalized: primaryTarget.trim(),
+      targetNormalized: targets[0],
       diffBreakdown: breakdown,
       ruleSummary: ruleHint || 'Review the core grammatical rule for this topic.',
     };
   }
 
-  // Sentence topic fuzzy match
-  const primaryTarget = targets[0];
+  // 3. Sentence topic fuzzy match against closest matching accepted target
   const uNorm = normalizeSentence(userInput);
-  const tNorm = normalizeSentence(primaryTarget);
-
   const uWords = uNorm.split(' ').filter(Boolean);
-  const tWords = tNorm.split(' ').filter(Boolean);
 
   if (uWords.length === 0) {
     return {
       status: 'wrong',
       scoreRatio: 0,
       userNormalized: '(empty answer)',
-      targetNormalized: primaryTarget.trim(),
+      targetNormalized: targets[0],
       diffBreakdown: ['No answer was provided.'],
       ruleSummary: ruleHint || 'Review the transformation formula.',
     };
   }
 
-  // Check word overlap & order
-  let matchCount = 0;
-  const missingWords: string[] = [];
-  const extraWords: string[] = [];
-  const tSet = new Set(tWords);
-  const uSet = new Set(uWords);
+  interface MatchEvaluation {
+    target: string;
+    compositeScore: number;
+    missingWords: string[];
+    extraWords: string[];
+    isMinorArticleDiff: boolean;
+    isMinorPrepDiff: boolean;
+  }
 
-  tWords.forEach((tw) => {
-    if (uSet.has(tw)) {
-      matchCount += 1;
-    } else {
-      missingWords.push(tw);
+  let bestEval: MatchEvaluation = {
+    target: targets[0],
+    compositeScore: -1,
+    missingWords: [],
+    extraWords: [],
+    isMinorArticleDiff: false,
+    isMinorPrepDiff: false,
+  };
+
+  for (const t of targets) {
+    const tNorm = normalizeSentence(t);
+    const tWords = tNorm.split(' ').filter(Boolean);
+
+    let matchCount = 0;
+    const missingWords: string[] = [];
+    const extraWords: string[] = [];
+    const tSet = new Set(tWords);
+    const uSet = new Set(uWords);
+
+    tWords.forEach((tw) => {
+      if (uSet.has(tw)) {
+        matchCount += 1;
+      } else {
+        missingWords.push(tw);
+      }
+    });
+
+    uWords.forEach((uw) => {
+      if (!tSet.has(uw)) {
+        extraWords.push(uw);
+      }
+    });
+
+    const wordOverlapRatio = tWords.length > 0 ? matchCount / tWords.length : 0;
+    const sentenceSimilarity = calculateSimilarity(uNorm, tNorm);
+    const compositeScore = Math.max(wordOverlapRatio, sentenceSimilarity);
+
+    const isMinorArticleDiff =
+      (uWords.includes('a') && tWords.includes('an')) ||
+      (uWords.includes('an') && tWords.includes('a')) ||
+      (uWords.includes('the') && tWords.includes('a')) ||
+      (uWords.includes('a') && tWords.includes('the'));
+
+    const isMinorPrepDiff =
+      (uWords.includes('by') && tWords.includes('with')) ||
+      (uWords.includes('with') && tWords.includes('by')) ||
+      (uWords.includes('in') && tWords.includes('at')) ||
+      (uWords.includes('at') && tWords.includes('in'));
+
+    if (compositeScore > bestEval.compositeScore) {
+      bestEval = {
+        target: t,
+        compositeScore,
+        missingWords,
+        extraWords,
+        isMinorArticleDiff,
+        isMinorPrepDiff,
+      };
     }
-  });
-
-  uWords.forEach((uw) => {
-    if (!tSet.has(uw)) {
-      extraWords.push(uw);
-    }
-  });
-
-  const wordOverlapRatio = tWords.length > 0 ? matchCount / tWords.length : 0;
-  const sentenceSimilarity = calculateSimilarity(uNorm, tNorm);
-  const compositeScore = Math.max(wordOverlapRatio, sentenceSimilarity);
-
-  // Check common minor differences (a vs an vs the, by vs with)
-  const isMinorArticleDiff =
-    (uWords.includes('a') && tWords.includes('an')) ||
-    (uWords.includes('an') && tWords.includes('a')) ||
-    (uWords.includes('the') && tWords.includes('a')) ||
-    (uWords.includes('a') && tWords.includes('the'));
-
-  const isMinorPrepDiff =
-    (uWords.includes('by') && tWords.includes('with')) ||
-    (uWords.includes('with') && tWords.includes('by')) ||
-    (uWords.includes('in') && tWords.includes('at')) ||
-    (uWords.includes('at') && tWords.includes('in'));
+  }
 
   const diffBreakdown: string[] = [];
 
-  if (isMinorArticleDiff) {
+  if (bestEval.isMinorArticleDiff) {
     diffBreakdown.push('Article nuance: Notice indefinite vs definite article distinction (a/an/the).');
   }
-  if (isMinorPrepDiff) {
+  if (bestEval.isMinorPrepDiff) {
     diffBreakdown.push('Preposition distinction: Check the exact preposition required (e.g. by vs with).');
   }
-  if (missingWords.length > 0 && missingWords.length <= 3) {
-    diffBreakdown.push(`Missing key word(s): ${missingWords.map((w) => `"${w}"`).join(', ')}`);
+  if (bestEval.missingWords.length > 0 && bestEval.missingWords.length <= 3) {
+    diffBreakdown.push(`Missing key word(s): ${bestEval.missingWords.map((w) => `"${w}"`).join(', ')}`);
   }
-  if (extraWords.length > 0 && extraWords.length <= 3) {
-    diffBreakdown.push(`Unexpected word(s): ${extraWords.map((w) => `"${w}"`).join(', ')}`);
+  if (bestEval.extraWords.length > 0 && bestEval.extraWords.length <= 3) {
+    diffBreakdown.push(`Unexpected word(s): ${bestEval.extraWords.map((w) => `"${w}"`).join(', ')}`);
   }
 
-  if (compositeScore >= 0.8 || (compositeScore >= 0.75 && (isMinorArticleDiff || isMinorPrepDiff))) {
+  if (
+    bestEval.compositeScore >= 0.8 ||
+    (bestEval.compositeScore >= 0.75 && (bestEval.isMinorArticleDiff || bestEval.isMinorPrepDiff))
+  ) {
     if (diffBreakdown.length === 0) {
       diffBreakdown.push('Minor word order or phrasing variation from standard key.');
     }
     return {
       status: 'almost_correct',
-      scoreRatio: compositeScore,
+      scoreRatio: bestEval.compositeScore,
       userNormalized: userInput.trim(),
-      targetNormalized: primaryTarget.trim(),
+      targetNormalized: bestEval.target,
       diffBreakdown,
       ruleSummary: ruleHint || 'Almost there! Pay close attention to subtle modifiers and verb forms.',
     };
@@ -332,14 +375,14 @@ export function validateWriteAnswer(
 
   // Wrong answer
   if (diffBreakdown.length === 0) {
-    diffBreakdown.push('Structural and tense differences from the standard board transformation.');
+    diffBreakdown.push('Structural and tense differences from standard board transformation.');
   }
 
   return {
     status: 'wrong',
-    scoreRatio: compositeScore,
+    scoreRatio: bestEval.compositeScore,
     userNormalized: userInput.trim(),
-    targetNormalized: primaryTarget.trim(),
+    targetNormalized: bestEval.target || targets[0],
     diffBreakdown,
     ruleSummary: ruleHint || 'Review the transformation rule and tense alignment.',
   };

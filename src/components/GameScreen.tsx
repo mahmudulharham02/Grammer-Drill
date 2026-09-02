@@ -68,7 +68,7 @@ export const GameScreen: React.FC<GameScreenProps> = ({
   onExit,
 }) => {
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [currentMode, setCurrentMode] = useState<DrillMode>(initialMode);
+  const currentMode: DrillMode = (initialMode as DrillMode) || 'mcq';
   const [selectedOption, setSelectedOption] = useState<string | null>(null);
   const [typedAnswer, setTypedAnswer] = useState<string>('');
   const [selectedRearrangeWords, setSelectedRearrangeWords] = useState<string[]>([]);
@@ -207,9 +207,14 @@ export const GameScreen: React.FC<GameScreenProps> = ({
     if (currentMode === 'write') {
       if (!typedAnswer.trim()) return;
 
+      const targetAnswers =
+        currentQ.acceptedAnswers && currentQ.acceptedAnswers.length > 0
+          ? currentQ.acceptedAnswers
+          : [String(currentQ.correctAnswer)];
+
       const result = validateWriteAnswer(
         typedAnswer,
-        currentQ.correctAnswer,
+        targetAnswers,
         currentQ.topicId,
         currentQ.subModule,
         currentQ.explanation.rule
@@ -364,13 +369,6 @@ export const GameScreen: React.FC<GameScreenProps> = ({
     }, 1500);
   };
 
-  const toggleModeMidSession = () => {
-    if (isAnswered) return;
-    soundManager.playClick();
-    const nextMode: DrillMode = currentMode === 'mcq' ? 'write' : 'mcq';
-    setCurrentMode(nextMode);
-  };
-
   const isBookmarked = state.bookmarkedQuestionIds.includes(currentQ?.id);
 
   const canSubmit =
@@ -416,34 +414,29 @@ export const GameScreen: React.FC<GameScreenProps> = ({
           </div>
         </div>
 
-        {/* Mode Switcher + Hearts, Bookmark & Hints */}
+        {/* Mode Indicator + Hearts, Bookmark & Hints */}
         <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
-          {/* Mode Switcher Toggle Pill */}
-          <button
-            type="button"
-            id="btn-toggle-drill-mode"
-            disabled={isAnswered}
-            onClick={toggleModeMidSession}
-            className={`flex items-center gap-1.5 px-2.5 py-1 rounded-xl text-xs font-bold transition-all border cursor-pointer ${
+          {/* Mode Indicator Badge */}
+          <div
+            id="badge-drill-mode"
+            className={`flex items-center gap-1.5 px-2.5 py-1 rounded-xl text-xs font-bold border select-none ${
               currentMode === 'write'
-                ? 'bg-amber-500/20 text-amber-300 border-amber-500/40 hover:bg-amber-500/30'
-                : 'bg-cyan-500/20 text-cyan-300 border-cyan-500/40 hover:bg-cyan-500/30'
+                ? 'bg-amber-500/15 text-amber-300 border-amber-500/30'
+                : 'bg-cyan-500/15 text-cyan-300 border-cyan-500/30'
             }`}
-            title="Switch between MCQ and Write mode"
           >
             {currentMode === 'write' ? (
               <>
                 <Edit3 className="w-3.5 h-3.5 text-amber-400" />
-                <span className="hidden xs:inline">Write</span>
+                <span className="hidden xs:inline">Write Mode</span>
               </>
             ) : (
               <>
                 <CheckSquare className="w-3.5 h-3.5 text-cyan-400" />
-                <span className="hidden xs:inline">MCQ</span>
+                <span className="hidden xs:inline">MCQ Mode</span>
               </>
             )}
-            <Repeat className="w-3 h-3 text-slate-400" />
-          </button>
+          </div>
 
           {/* Hearts Counter */}
           <div className="flex items-center gap-1 bg-rose-500/10 border border-rose-500/20 px-2 sm:px-2.5 py-1 rounded-xl text-rose-400 text-xs font-extrabold shrink-0">
@@ -836,13 +829,32 @@ export const GameScreen: React.FC<GameScreenProps> = ({
               </div>
 
               {/* 2. CORRECT ANSWER BOX */}
-              <div className="space-y-1">
+              <div className="space-y-1.5">
                 <span className="text-[10px] font-mono uppercase tracking-wider font-bold text-emerald-400">
                   2. Correct Board Answer:
                 </span>
                 <div className="p-3 rounded-xl bg-slate-900/95 border-2 border-emerald-500/60 text-emerald-300 text-sm sm:text-base font-bold break-words">
-                  {String(currentQ.correctAnswer)}
+                  {currentQ.acceptedAnswers && currentQ.acceptedAnswers.length > 0
+                    ? currentQ.acceptedAnswers[0]
+                    : String(currentQ.correctAnswer)}
                 </div>
+                {currentQ.acceptedAnswers && currentQ.acceptedAnswers.length > 1 && (
+                  <div className="bg-slate-900/80 p-2.5 rounded-xl border border-white/[0.06] space-y-1">
+                    <span className="text-[10px] uppercase font-bold text-slate-400 block font-mono">
+                      Other Accepted Variations:
+                    </span>
+                    <div className="flex flex-wrap gap-1.5">
+                      {currentQ.acceptedAnswers.slice(1).map((alt, altIdx) => (
+                        <span
+                          key={altIdx}
+                          className="px-2 py-0.5 rounded-md bg-emerald-950/60 border border-emerald-500/30 text-emerald-200 text-xs font-mono"
+                        >
+                          {alt}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
 
               {/* 3. WHAT YOU GOT WRONG (BULLETS) */}

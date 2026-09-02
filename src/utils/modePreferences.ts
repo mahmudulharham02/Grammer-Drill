@@ -45,3 +45,11 @@ export function clearDrillModePreference(topicId: string, subModuleId?: string) 
     console.error('Failed to clear drill mode preference', e);
   }
 }
+
+export function clearAllDrillModePreferences() {
+  try {
+    localStorage.removeItem(PREFS_STORAGE_KEY);
+  } catch (e) {
+    console.error('Failed to clear all drill mode preferences', e);
+  }
+}

@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
-import { X, Volume2, VolumeX, Download, Upload, Trash2, AlertTriangle, User, ShieldCheck, MessageSquare } from 'lucide-react';
+import { X, Volume2, VolumeX, Download, Upload, Trash2, AlertTriangle, User, ShieldCheck, MessageSquare, RotateCcw, Check, PenTool } from 'lucide-react';
 import { AppState } from '../types';
 import { soundManager } from '../utils/sound';
 import { exportStateAsJSON, importStateFromJSON } from '../utils/storage';
+import { clearAllDrillModePreferences } from '../utils/modePreferences';
 
 interface SettingsModalProps {
   state: AppState;
@@ -23,6 +24,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
   const [avatar, setAvatar] = useState(state.user.avatar);
   const [showResetConfirm, setShowResetConfirm] = useState(false);
   const [importError, setImportError] = useState<string | null>(null);
+  const [clearedPreferencesMsg, setClearedPreferencesMsg] = useState(false);
 
   const avatarsList = ['🧑‍🎓', '👩‍🎓', '🦉', '🚀', '⚡', '🏆', '🦁', '👑'];
 
@@ -215,6 +217,43 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
               </label>
             </div>
             {importError && <p className="text-xs text-red-400">{importError}</p>}
+          </div>
+
+          {/* Practice Mode Preferences */}
+          <div className="space-y-2 bg-slate-800/80 p-3.5 rounded-xl border border-white/[0.08]">
+            <div className="flex items-center justify-between">
+              <h3 className="text-[11px] font-bold uppercase tracking-wider text-cyan-400 flex items-center gap-1.5">
+                <PenTool className="w-3.5 h-3.5 text-cyan-400" />
+                <span>Drill Mode Preferences</span>
+              </h3>
+            </div>
+            <p className="text-xs text-slate-400 leading-relaxed">
+              Reset remembered practice mode choices (MCQ or Write Mode) across all grammar topics.
+            </p>
+
+            <button
+              id="btn-settings-clear-mode-preferences"
+              type="button"
+              onClick={() => {
+                soundManager.playClick();
+                clearAllDrillModePreferences();
+                setClearedPreferencesMsg(true);
+                setTimeout(() => setClearedPreferencesMsg(false), 2500);
+              }}
+              className="py-2 px-3.5 bg-slate-900 hover:bg-slate-700/80 border border-white/[0.08] text-slate-200 rounded-lg text-xs font-semibold flex items-center gap-2 transition-colors cursor-pointer"
+            >
+              {clearedPreferencesMsg ? (
+                <>
+                  <Check className="w-3.5 h-3.5 text-emerald-400" />
+                  <span className="text-emerald-300">All topic preferences cleared!</span>
+                </>
+              ) : (
+                <>
+                  <RotateCcw className="w-3.5 h-3.5 text-cyan-400" />
+                  <span>Clear All Saved Mode Preferences</span>
+                </>
+              )}
+            </button>
           </div>
 
           {/* Feedback Section */}

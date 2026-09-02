@@ -558,7 +558,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
               Made by ARHAM
             </span>
             <span className="text-[10px] text-slate-400">
-              Created for Bangladesh HSC Students
+              Created for HSC Students
             </span>
           </div>
 
@@ -578,7 +578,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
               />
             </a>
             <span className="text-[10px] font-mono font-semibold text-slate-400 px-2.5 py-1 rounded-md bg-slate-900 border border-white/[0.06]">
-              v3.0.0 (HSC Board Standard)
+              (HSC Board Standard)
             </span>
           </div>
         </div>
