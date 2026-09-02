@@ -292,7 +292,7 @@ export const FeedbackModal: React.FC<FeedbackModalProps> = ({
                     disabled={isLoading}
                     value={firstName}
                     onChange={(e) => setFirstName(e.target.value)}
-                    placeholder="e.g. Tanvir"
+                    placeholder="e.g. Alamin"
                     className={`w-full bg-slate-900/90 border rounded-xl px-3.5 py-3 text-base text-white placeholder-slate-500 transition-all focus:outline-none disabled:opacity-50 ${
                       hasAttemptedSubmit && errors.firstName
                         ? 'border-rose-500 ring-1 ring-rose-500/30'
@@ -321,7 +321,7 @@ export const FeedbackModal: React.FC<FeedbackModalProps> = ({
                     disabled={isLoading}
                     value={lastName}
                     onChange={(e) => setLastName(e.target.value)}
-                    placeholder="e.g. Ahmed"
+                    placeholder="e.g. Russel"
                     className={`w-full bg-slate-900/90 border rounded-xl px-3.5 py-3 text-base text-white placeholder-slate-500 transition-all focus:outline-none disabled:opacity-50 ${
                       hasAttemptedSubmit && errors.lastName
                         ? 'border-rose-500 ring-1 ring-rose-500/30'

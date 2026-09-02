@@ -777,7 +777,9 @@ export function recordQuestionResult(
   questionId: string,
   topicId: string,
   isCorrect: boolean,
-  subModuleId?: string
+  subModuleId?: string,
+  mode: 'mcq' | 'write' = 'mcq',
+  answerStatus: 'correct' | 'almost_correct' | 'wrong' = isCorrect ? 'correct' : 'wrong'
 ): AppState {
   const topicProg = state.topicProgress[topicId] || {
     unlocked: true,
@@ -791,9 +793,36 @@ export function recordQuestionResult(
   };
 
   const attempts = topicProg.attempts + 1;
-  const correct = topicProg.correct + (isCorrect ? 1 : 0);
-  const wrong = topicProg.wrong + (isCorrect ? 0 : 1);
+  const isActualCorrect = answerStatus === 'correct';
+  const isAlmost = answerStatus === 'almost_correct';
+  const isWrong = answerStatus === 'wrong';
+
+  const correct = topicProg.correct + (isActualCorrect ? 1 : 0);
+  const wrong = topicProg.wrong + (isWrong ? 1 : 0);
   const mastery = Math.min(100, Math.round((correct / Math.max(1, attempts)) * 100));
+
+  // Mode specific tracking on topic level
+  let mcqAttempts = topicProg.mcqAttempts || 0;
+  let mcqCorrect = topicProg.mcqCorrect || 0;
+  let mcqWrong = topicProg.mcqWrong || 0;
+  let writeAttempts = topicProg.writeAttempts || 0;
+  let writeCorrect = topicProg.writeCorrect || 0;
+  let writeAlmostCorrect = topicProg.writeAlmostCorrect || 0;
+  let writeWrong = topicProg.writeWrong || 0;
+
+  if (mode === 'write') {
+    writeAttempts += 1;
+    if (isActualCorrect) writeCorrect += 1;
+    else if (isAlmost) writeAlmostCorrect += 1;
+    else writeWrong += 1;
+  } else {
+    mcqAttempts += 1;
+    if (isActualCorrect) mcqCorrect += 1;
+    else mcqWrong += 1;
+  }
+
+  const mcqAccuracy = mcqAttempts > 0 ? Math.round((mcqCorrect / mcqAttempts) * 100) : 0;
+  const writeModeAccuracy = writeAttempts > 0 ? Math.round(((writeCorrect + writeAlmostCorrect * 0.5) / writeAttempts) * 100) : 0;
 
   const updatedSubModules = { ...(topicProg.subModules || {}) };
   if (subModuleId) {
@@ -804,20 +833,51 @@ export function recordQuestionResult(
       mastery: 0,
     };
     const subAttempts = prevSub.attempts + 1;
-    const subCorrect = prevSub.correct + (isCorrect ? 1 : 0);
-    const subWrong = prevSub.wrong + (isCorrect ? 0 : 1);
+    const subCorrect = prevSub.correct + (isActualCorrect ? 1 : 0);
+    const subWrong = prevSub.wrong + (isWrong ? 1 : 0);
     const subMastery = Math.min(100, Math.round((subCorrect / Math.max(1, subAttempts)) * 100));
+
+    let subMcqAttempts = prevSub.mcqAttempts || 0;
+    let subMcqCorrect = prevSub.mcqCorrect || 0;
+    let subMcqWrong = prevSub.mcqWrong || 0;
+    let subWriteAttempts = prevSub.writeAttempts || 0;
+    let subWriteCorrect = prevSub.writeCorrect || 0;
+    let subWriteAlmostCorrect = prevSub.writeAlmostCorrect || 0;
+    let subWriteWrong = prevSub.writeWrong || 0;
+
+    if (mode === 'write') {
+      subWriteAttempts += 1;
+      if (isActualCorrect) subWriteCorrect += 1;
+      else if (isAlmost) subWriteAlmostCorrect += 1;
+      else subWriteWrong += 1;
+    } else {
+      subMcqAttempts += 1;
+      if (isActualCorrect) subMcqCorrect += 1;
+      else subMcqWrong += 1;
+    }
+
+    const subMcqAccuracy = subMcqAttempts > 0 ? Math.round((subMcqCorrect / subMcqAttempts) * 100) : 0;
+    const subWriteModeAccuracy = subWriteAttempts > 0 ? Math.round(((subWriteCorrect + subWriteAlmostCorrect * 0.5) / subWriteAttempts) * 100) : 0;
 
     updatedSubModules[subModuleId] = {
       attempts: subAttempts,
       correct: subCorrect,
       wrong: subWrong,
       mastery: subMastery,
+      mcqAttempts: subMcqAttempts,
+      mcqCorrect: subMcqCorrect,
+      mcqWrong: subMcqWrong,
+      mcqAccuracy: subMcqAccuracy,
+      writeAttempts: subWriteAttempts,
+      writeCorrect: subWriteCorrect,
+      writeAlmostCorrect: subWriteAlmostCorrect,
+      writeWrong: subWriteWrong,
+      writeModeAccuracy: subWriteModeAccuracy,
     };
   }
 
   let wrongPool = [...state.wrongQuestionReviewPool];
-  if (!isCorrect) {
+  if (isWrong) {
     if (!wrongPool.includes(questionId)) {
       wrongPool.push(questionId);
     }
@@ -829,15 +889,16 @@ export function recordQuestionResult(
   let lastHeartLostAt = state.lastHeartLostAt;
   const maxHearts = state.maxHearts || 20;
 
-  if (!isCorrect) {
+  // Only wrong answers lose a heart (almost correct costs nothing)
+  if (isWrong) {
     hearts = Math.max(0, state.hearts - 1);
     if (lastHeartLostAt === null || hearts === maxHearts - 1) {
       lastHeartLostAt = new Date().toISOString();
     }
   }
 
-  // Award 1 Diamond on correct answer
-  const diamonds = (state.diamonds || 0) + (isCorrect ? 1 : 0);
+  // Award 1 Diamond on exact correct answer
+  const diamonds = (state.diamonds || 0) + (isActualCorrect ? 1 : 0);
 
   const newState: AppState = {
     ...state,
@@ -853,6 +914,15 @@ export function recordQuestionResult(
         correct,
         wrong,
         mastery,
+        mcqAttempts,
+        mcqCorrect,
+        mcqWrong,
+        mcqAccuracy,
+        writeAttempts,
+        writeCorrect,
+        writeAlmostCorrect,
+        writeWrong,
+        writeModeAccuracy,
         subModules: updatedSubModules,
       },
     },

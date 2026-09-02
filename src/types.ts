@@ -106,11 +106,23 @@ export interface TopicInfo {
   subtopics: SubTopic[];
 }
 
+export type DrillMode = 'mcq' | 'write';
+export type AnswerResultState = 'correct' | 'almost_correct' | 'wrong';
+
 export interface SubModuleProgressItem {
   attempts: number;
   correct: number;
   wrong: number;
   mastery: number;
+  mcqAttempts?: number;
+  mcqCorrect?: number;
+  mcqWrong?: number;
+  mcqAccuracy?: number;
+  writeAttempts?: number;
+  writeCorrect?: number;
+  writeAlmostCorrect?: number;
+  writeWrong?: number;
+  writeModeAccuracy?: number;
 }
 
 export interface TopicProgressItem {
@@ -121,6 +133,15 @@ export interface TopicProgressItem {
   correct: number;
   wrong: number;
   mastery: number; // 0 to 100%
+  mcqAttempts?: number;
+  mcqCorrect?: number;
+  mcqWrong?: number;
+  mcqAccuracy?: number;
+  writeAttempts?: number;
+  writeCorrect?: number;
+  writeAlmostCorrect?: number;
+  writeWrong?: number;
+  writeModeAccuracy?: number;
   subModules?: Record<string, SubModuleProgressItem>;
 }
 
@@ -172,6 +193,7 @@ export interface CurrentDrillSession {
   topicId: string;
   subModuleId?: string;
   subtopicId?: string;
+  mode?: DrillMode;
   title: string;
   subTitle?: string;
   currentQuestionIndex: number;

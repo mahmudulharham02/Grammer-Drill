@@ -1,36 +1,49 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import confetti from 'canvas-confetti';
 import {
   Heart,
-  HelpCircle,
   Bookmark,
   Sparkles,
   Zap,
   CheckCircle2,
   XCircle,
-  ArrowRight,
-  RotateCcw,
-  Volume2,
-  AlertTriangle,
+  AlertCircle,
   Lightbulb,
-  Check,
-  ChevronRight,
-  BookOpen,
   ArrowLeftRight,
-  Info
+  HelpCircle,
+  Edit3,
+  CheckSquare,
+  Repeat,
+  Info,
+  Check
 } from 'lucide-react';
-import { Question, AppState } from '../types';
+import { Question, AppState, DrillMode, AnswerResultState } from '../types';
 import { soundManager } from '../utils/sound';
 import { getNextHeartRegenSeconds, formatHMS } from '../utils/storage';
 import { Mascot, MascotMood } from './Mascot';
+import {
+  validateWriteAnswer,
+  isSentenceTopic,
+  getPlaceholderForTopic,
+  getFormatTipsForTopic,
+  WriteValidationResult
+} from '../utils/writeModeValidator';
 
 interface GameScreenProps {
   state: AppState;
   questions: Question[];
   title: string;
   subTitle?: string;
+  initialMode?: DrillMode;
   onComplete: (sessionStats: { correct: number; total: number; xpEarned: number; coinsEarned: number }) => void;
-  onRecordResult: (questionId: string, topicId: string, isCorrect: boolean, subModuleId?: string) => void;
+  onRecordResult: (
+    questionId: string,
+    topicId: string,
+    isCorrect: boolean,
+    subModuleId?: string,
+    mode?: DrillMode,
+    answerStatus?: AnswerResultState
+  ) => void;
   onAddXP: (xp: number, coins: number) => void;
   onToggleBookmark: (questionId: string) => void;
   onUseHint: () => boolean;
@@ -44,6 +57,7 @@ export const GameScreen: React.FC<GameScreenProps> = ({
   questions,
   title,
   subTitle,
+  initialMode = 'mcq',
   onComplete,
   onRecordResult,
   onAddXP,
@@ -54,13 +68,17 @@ export const GameScreen: React.FC<GameScreenProps> = ({
   onExit,
 }) => {
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [currentMode, setCurrentMode] = useState<DrillMode>(initialMode);
   const [selectedOption, setSelectedOption] = useState<string | null>(null);
   const [typedAnswer, setTypedAnswer] = useState<string>('');
   const [selectedRearrangeWords, setSelectedRearrangeWords] = useState<string[]>([]);
   const [availableRearrangeWords, setAvailableRearrangeWords] = useState<string[]>([]);
   const [disabledOptionIndices, setDisabledOptionIndices] = useState<number[]>([]);
   const [isAnswered, setIsAnswered] = useState(false);
-  const [isCorrect, setIsCorrect] = useState(false);
+  const [answerStatus, setAnswerStatus] = useState<AnswerResultState>('wrong');
+  const [validationResult, setValidationResult] = useState<WriteValidationResult | null>(null);
+  const [showFormatTips, setShowFormatTips] = useState(false);
+
   const [sessionCorrectCount, setSessionCorrectCount] = useState(0);
   const [sessionTotalXp, setSessionTotalXp] = useState(0);
   const [sessionTotalCoins, setSessionTotalCoins] = useState(0);
@@ -71,7 +89,11 @@ export const GameScreen: React.FC<GameScreenProps> = ({
   const [isWatchingAd, setIsWatchingAd] = useState(false);
   const [countdownSecs, setCountdownSecs] = useState<number>(0);
 
+  const inputRef = useRef<HTMLInputElement>(null);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+
   const currentQ = questions[currentIndex] || questions[0];
+  const isSentence = currentQ ? isSentenceTopic(currentQ.topicId, currentQ.subModule) : false;
 
   useEffect(() => {
     if (!showGameOverModal) return;
@@ -87,16 +109,29 @@ export const GameScreen: React.FC<GameScreenProps> = ({
     setSelectedOption(null);
     setTypedAnswer('');
     setIsAnswered(false);
-    setIsCorrect(false);
+    setAnswerStatus('wrong');
+    setValidationResult(null);
     setDisabledOptionIndices([]);
     setMascotMood('neutral');
     setMascotSpeech(null);
+    setShowFormatTips(false);
 
     if (currentQ.type === 'rearrange' && currentQ.rearrangeWords) {
       setAvailableRearrangeWords([...currentQ.rearrangeWords].sort(() => Math.random() - 0.5));
       setSelectedRearrangeWords([]);
     }
-  }, [currentIndex, currentQ]);
+
+    // Auto focus on question change in Write mode
+    if (currentMode === 'write') {
+      setTimeout(() => {
+        if (isSentence && textareaRef.current) {
+          textareaRef.current.focus();
+        } else if (inputRef.current) {
+          inputRef.current.focus();
+        }
+      }, 80);
+    }
+  }, [currentIndex, currentQ, currentMode, isSentence]);
 
   useEffect(() => {
     if (state.hearts <= 0 && !isAnswered && !showSessionSummary) {
@@ -110,16 +145,25 @@ export const GameScreen: React.FC<GameScreenProps> = ({
       if (showGameOverModal || showSessionSummary) return;
 
       if (!isAnswered) {
-        if (currentQ?.options && (currentQ.type === 'mcq' || currentQ.type === 'transformation_mcq')) {
+        if (currentMode === 'mcq' && currentQ?.options && (currentQ.type === 'mcq' || currentQ.type === 'transformation_mcq')) {
           if (['1', '2', '3', '4'].includes(e.key)) {
             const idx = parseInt(e.key, 10) - 1;
             if (idx < currentQ.options.length && !disabledOptionIndices.includes(idx)) {
               setSelectedOption(currentQ.options[idx]);
             }
           }
-        }
-        if (e.key === 'Enter') {
-          handleSubmitAnswer();
+          if (e.key === 'Enter') {
+            handleSubmitAnswer();
+          }
+        } else if (currentMode === 'write') {
+          // In write mode: Enter submits single-line, or Cmd/Ctrl+Enter for textarea
+          if (!isSentence && e.key === 'Enter') {
+            e.preventDefault();
+            handleSubmitAnswer();
+          } else if (isSentence && e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
+            e.preventDefault();
+            handleSubmitAnswer();
+          }
         }
       } else {
         if (e.key === 'Enter' || e.key === ' ') {
@@ -131,7 +175,18 @@ export const GameScreen: React.FC<GameScreenProps> = ({
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [isAnswered, selectedOption, typedAnswer, selectedRearrangeWords, currentQ, disabledOptionIndices, showGameOverModal, showSessionSummary]);
+  }, [
+    isAnswered,
+    selectedOption,
+    typedAnswer,
+    selectedRearrangeWords,
+    currentQ,
+    currentMode,
+    isSentence,
+    disabledOptionIndices,
+    showGameOverModal,
+    showSessionSummary,
+  ]);
 
   const fireVictoryConfetti = () => {
     try {
@@ -139,7 +194,7 @@ export const GameScreen: React.FC<GameScreenProps> = ({
         particleCount: 40,
         spread: 60,
         origin: { y: 0.7 },
-        colors: ['#22d3ee', '#a78bfa', '#a3e635', '#fbbf24'],
+        colors: ['#22d3ee', '#34d399', '#fbbf24', '#a78bfa'],
       });
     } catch {
       // ignore
@@ -149,6 +204,61 @@ export const GameScreen: React.FC<GameScreenProps> = ({
   const handleSubmitAnswer = () => {
     if (isAnswered || !currentQ) return;
 
+    if (currentMode === 'write') {
+      if (!typedAnswer.trim()) return;
+
+      const result = validateWriteAnswer(
+        typedAnswer,
+        currentQ.correctAnswer,
+        currentQ.topicId,
+        currentQ.subModule,
+        currentQ.explanation.rule
+      );
+
+      setValidationResult(result);
+      setAnswerStatus(result.status);
+      setIsAnswered(true);
+
+      const isCorrectFlag = result.status === 'correct';
+
+      onRecordResult(
+        currentQ.id,
+        currentQ.topicId,
+        isCorrectFlag,
+        currentQ.subModule,
+        'write',
+        result.status
+      );
+
+      if (result.status === 'correct') {
+        soundManager.playCorrect();
+        fireVictoryConfetti();
+        const xpEarned = 10;
+        const coinEarned = 1;
+        setSessionCorrectCount((prev) => prev + 1);
+        setSessionTotalXp((prev) => prev + xpEarned);
+        setSessionTotalCoins((prev) => prev + coinEarned);
+        onAddXP(xpEarned, coinEarned);
+
+        setMascotMood('happy');
+        setMascotSpeech('Spot on! Excellent typing.');
+      } else if (result.status === 'almost_correct') {
+        soundManager.playCorrect();
+        const xpEarned = 5;
+        setSessionTotalXp((prev) => prev + xpEarned);
+        onAddXP(xpEarned, 0);
+
+        setMascotMood('surprised');
+        setMascotSpeech('Almost correct! Check the small difference.');
+      } else {
+        soundManager.playWrong();
+        setMascotMood('sad');
+        setMascotSpeech('Read the rule and compare below!');
+      }
+      return;
+    }
+
+    // MCQ Mode submission
     let correct = false;
 
     if (currentQ.type === 'mcq' || currentQ.type === 'transformation_mcq' || currentQ.type === 'true_false') {
@@ -166,10 +276,11 @@ export const GameScreen: React.FC<GameScreenProps> = ({
       correct = builtSentence === targetClean;
     }
 
+    const status: AnswerResultState = correct ? 'correct' : 'wrong';
+    setAnswerStatus(status);
     setIsAnswered(true);
-    setIsCorrect(correct);
 
-    onRecordResult(currentQ.id, currentQ.topicId, correct, currentQ.subModule);
+    onRecordResult(currentQ.id, currentQ.topicId, correct, currentQ.subModule, 'mcq', status);
 
     if (correct) {
       soundManager.playCorrect();
@@ -253,14 +364,26 @@ export const GameScreen: React.FC<GameScreenProps> = ({
     }, 1500);
   };
 
+  const toggleModeMidSession = () => {
+    if (isAnswered) return;
+    soundManager.playClick();
+    const nextMode: DrillMode = currentMode === 'mcq' ? 'write' : 'mcq';
+    setCurrentMode(nextMode);
+  };
+
   const isBookmarked = state.bookmarkedQuestionIds.includes(currentQ?.id);
 
   const canSubmit =
     !isAnswered &&
-    ((currentQ?.type === 'mcq' || currentQ?.type === 'transformation_mcq') && !!selectedOption ||
-      currentQ?.type === 'fill_blank' && !!typedAnswer.trim() ||
-      currentQ?.type === 'rearrange' && selectedRearrangeWords.length > 0 ||
-      currentQ?.type === 'true_false' && selectedOption !== null);
+    (currentMode === 'write'
+      ? !!typedAnswer.trim()
+      : ((currentQ?.type === 'mcq' || currentQ?.type === 'transformation_mcq') && !!selectedOption) ||
+        (currentQ?.type === 'fill_blank' && !!typedAnswer.trim()) ||
+        (currentQ?.type === 'rearrange' && selectedRearrangeWords.length > 0) ||
+        (currentQ?.type === 'true_false' && selectedOption !== null));
+
+  const placeholderText = getPlaceholderForTopic(currentQ?.topicId, currentQ?.subModule);
+  const formatTips = getFormatTipsForTopic(currentQ?.topicId);
 
   return (
     <div id="screen-game" className="relative z-content max-w-3xl mx-auto space-y-3.5 sm:space-y-4 w-full min-w-0 pb-16 sm:pb-8">
@@ -272,7 +395,7 @@ export const GameScreen: React.FC<GameScreenProps> = ({
               soundManager.playClick();
               onExit();
             }}
-            className="px-2.5 sm:px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-bold transition-colors shrink-0"
+            className="px-2.5 sm:px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-bold transition-colors shrink-0 cursor-pointer"
           >
             ✕ Exit
           </button>
@@ -293,19 +416,48 @@ export const GameScreen: React.FC<GameScreenProps> = ({
           </div>
         </div>
 
-        {/* Hearts, Bookmark & Hints */}
+        {/* Mode Switcher + Hearts, Bookmark & Hints */}
         <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
+          {/* Mode Switcher Toggle Pill */}
+          <button
+            type="button"
+            id="btn-toggle-drill-mode"
+            disabled={isAnswered}
+            onClick={toggleModeMidSession}
+            className={`flex items-center gap-1.5 px-2.5 py-1 rounded-xl text-xs font-bold transition-all border cursor-pointer ${
+              currentMode === 'write'
+                ? 'bg-amber-500/20 text-amber-300 border-amber-500/40 hover:bg-amber-500/30'
+                : 'bg-cyan-500/20 text-cyan-300 border-cyan-500/40 hover:bg-cyan-500/30'
+            }`}
+            title="Switch between MCQ and Write mode"
+          >
+            {currentMode === 'write' ? (
+              <>
+                <Edit3 className="w-3.5 h-3.5 text-amber-400" />
+                <span className="hidden xs:inline">Write</span>
+              </>
+            ) : (
+              <>
+                <CheckSquare className="w-3.5 h-3.5 text-cyan-400" />
+                <span className="hidden xs:inline">MCQ</span>
+              </>
+            )}
+            <Repeat className="w-3 h-3 text-slate-400" />
+          </button>
+
+          {/* Hearts Counter */}
           <div className="flex items-center gap-1 bg-rose-500/10 border border-rose-500/20 px-2 sm:px-2.5 py-1 rounded-xl text-rose-400 text-xs font-extrabold shrink-0">
             <Heart className="w-3.5 h-3.5 fill-rose-500 text-rose-500 animate-pulse shrink-0" />
             <span>{state.hearts}</span>
           </div>
 
+          {/* Bookmark */}
           <button
             onClick={() => {
               soundManager.playClick();
               onToggleBookmark(currentQ.id);
             }}
-            className={`p-1.5 sm:p-2 rounded-xl border transition-colors shrink-0 ${
+            className={`p-1.5 sm:p-2 rounded-xl border transition-colors shrink-0 cursor-pointer ${
               isBookmarked
                 ? 'bg-amber-500/20 border-amber-500/50 text-amber-400'
                 : 'bg-slate-800 border-slate-700 text-slate-400 hover:text-white'
@@ -315,17 +467,55 @@ export const GameScreen: React.FC<GameScreenProps> = ({
             <Bookmark className="w-3.5 h-3.5" />
           </button>
 
-          <button
-            onClick={handleUse5050Hint}
-            disabled={isAnswered || state.inventory.hints <= 0 || disabledOptionIndices.length > 0}
-            className="flex items-center gap-1 px-2 sm:px-2.5 py-1 rounded-xl bg-violet-500/20 border border-violet-500/30 hover:bg-violet-500/30 text-violet-300 text-xs font-bold disabled:opacity-40 transition-colors shrink-0"
-            title="50/50 hint: removes 2 wrong options"
-          >
-            <Lightbulb className="w-3.5 h-3.5 text-amber-400 shrink-0" />
-            <span>{state.inventory.hints}</span>
-          </button>
+          {/* 50/50 Hint (only for MCQ) */}
+          {currentMode === 'mcq' && (
+            <button
+              onClick={handleUse5050Hint}
+              disabled={isAnswered || state.inventory.hints <= 0 || disabledOptionIndices.length > 0}
+              className="flex items-center gap-1 px-2 sm:px-2.5 py-1 rounded-xl bg-violet-500/20 border border-violet-500/30 hover:bg-violet-500/30 text-violet-300 text-xs font-bold disabled:opacity-40 transition-colors shrink-0 cursor-pointer"
+              title="50/50 hint: removes 2 wrong options"
+            >
+              <Lightbulb className="w-3.5 h-3.5 text-amber-400 shrink-0" />
+              <span>{state.inventory.hints}</span>
+            </button>
+          )}
+
+          {/* Format Tips (for Write Mode) */}
+          {currentMode === 'write' && (
+            <button
+              onClick={() => setShowFormatTips((prev) => !prev)}
+              className="p-1.5 sm:p-2 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-cyan-300 hover:text-white transition-colors shrink-0 cursor-pointer"
+              title="Formatting Tips"
+            >
+              <HelpCircle className="w-3.5 h-3.5" />
+            </button>
+          )}
         </div>
       </div>
+
+      {/* Format Tips Dropdown */}
+      {showFormatTips && currentMode === 'write' && (
+        <div className="p-3 rounded-2xl bg-[#0f172a] border border-cyan-500/30 shadow-lg text-xs space-y-1.5 text-slate-300 animate-fade-in">
+          <div className="flex items-center justify-between font-bold text-cyan-400 text-xs">
+            <span className="flex items-center gap-1.5">
+              <Info className="w-3.5 h-3.5" />
+              <span>Write Mode Tips for {currentQ.topicId.replace(/_/g, ' ')}</span>
+            </span>
+            <button
+              type="button"
+              onClick={() => setShowFormatTips(false)}
+              className="text-slate-400 hover:text-white"
+            >
+              ✕
+            </button>
+          </div>
+          <ul className="list-disc list-inside space-y-1 text-slate-300 text-[11px] leading-relaxed">
+            {formatTips.map((tip, idx) => (
+              <li key={idx}>{tip}</li>
+            ))}
+          </ul>
+        </div>
+      )}
 
       {/* Linear Progress Bar */}
       <div className="w-full h-1.5 rounded-full bg-slate-800 overflow-hidden">
@@ -335,30 +525,36 @@ export const GameScreen: React.FC<GameScreenProps> = ({
         />
       </div>
 
-      {/* Main Question Card Area (Natural Height, Responsive Flex Col) */}
+      {/* Main Question Card Area */}
       {currentQ && (
         <div className="glass-panel rounded-3xl p-3.5 sm:p-6 border border-slate-800 flex flex-col gap-3.5 sm:gap-4 w-full min-w-0 overflow-hidden">
           {/* Question Direction & Submodule Tags */}
           <div className="flex flex-wrap items-center justify-between gap-1.5 sm:gap-2">
             <span className="text-[10px] sm:text-[11px] font-extrabold uppercase tracking-wider text-cyan-400 bg-cyan-500/10 px-2 sm:px-2.5 py-1 rounded-lg border border-cyan-500/20 flex items-center gap-1.5 break-words max-w-full">
               <Sparkles className="w-3 h-3 shrink-0" />
-              <span>{currentQ.instruction || 'Select the correct answer'}</span>
+              <span>{currentQ.instruction || 'Transform according to rules'}</span>
             </span>
 
-            {currentQ.direction && (
-              <span className="text-[10px] sm:text-[11px] font-bold text-violet-300 bg-violet-500/10 px-2 sm:px-2.5 py-1 rounded-lg border border-violet-500/20 flex items-center gap-1 shrink-0">
-                <ArrowLeftRight className="w-3 h-3 shrink-0" />
-                <span>
-                  {currentQ.direction === 'active_to_passive'
-                    ? 'Active ➔ Passive'
-                    : currentQ.direction === 'passive_to_active'
-                    ? 'Passive ➔ Active'
-                    : currentQ.direction === 'direct_to_indirect'
-                    ? 'Direct ➔ Indirect'
-                    : 'Indirect ➔ Direct'}
-                </span>
+            <div className="flex items-center gap-2">
+              <span className="text-[10px] sm:text-[11px] font-mono font-bold text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded border border-amber-500/20">
+                {currentMode === 'write' ? '✍️ WRITE MODE' : '📝 MCQ MODE'}
               </span>
-            )}
+
+              {currentQ.direction && (
+                <span className="text-[10px] sm:text-[11px] font-bold text-violet-300 bg-violet-500/10 px-2 sm:px-2.5 py-1 rounded-lg border border-violet-500/20 flex items-center gap-1 shrink-0">
+                  <ArrowLeftRight className="w-3 h-3 shrink-0" />
+                  <span>
+                    {currentQ.direction === 'active_to_passive'
+                      ? 'Active ➔ Passive'
+                      : currentQ.direction === 'passive_to_active'
+                      ? 'Passive ➔ Active'
+                      : currentQ.direction === 'direct_to_indirect'
+                      ? 'Direct ➔ Indirect'
+                      : 'Indirect ➔ Direct'}
+                  </span>
+                </span>
+              )}
+            </div>
           </div>
 
           {/* Sentence / Prompt Display */}
@@ -366,7 +562,7 @@ export const GameScreen: React.FC<GameScreenProps> = ({
             {currentQ.sentence && (
               <div className="p-3 sm:p-3.5 rounded-2xl bg-slate-900/90 border border-slate-700/80 w-full min-w-0 overflow-hidden">
                 <span className="text-slate-400 font-bold block text-[10px] uppercase tracking-wider mb-1">
-                  Given Sentence:
+                  Given Sentence / Context:
                 </span>
                 <span className="text-sm sm:text-base md:text-lg font-bold text-white break-words block leading-snug">
                   "{currentQ.sentence}"
@@ -390,8 +586,51 @@ export const GameScreen: React.FC<GameScreenProps> = ({
             </h2>
           </div>
 
-          {/* Options: MCQ */}
-          {(currentQ.type === 'mcq' || currentQ.type === 'transformation_mcq') && currentQ.options && (
+          {/* WRITE MODE INPUT AREA */}
+          {currentMode === 'write' && (
+            <div className="space-y-2.5 w-full min-w-0">
+              <div className="flex items-center justify-between text-xs text-slate-400">
+                <span className="font-semibold text-cyan-300 flex items-center gap-1.5">
+                  <Edit3 className="w-3.5 h-3.5" />
+                  <span>Your Answer:</span>
+                </span>
+                <span className="text-[11px] text-slate-500">
+                  {isSentence ? 'Press Cmd/Ctrl + Enter to check' : 'Press Enter to check'}
+                </span>
+              </div>
+
+              {isSentence ? (
+                <textarea
+                  ref={textareaRef}
+                  id="textarea-write-answer"
+                  rows={4}
+                  value={typedAnswer}
+                  disabled={isAnswered}
+                  onChange={(e) => setTypedAnswer(e.target.value)}
+                  onFocus={(e) => e.target.scrollIntoView({ behavior: 'smooth', block: 'center' })}
+                  placeholder={placeholderText}
+                  className="w-full min-h-[120px] bg-[#0f172a] border-2 border-slate-700 focus:border-cyan-400 text-slate-100 p-3 sm:p-4 rounded-2xl text-base font-sans leading-relaxed focus:outline-none focus:ring-4 focus:ring-cyan-500/20 transition-all placeholder:text-slate-500 disabled:opacity-80"
+                  style={{ fontSize: '16px' }}
+                />
+              ) : (
+                <input
+                  ref={inputRef}
+                  id="input-write-answer"
+                  type="text"
+                  value={typedAnswer}
+                  disabled={isAnswered}
+                  onChange={(e) => setTypedAnswer(e.target.value)}
+                  onFocus={(e) => e.target.scrollIntoView({ behavior: 'smooth', block: 'center' })}
+                  placeholder={placeholderText}
+                  className="w-full h-14 min-h-[56px] bg-[#0f172a] border-2 border-slate-700 focus:border-cyan-400 text-slate-100 px-4 rounded-2xl text-base font-mono focus:outline-none focus:ring-4 focus:ring-cyan-500/20 transition-all placeholder:text-slate-500 disabled:opacity-80"
+                  style={{ fontSize: '16px' }}
+                />
+              )}
+            </div>
+          )}
+
+          {/* MCQ MODE OPTIONS AREA */}
+          {currentMode === 'mcq' && (currentQ.type === 'mcq' || currentQ.type === 'transformation_mcq') && currentQ.options && (
             <div className="grid grid-cols-1 gap-2 sm:gap-2.5 w-full min-w-0">
               {currentQ.options.map((option, idx) => {
                 const isSelected = selectedOption === option;
@@ -402,9 +641,9 @@ export const GameScreen: React.FC<GameScreenProps> = ({
                 if (isAnswered) {
                   const isThisCorrect = option.trim().toLowerCase() === String(currentQ.correctAnswer).trim().toLowerCase();
                   if (isThisCorrect) {
-                    optionStyle = 'bg-lime-950/60 border-lime-400 text-lime-200 ring-2 ring-lime-400/20';
+                    optionStyle = 'bg-emerald-950/70 border-emerald-400 text-emerald-100 ring-2 ring-emerald-400/30';
                   } else if (isSelected && !isThisCorrect) {
-                    optionStyle = 'bg-rose-950/60 border-rose-500 text-rose-200 ring-2 ring-rose-500/20';
+                    optionStyle = 'bg-rose-950/70 border-rose-500 text-rose-100 ring-2 ring-rose-500/30';
                   } else {
                     optionStyle = 'opacity-40 bg-slate-900 border-slate-800';
                   }
@@ -421,7 +660,7 @@ export const GameScreen: React.FC<GameScreenProps> = ({
                       soundManager.playClick();
                       setSelectedOption(option);
                     }}
-                    className={`w-full p-2.5 sm:p-3.5 md:p-4 rounded-2xl border text-left transition-all flex items-center justify-between gap-2.5 sm:gap-3 min-w-0 overflow-hidden ${optionStyle} ${
+                    className={`w-full p-2.5 sm:p-3.5 md:p-4 rounded-2xl border text-left transition-all flex items-center justify-between gap-2.5 sm:gap-3 min-w-0 overflow-hidden cursor-pointer ${optionStyle} ${
                       isDisabled ? 'opacity-25 line-through cursor-not-allowed' : ''
                     }`}
                   >
@@ -433,7 +672,7 @@ export const GameScreen: React.FC<GameScreenProps> = ({
                     </div>
 
                     {isAnswered && option.trim().toLowerCase() === String(currentQ.correctAnswer).trim().toLowerCase() && (
-                      <CheckCircle2 className="w-5 h-5 text-lime-400 shrink-0 ml-1" />
+                      <CheckCircle2 className="w-5 h-5 text-emerald-400 shrink-0 ml-1" />
                     )}
                     {isAnswered && isSelected && option.trim().toLowerCase() !== String(currentQ.correctAnswer).trim().toLowerCase() && (
                       <XCircle className="w-5 h-5 text-rose-400 shrink-0 ml-1" />
@@ -444,8 +683,8 @@ export const GameScreen: React.FC<GameScreenProps> = ({
             </div>
           )}
 
-          {/* Fill in the Blank */}
-          {currentQ.type === 'fill_blank' && (
+          {/* Fill in the Blank (MCQ mode fallback) */}
+          {currentMode === 'mcq' && currentQ.type === 'fill_blank' && (
             <div className="space-y-3 w-full min-w-0">
               <input
                 id="input-fill-blank"
@@ -459,8 +698,8 @@ export const GameScreen: React.FC<GameScreenProps> = ({
             </div>
           )}
 
-          {/* Rearrange Sentence */}
-          {currentQ.type === 'rearrange' && (
+          {/* Rearrange Sentence (MCQ mode fallback) */}
+          {currentMode === 'mcq' && currentQ.type === 'rearrange' && (
             <div className="space-y-3 w-full min-w-0">
               <div className="min-h-[52px] p-2.5 sm:p-3 rounded-2xl bg-slate-950/80 border-2 border-dashed border-slate-700 flex flex-wrap gap-1.5 sm:gap-2 items-center w-full min-w-0">
                 {selectedRearrangeWords.length === 0 ? (
@@ -476,7 +715,7 @@ export const GameScreen: React.FC<GameScreenProps> = ({
                         setSelectedRearrangeWords(selectedRearrangeWords.filter((_, idx) => idx !== i));
                         setAvailableRearrangeWords([...availableRearrangeWords, word]);
                       }}
-                      className="px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-xl bg-cyan-950 text-cyan-200 border border-cyan-500/40 text-xs font-mono font-bold hover:bg-rose-950 hover:text-rose-300 transition-all max-w-full break-all"
+                      className="px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-xl bg-cyan-950 text-cyan-200 border border-cyan-500/40 text-xs font-mono font-bold hover:bg-rose-950 hover:text-rose-300 transition-all max-w-full break-all cursor-pointer"
                     >
                       {word} ✕
                     </button>
@@ -495,7 +734,7 @@ export const GameScreen: React.FC<GameScreenProps> = ({
                       setSelectedRearrangeWords([...selectedRearrangeWords, word]);
                       setAvailableRearrangeWords(availableRearrangeWords.filter((_, idx) => idx !== i));
                     }}
-                    className="px-2.5 py-1.5 sm:px-3.5 sm:py-2 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-200 text-xs font-mono font-bold transition-all hover:scale-105 active:scale-95 max-w-full break-words"
+                    className="px-2.5 py-1.5 sm:px-3.5 sm:py-2 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-200 text-xs font-mono font-bold transition-all hover:scale-105 active:scale-95 max-w-full break-words cursor-pointer"
                   >
                     {word}
                   </button>
@@ -504,7 +743,7 @@ export const GameScreen: React.FC<GameScreenProps> = ({
             </div>
           )}
 
-          {/* INLINE CHECK / NEXT BUTTON DIRECTLY UNDER OPTIONS */}
+          {/* INLINE SUBMIT / NEXT ACTION BUTTON */}
           <div className="pt-1 w-full min-w-0">
             {!canSubmit && !isAnswered && (
               <button
@@ -512,7 +751,7 @@ export const GameScreen: React.FC<GameScreenProps> = ({
                 disabled
                 className="w-full min-h-[48px] sm:min-h-[56px] rounded-2xl bg-slate-800/80 text-slate-400 font-bold text-xs sm:text-base border border-slate-700/60 opacity-60 cursor-not-allowed flex items-center justify-center gap-2 px-3 py-2 text-center"
               >
-                <span>👆 Select an option first</span>
+                <span>{currentMode === 'write' ? '✍️ Type your answer first' : '👆 Select an option first'}</span>
               </button>
             )}
 
@@ -520,7 +759,7 @@ export const GameScreen: React.FC<GameScreenProps> = ({
               <button
                 id="btn-check-answer"
                 onClick={handleSubmitAnswer}
-                className="w-full min-h-[48px] sm:min-h-[52px] rounded-xl bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold text-sm sm:text-base shadow-md active:scale-[0.98] transition-all duration-200 flex items-center justify-center gap-2 px-3 py-2 text-center"
+                className="w-full min-h-[48px] sm:min-h-[52px] rounded-xl bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold text-sm sm:text-base shadow-md active:scale-[0.98] transition-all duration-200 flex items-center justify-center gap-2 px-3 py-2 text-center cursor-pointer"
               >
                 <span>Check Answer</span>
               </button>
@@ -530,32 +769,139 @@ export const GameScreen: React.FC<GameScreenProps> = ({
               <button
                 id="btn-next-question"
                 onClick={handleNextQuestion}
-                className="w-full min-h-[48px] sm:min-h-[52px] rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-sm sm:text-base shadow-md active:scale-[0.98] transition-all duration-200 flex items-center justify-center gap-2 px-3 py-2 text-center"
+                className="w-full min-h-[48px] sm:min-h-[52px] rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-sm sm:text-base shadow-md active:scale-[0.98] transition-all duration-200 flex items-center justify-center gap-2 px-3 py-2 text-center cursor-pointer"
               >
                 <span>{currentIndex + 1 < questions.length ? 'Next Question →' : 'Finish Session 🏆'}</span>
               </button>
             )}
           </div>
 
-          {/* Instant Board-Standard Rule Card (After Answered) */}
-          {isAnswered && (
+          {/* WRITE MODE 4-PART EXPLANATION CARD */}
+          {isAnswered && currentMode === 'write' && (
+            <div
+              id="write-mode-explanation-card"
+              className={`rounded-2xl p-4 sm:p-5 border space-y-4 animate-fade-in w-full min-w-0 overflow-hidden ${
+                answerStatus === 'correct'
+                  ? 'bg-emerald-950/40 border-emerald-500/50 text-emerald-200'
+                  : answerStatus === 'almost_correct'
+                  ? 'bg-amber-950/40 border-amber-500/50 text-amber-200'
+                  : 'bg-rose-950/40 border-rose-500/50 text-rose-200'
+              }`}
+            >
+              {/* Header Badge */}
+              <div className="flex items-center justify-between gap-2 border-b border-white/[0.08] pb-3">
+                <div className="flex items-center gap-2">
+                  {answerStatus === 'correct' ? (
+                    <CheckCircle2 className="w-6 h-6 text-emerald-400 shrink-0" />
+                  ) : answerStatus === 'almost_correct' ? (
+                    <AlertCircle className="w-6 h-6 text-amber-400 shrink-0" />
+                  ) : (
+                    <XCircle className="w-6 h-6 text-rose-400 shrink-0" />
+                  )}
+                  <div>
+                    <h3 className="text-sm sm:text-base font-bold text-white leading-tight">
+                      {answerStatus === 'correct'
+                        ? 'Correct Answer! (+10 XP, +1 💎)'
+                        : answerStatus === 'almost_correct'
+                        ? 'Almost Correct! (+5 XP)'
+                        : 'Incorrect Answer (-1 ❤️)'}
+                    </h3>
+                    <p className="text-[11px] text-slate-400 mt-0.5">
+                      {answerStatus === 'correct'
+                        ? 'Your typed answer matches board standards.'
+                        : answerStatus === 'almost_correct'
+                        ? 'Minor detail deviation — review differences below.'
+                        : 'Review the correct answer and grammatical rule.'}
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {/* 1. YOUR ANSWER BOX */}
+              <div className="space-y-1">
+                <span className="text-[10px] font-mono uppercase tracking-wider font-bold text-slate-400">
+                  1. Your Answer:
+                </span>
+                <div
+                  className={`p-3 rounded-xl border text-sm sm:text-base font-medium break-words ${
+                    answerStatus === 'correct'
+                      ? 'bg-emerald-950/80 border-emerald-500/40 text-emerald-100'
+                      : answerStatus === 'almost_correct'
+                      ? 'bg-amber-950/80 border-amber-500/40 text-amber-100'
+                      : 'bg-rose-950/80 border-rose-500/40 text-rose-100 line-through'
+                  }`}
+                >
+                  {typedAnswer || '(No input)'}
+                </div>
+              </div>
+
+              {/* 2. CORRECT ANSWER BOX */}
+              <div className="space-y-1">
+                <span className="text-[10px] font-mono uppercase tracking-wider font-bold text-emerald-400">
+                  2. Correct Board Answer:
+                </span>
+                <div className="p-3 rounded-xl bg-slate-900/95 border-2 border-emerald-500/60 text-emerald-300 text-sm sm:text-base font-bold break-words">
+                  {String(currentQ.correctAnswer)}
+                </div>
+              </div>
+
+              {/* 3. WHAT YOU GOT WRONG (BULLETS) */}
+              <div className="space-y-1.5 bg-slate-950/70 p-3 sm:p-3.5 rounded-xl border border-white/[0.06]">
+                <span className="text-[10px] font-mono uppercase tracking-wider font-bold text-amber-300 block">
+                  3. What You Got Wrong / Key Differences:
+                </span>
+                <ul className="list-disc list-inside text-xs space-y-1 text-slate-200 leading-relaxed">
+                  {validationResult?.diffBreakdown && validationResult.diffBreakdown.length > 0 ? (
+                    validationResult.diffBreakdown.map((item, idx) => (
+                      <li key={idx} className="break-words">
+                        {item}
+                      </li>
+                    ))
+                  ) : (
+                    <li>{currentQ.explanation.whyCorrect}</li>
+                  )}
+                </ul>
+              </div>
+
+              {/* 4. THE RULE (ONE LINE) */}
+              <div className="space-y-1 bg-slate-900/90 p-3 rounded-xl border border-cyan-500/30">
+                <span className="text-[10px] font-mono uppercase tracking-wider font-bold text-cyan-400 block">
+                  4. The Rule:
+                </span>
+                <p className="text-xs sm:text-sm font-semibold text-white leading-relaxed">
+                  {currentQ.explanation.rule || currentQ.rule || 'Board Standard Transformation Rule'}
+                </p>
+              </div>
+
+              {/* Formula if available */}
+              {currentQ.explanation.formula && (
+                <div className="bg-slate-950/90 p-2.5 rounded-lg border border-slate-800 text-[11px] sm:text-xs font-mono text-cyan-300 break-words">
+                  <span className="text-slate-400 font-bold block text-[10px] uppercase">Formula Reference:</span>
+                  {currentQ.explanation.formula}
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* MCQ MODE EXPLANATION CARD */}
+          {isAnswered && currentMode === 'mcq' && (
             <div
               id="feedback-card"
               className={`rounded-xl p-3 sm:p-4 border space-y-2.5 animate-fade-in w-full min-w-0 overflow-hidden ${
-                isCorrect
+                answerStatus === 'correct'
                   ? 'bg-emerald-950/40 border-emerald-500/40 text-emerald-200'
                   : 'bg-red-950/40 border-red-500/40 text-red-200'
               }`}
             >
               <div className="flex flex-col xs:flex-row xs:items-center justify-between gap-1.5 sm:gap-2">
                 <div className="flex items-center gap-2 min-w-0">
-                  {isCorrect ? (
+                  {answerStatus === 'correct' ? (
                     <CheckCircle2 className="w-5 h-5 text-emerald-400 shrink-0" />
                   ) : (
                     <XCircle className="w-5 h-5 text-red-400 shrink-0" />
                   )}
                   <span className="text-xs sm:text-sm md:text-base font-bold text-white">
-                    {isCorrect ? 'Correct! +10 XP' : 'Incorrect (-1 Heart ❤️)'}
+                    {answerStatus === 'correct' ? 'Correct! +10 XP (+1 💎)' : 'Incorrect (-1 Heart ❤️)'}
                   </span>
                 </div>
 
@@ -569,30 +915,6 @@ export const GameScreen: React.FC<GameScreenProps> = ({
                 <div className="bg-slate-950/80 p-2.5 rounded-lg border border-slate-800 text-[11px] sm:text-xs font-mono text-cyan-300 break-words overflow-x-auto">
                   <span className="text-slate-400 font-bold block text-[10px] uppercase">Rule Formula:</span>
                   {currentQ.explanation.formula}
-                </div>
-              )}
-
-              {/* Tense & Shift Badges if present */}
-              {(currentQ.explanation.tenseShift || currentQ.explanation.timeShift || currentQ.explanation.pronounShift) && (
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-1.5 sm:gap-2 text-[10px] sm:text-[11px]">
-                  {currentQ.explanation.tenseShift && (
-                    <div className="p-2 rounded-lg bg-slate-900/90 border border-slate-800 min-w-0">
-                      <span className="text-slate-400 block text-[10px]">Tense Back-Shift:</span>
-                      <span className="text-cyan-300 font-bold break-words">{currentQ.explanation.tenseShift}</span>
-                    </div>
-                  )}
-                  {currentQ.explanation.timeShift && (
-                    <div className="p-2 rounded-lg bg-slate-900/90 border border-slate-800 min-w-0">
-                      <span className="text-slate-400 block text-[10px]">Time/Place Shift:</span>
-                      <span className="text-amber-300 font-bold break-words">{currentQ.explanation.timeShift}</span>
-                    </div>
-                  )}
-                  {currentQ.explanation.pronounShift && (
-                    <div className="p-2 rounded-lg bg-slate-900/90 border border-slate-800 min-w-0">
-                      <span className="text-slate-400 block text-[10px]">Pronoun Shift:</span>
-                      <span className="text-cyan-300 font-bold break-words">{currentQ.explanation.pronounShift}</span>
-                    </div>
-                  )}
                 </div>
               )}
 
@@ -611,7 +933,7 @@ export const GameScreen: React.FC<GameScreenProps> = ({
         </div>
       )}
 
-      {/* Floating Mascot in Corner (Scaled on mobile, does not block clicks) */}
+      {/* Floating Mascot in Corner */}
       <div className="fixed bottom-16 sm:bottom-20 right-2 sm:right-6 z-10 pointer-events-none drop-shadow-xl scale-75 sm:scale-100 origin-bottom-right">
         <Mascot mood={mascotMood} size="sm" showSpeech={mascotSpeech} />
       </div>
@@ -655,7 +977,7 @@ export const GameScreen: React.FC<GameScreenProps> = ({
                       }
                     }
                   }}
-                  className={`p-2 rounded-lg border flex flex-col items-center justify-center text-center transition-all ${
+                  className={`p-2 rounded-lg border flex flex-col items-center justify-center text-center transition-all cursor-pointer ${
                     state.diamonds >= 1
                       ? 'bg-red-500/20 hover:bg-red-500/30 border-red-500/50 text-white'
                       : 'bg-slate-800/40 border-slate-800 text-slate-500 cursor-not-allowed'
@@ -676,7 +998,7 @@ export const GameScreen: React.FC<GameScreenProps> = ({
                       }
                     }
                   }}
-                  className={`p-2 rounded-lg border flex flex-col items-center justify-center text-center transition-all ${
+                  className={`p-2 rounded-lg border flex flex-col items-center justify-center text-center transition-all cursor-pointer ${
                     state.diamonds >= 3
                       ? 'bg-red-500/20 hover:bg-red-500/30 border-red-500/50 text-white'
                       : 'bg-slate-800/40 border-slate-800 text-slate-500 cursor-not-allowed'
@@ -697,7 +1019,7 @@ export const GameScreen: React.FC<GameScreenProps> = ({
                       }
                     }
                   }}
-                  className={`p-2 rounded-lg border flex flex-col items-center justify-center text-center transition-all ${
+                  className={`p-2 rounded-lg border flex flex-col items-center justify-center text-center transition-all cursor-pointer ${
                     state.diamonds >= 7
                       ? 'bg-amber-500/20 hover:bg-amber-500/30 border-amber-500/50 text-white'
                       : 'bg-slate-800/40 border-slate-800 text-slate-500 cursor-not-allowed'
@@ -714,7 +1036,7 @@ export const GameScreen: React.FC<GameScreenProps> = ({
               id="btn-watch-ad-refill"
               disabled={isWatchingAd}
               onClick={handleWatchMockAd}
-              className="w-full py-2.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-cyan-400 border border-cyan-500/30 font-semibold text-xs transition-colors flex items-center justify-center gap-2"
+              className="w-full py-2.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-cyan-400 border border-cyan-500/30 font-semibold text-xs transition-colors flex items-center justify-center gap-2 cursor-pointer"
             >
               <span>{isWatchingAd ? 'Refilling Hearts...' : '📺 Watch Sponsor Clip (+5 ❤️)'}</span>
             </button>
@@ -736,7 +1058,7 @@ export const GameScreen: React.FC<GameScreenProps> = ({
                 setShowGameOverModal(false);
                 onExit();
               }}
-              className="w-full py-2.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold transition-colors"
+              className="w-full py-2.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold transition-colors cursor-pointer"
             >
               Return to Dashboard
             </button>
@@ -783,7 +1105,7 @@ export const GameScreen: React.FC<GameScreenProps> = ({
                 setShowSessionSummary(false);
                 onExit();
               }}
-              className="w-full py-2.5 rounded-lg bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold text-xs sm:text-sm shadow-md transition-all active:scale-95"
+              className="w-full py-2.5 rounded-lg bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold text-xs sm:text-sm shadow-md transition-all active:scale-95 cursor-pointer"
             >
               Continue to Dashboard
             </button>
