@@ -289,7 +289,7 @@ export function getDefaultState(): AppState {
       roll: null,
       group: null,
       board: null,
-      avatar: '🧑‍🎓',
+      avatar: 'cap',
       avatarFrame: 'none',
       joinedAt: null,
       title: 'Apprentice 🐣',

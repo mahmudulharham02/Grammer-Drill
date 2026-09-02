@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { X, Download } from 'lucide-react';
+import { X, Download, GraduationCap } from 'lucide-react';
 import { AppState } from '../types';
 import { generateMasteryCertificate, downloadCertificatePNG } from '../utils/certificate';
 import { soundManager } from '../utils/sound';
@@ -27,12 +27,12 @@ export const CertificateModal: React.FC<CertificateModalProps> = ({ state, onClo
       id="modal-certificate"
       className="fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex items-center justify-center p-3 sm:p-4 animate-fade-in"
     >
-      <div className="w-full max-w-3xl bg-slate-900 border border-white/[0.08] rounded-xl flex flex-col max-h-[95vh] overflow-hidden shadow-2xl">
+      <div className="w-full max-w-3xl bg-[#1e293b] border border-white/[0.08] rounded-2xl flex flex-col max-h-[95vh] overflow-hidden shadow-2xl">
         {/* Header */}
         <div className="p-3.5 sm:p-4 border-b border-white/[0.08] flex items-center justify-between bg-slate-950/80">
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-lg bg-cyan-500/10 border border-cyan-500/30 text-cyan-400 flex items-center justify-center text-lg">
-              🎓
+          <div className="flex items-center gap-2.5">
+            <div className="w-8 h-8 rounded-lg bg-cyan-500/10 border border-cyan-500/30 text-cyan-400 flex items-center justify-center">
+              <GraduationCap className="w-4 h-4" />
             </div>
             <div>
               <h2 className="text-sm sm:text-base font-bold text-white">

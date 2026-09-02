@@ -28,6 +28,7 @@ import { soundManager } from '../utils/sound';
 import { getMasteryTier } from '../utils/storage';
 import { getExamHistory, LastHourPrepAttempt } from '../utils/examGenerator';
 import { getDashboardTopicIcon } from './HomeDashboard';
+import { AvatarIcon } from './AvatarIcon';
 
 interface ProfileViewProps {
   state: AppState;
@@ -96,8 +97,8 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
         <div className="flex flex-col sm:flex-row items-center sm:items-start gap-4">
           {/* Avatar with Frame */}
           <div className="relative shrink-0">
-            <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-xl bg-slate-900 border border-cyan-500/30 flex items-center justify-center text-3xl sm:text-4xl shadow-md">
-              <span>{state.user.avatar || '🧑‍🎓'}</span>
+            <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-xl bg-slate-900 border border-cyan-500/30 flex items-center justify-center text-cyan-400 shadow-md">
+              <AvatarIcon avatarKey={state.user.avatar} className="w-8 h-8 sm:w-10 sm:h-10 text-cyan-400" />
             </div>
             <div className="absolute -bottom-1.5 -right-1.5 px-2 py-0.5 rounded-md bg-cyan-500 text-slate-950 text-[10px] font-bold shadow">
               Lvl {state.level}
