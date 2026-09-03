@@ -113,7 +113,7 @@ export async function syncProfileToSupabase(
       academic_group: profile.group || null,
       education_board: profile.board || null,
       college_name: collegeValue,
-      avatar: profile.avatar || 'cap',
+      avatar: profile.avatar || '🧑🎓',
       updated_at: new Date().toISOString(),
     };
 
@@ -186,7 +186,7 @@ export async function fetchProfileFromSupabase(
     const boardName = data.education_board || data.board || state.user.board;
     const genderVal =
       data.gender === 'male' || data.gender === 'female' ? data.gender : state.user.gender;
-    const avatarVal = data.avatar || state.user.avatar || 'cap';
+    const avatarVal = data.avatar || state.user.avatar || '🧑🎓';
 
     const mergedProfile: StudentProfile = {
       ...state.user,

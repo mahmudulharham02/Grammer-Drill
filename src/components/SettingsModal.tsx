@@ -4,6 +4,7 @@ import { AppState } from '../types';
 import { soundManager } from '../utils/sound';
 import { exportStateAsJSON, importStateFromJSON } from '../utils/storage';
 import { clearAllDrillModePreferences } from '../utils/modePreferences';
+import { AvatarPickerModal, resolveAvatar } from './AvatarPickerModal';
 
 interface SettingsModalProps {
   state: AppState;
@@ -21,12 +22,11 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
   onOpenFeedback,
 }) => {
   const [name, setName] = useState(state.user.name);
-  const [avatar, setAvatar] = useState(state.user.avatar);
+  const [avatar, setAvatar] = useState(resolveAvatar(state.user.avatar));
+  const [showPicker, setShowPicker] = useState(false);
   const [showResetConfirm, setShowResetConfirm] = useState(false);
   const [importError, setImportError] = useState<string | null>(null);
   const [clearedPreferencesMsg, setClearedPreferencesMsg] = useState(false);
-
-  const avatarsList = ['🧑‍🎓', '👩‍🎓', '🦉', '🚀', '⚡', '🏆', '🦁', '👑'];
 
   const handleSaveProfile = () => {
     soundManager.playClick();
@@ -127,29 +127,23 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
               </div>
             </div>
 
-            <div className="space-y-1 pt-1">
-              <label className="text-xs text-slate-300 font-medium block">Choose Avatar</label>
-              <div className="flex flex-wrap gap-1.5">
-                {avatarsList.map((em) => (
-                  <button
-                    key={em}
-                    onClick={() => {
-                      setAvatar(em);
-                      onUpdateState({
-                        ...state,
-                        user: { ...state.user, avatar: em },
-                      });
-                    }}
-                    className={`w-9 h-9 rounded-lg text-lg flex items-center justify-center transition-all ${
-                      avatar === em
-                        ? 'bg-cyan-500/20 border-2 border-cyan-400 scale-105'
-                        : 'bg-slate-900 border border-white/[0.06] hover:bg-slate-800'
-                    }`}
-                  >
-                    {em}
-                  </button>
-                ))}
+            <div className="flex items-center justify-between pt-1">
+              <div>
+                <label className="text-xs text-slate-300 font-medium block">Avatar</label>
+                <p className="text-[11px] text-slate-400">Choose your profile emoji</p>
               </div>
+              <button
+                type="button"
+                id="btn-settings-avatar-picker"
+                onClick={() => {
+                  soundManager.playClick();
+                  setShowPicker(true);
+                }}
+                className="w-12 h-12 rounded-full bg-slate-700/50 border border-white/10 hover:border-cyan-400 hover:bg-slate-700 flex items-center justify-center text-2xl transition-all active:scale-95 cursor-pointer"
+                title="Change Avatar"
+              >
+                {resolveAvatar(avatar)}
+              </button>
             </div>
           </div>
 
@@ -332,6 +326,22 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
           </div>
         </div>
       </div>
+
+      {showPicker && (
+        <AvatarPickerModal
+          isOpen={showPicker}
+          currentAvatar={avatar}
+          onSelect={(selected) => {
+            setAvatar(selected);
+            onUpdateState({
+              ...state,
+              user: { ...state.user, avatar: selected },
+            });
+            setShowPicker(false);
+          }}
+          onClose={() => setShowPicker(false)}
+        />
+      )}
     </div>
   );
 };

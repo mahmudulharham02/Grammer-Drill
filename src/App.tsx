@@ -979,6 +979,18 @@ export function App() {
             onNavigateTopic={(topicId) => startTopicLesson(topicId)}
             onStartExam={startLastHourPrepExam}
             onToast={showToast}
+            onUpdateAvatar={(newAvatar) => {
+              updateState((prev) => ({
+                ...prev,
+                user: {
+                  ...prev.user,
+                  avatar: newAvatar,
+                },
+              }));
+              if (isLoggedIn) {
+                syncProfile({ avatar: newAvatar });
+              }
+            }}
           />
         )}
       </main>

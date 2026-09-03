@@ -31,6 +31,7 @@ import {
   getCurrentDrillSession,
   WeakSpotInfo
 } from '../utils/storage';
+import { resolveAvatar } from './AvatarPickerModal';
 
 interface HomeDashboardProps {
   state: AppState;
@@ -249,9 +250,9 @@ export const HomeDashboard: React.FC<HomeDashboardProps> = ({
                 soundManager.playClick();
                 onNavigate('profile');
               }}
-              className="w-9 h-9 rounded-lg bg-slate-700 border border-white/[0.08] flex items-center justify-center text-lg cursor-pointer hover:border-cyan-500/40 shrink-0"
+              className="w-9 h-9 rounded-lg bg-slate-700 border border-white/[0.08] flex items-center justify-center text-lg cursor-pointer hover:border-cyan-500/40 shrink-0 select-none leading-none"
             >
-              <span>{state.user.avatar || '🧑‍🎓'}</span>
+              <span>{resolveAvatar(state.user.avatar)}</span>
             </div>
             <div className="min-w-0">
               <div className="flex items-center gap-2">

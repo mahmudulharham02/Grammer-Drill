@@ -25,6 +25,7 @@ import { soundManager } from '../utils/sound';
 import { useAuth } from '../context/AuthContext';
 import { maskEmail } from '../utils/syncEngine';
 import { LoginModal } from './LoginModal';
+import { resolveAvatar } from './AvatarPickerModal';
 
 interface NavbarProps {
   state: AppState;
@@ -256,7 +257,7 @@ export const Navbar: React.FC<NavbarProps> = ({
           <div className="bg-[#1e293b] rounded-2xl p-4 border border-white/[0.08] space-y-2">
             <div className="p-3 rounded-xl bg-slate-900 border border-white/[0.06] flex items-center justify-between mb-3">
               <div className="flex items-center gap-2.5">
-                <span className="text-2xl">{state.user.avatar || '🧑‍🎓'}</span>
+                <span className="text-[20px] leading-none select-none">{resolveAvatar(state.user.avatar)}</span>
                 <div>
                   <span className="text-xs font-semibold text-white block">
                     {state.user.name || 'HSC Aspirant'}

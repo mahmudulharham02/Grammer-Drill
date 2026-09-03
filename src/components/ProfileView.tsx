@@ -32,9 +32,9 @@ import { soundManager } from '../utils/sound';
 import { getMasteryTier } from '../utils/storage';
 import { getExamHistory, LastHourPrepAttempt } from '../utils/examGenerator';
 import { getDashboardTopicIcon } from './HomeDashboard';
-import { AvatarIcon } from './AvatarIcon';
+import { AvatarPickerModal, resolveAvatar } from './AvatarPickerModal';
 import { useAuth } from '../context/AuthContext';
-import { maskEmail, formatLastSynced } from '../utils/syncEngine';
+import { maskEmail, formatLastSynced, syncProfileToSupabase } from '../utils/syncEngine';
 import { LoginModal } from './LoginModal';
 
 interface ProfileViewProps {
@@ -46,6 +46,7 @@ interface ProfileViewProps {
   onNavigateTopic?: (topicId: string) => void;
   onStartExam?: () => void;
   onToast?: (msg: string) => void;
+  onUpdateAvatar?: (avatar: string) => void;
 }
 
 export const ProfileView: React.FC<ProfileViewProps> = ({
@@ -57,12 +58,27 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
   onNavigateTopic,
   onStartExam,
   onToast,
+  onUpdateAvatar,
 }) => {
   const { user, isLoggedIn, logout, lastSynced } = useAuth();
   const [showLoginModal, setShowLoginModal] = useState(false);
+  const [showPicker, setShowPicker] = useState(false);
   const [copiedRoll, setCopiedRoll] = useState(false);
   const [importStatus, setImportStatus] = useState<string | null>(null);
   const [selectedBadge, setSelectedBadge] = useState<Badge | null>(null);
+
+  const handleSaveAvatar = (newAvatar: string) => {
+    if (onUpdateAvatar) {
+      onUpdateAvatar(newAvatar);
+    }
+    if (isLoggedIn && user) {
+      syncProfileToSupabase({ ...state.user, avatar: newAvatar }, user);
+    }
+    setShowPicker(false);
+    if (onToast) {
+      onToast('Avatar updated!');
+    }
+  };
 
   const examHistory: LastHourPrepAttempt[] = getExamHistory();
   const latestExam = examHistory.length > 0 ? examHistory[0] : null;
@@ -181,14 +197,33 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
       {/* Profile Header Card */}
       <div className="rounded-xl p-4 sm:p-5 border border-white/[0.08] bg-slate-800/80 shadow-lg">
         <div className="flex flex-col sm:flex-row items-center sm:items-start gap-4">
-          {/* Avatar with Frame */}
-          <div className="relative shrink-0">
-            <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-xl bg-slate-900 border border-cyan-500/30 flex items-center justify-center text-cyan-400 shadow-md">
-              <AvatarIcon avatarKey={state.user.avatar} className="w-8 h-8 sm:w-10 sm:h-10 text-cyan-400" />
+          {/* Avatar Trigger Button */}
+          <div className="flex flex-col items-center shrink-0">
+            <div className="relative">
+              <button
+                id="btn-profile-avatar-picker"
+                type="button"
+                onClick={() => {
+                  soundManager.playClick();
+                  setShowPicker(true);
+                }}
+                className="
+                  w-20 h-20 rounded-full
+                  bg-slate-700/50 border-2 border-white/10
+                  hover:border-cyan-400 hover:bg-slate-700
+                  flex items-center justify-center
+                  text-4xl
+                  transition-all active:scale-95 cursor-pointer
+                "
+                title="Tap to change avatar"
+              >
+                {resolveAvatar(state.user.avatar)}
+              </button>
+              <div className="absolute -bottom-1 -right-1 px-2 py-0.5 rounded-md bg-cyan-500 text-slate-950 text-[10px] font-bold shadow pointer-events-none">
+                Lvl {state.level}
+              </div>
             </div>
-            <div className="absolute -bottom-1.5 -right-1.5 px-2 py-0.5 rounded-md bg-cyan-500 text-slate-950 text-[10px] font-bold shadow">
-              Lvl {state.level}
-            </div>
+            <p className="text-xs text-slate-400 mt-1">Tap to change</p>
           </div>
 
           {/* Profile Info */}
@@ -703,6 +738,15 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
         onClose={() => setShowLoginModal(false)}
         onToast={onToast}
       />
+
+      {showPicker && (
+        <AvatarPickerModal
+          isOpen={showPicker}
+          currentAvatar={state.user.avatar}
+          onSelect={handleSaveAvatar}
+          onClose={() => setShowPicker(false)}
+        />
+      )}
     </div>
   );
 };

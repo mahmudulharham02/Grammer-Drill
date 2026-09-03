@@ -15,7 +15,7 @@ import {
 } from 'lucide-react';
 import { StudentProfile } from '../types';
 import { soundManager } from '../utils/sound';
-import { AVATAR_OPTIONS, AvatarId } from './AvatarIcon';
+import { AvatarPickerModal, resolveAvatar } from './AvatarPickerModal';
 
 interface StudentIntroModalProps {
   initialProfile?: StudentProfile;
@@ -42,7 +42,8 @@ export const StudentIntroModal: React.FC<StudentIntroModalProps> = ({
   );
   const [group, setGroup] = useState(initialProfile?.group || 'Science');
   const [board, setBoard] = useState(initialProfile?.board || 'Dhaka');
-  const [avatar, setAvatar] = useState<string>(initialProfile?.avatar || 'cap');
+  const [avatar, setAvatar] = useState<string>(resolveAvatar(initialProfile?.avatar));
+  const [showPicker, setShowPicker] = useState<boolean>(false);
   const [gender, setGender] = useState<'male' | 'female' | null>(
     initialProfile?.gender === 'male' || initialProfile?.gender === 'female'
       ? initialProfile.gender
@@ -173,44 +174,28 @@ export const StudentIntroModal: React.FC<StudentIntroModalProps> = ({
               </p>
             </div>
 
-            {/* Avatar picker (8 flat icon circular buttons) */}
-            <div className="space-y-2">
-              <label className="text-[12px] font-semibold text-[#f8fafc] uppercase tracking-wider block">
-                Choose Avatar
-              </label>
-              <div className="flex items-center justify-center gap-2 flex-wrap py-0.5">
-                {AVATAR_OPTIONS.map((opt) => {
-                  const IconComp = opt.icon;
-                  const isSelected =
-                    avatar === opt.id ||
-                    (opt.id === 'cap' && (avatar === '🧑‍🎓' || avatar === '👩‍🎓')) ||
-                    (opt.id === 'lightbulb' && avatar === '🧠') ||
-                    (opt.id === 'owl' && avatar === '🦉') ||
-                    (opt.id === 'star' && avatar === '⭐') ||
-                    (opt.id === 'rocket' && avatar === '🚀') ||
-                    (opt.id === 'crown' && avatar === '👑') ||
-                    (opt.id === 'flame' && avatar === '🔥');
-
-                  return (
-                    <button
-                      key={opt.id}
-                      type="button"
-                      title={opt.label}
-                      onClick={() => {
-                        soundManager.playClick();
-                        setAvatar(opt.id);
-                      }}
-                      className={`w-10 h-10 rounded-full flex items-center justify-center transition-all cursor-pointer ${
-                        isSelected
-                          ? 'bg-[#0ea5e9] text-white border-2 border-[#0ea5e9] shadow-sm scale-105'
-                          : 'bg-transparent text-[#0ea5e9] border border-white/15 hover:border-[#0ea5e9]/50 hover:bg-[#0ea5e9]/10'
-                      }`}
-                    >
-                      <IconComp className="w-5 h-5" />
-                    </button>
-                  );
-                })}
-              </div>
+            {/* Avatar picker trigger button */}
+            <div className="flex flex-col items-center justify-center py-1">
+              <button
+                type="button"
+                id="btn-intro-avatar-picker"
+                onClick={() => {
+                  soundManager.playClick();
+                  setShowPicker(true);
+                }}
+                className="
+                  w-20 h-20 rounded-full
+                  bg-slate-700/50 border-2 border-white/10
+                  hover:border-cyan-400 hover:bg-slate-700
+                  flex items-center justify-center
+                  text-4xl
+                  transition-all active:scale-95 cursor-pointer
+                "
+                title="Tap to change avatar"
+              >
+                {resolveAvatar(avatar)}
+              </button>
+              <p className="text-xs text-slate-400 mt-1">Tap to change</p>
             </div>
 
             {/* Name Input */}
@@ -446,6 +431,15 @@ export const StudentIntroModal: React.FC<StudentIntroModalProps> = ({
           </div>
         )}
       </div>
+
+      {showPicker && (
+        <AvatarPickerModal
+          isOpen={showPicker}
+          currentAvatar={avatar}
+          onSelect={(selected) => setAvatar(selected)}
+          onClose={() => setShowPicker(false)}
+        />
+      )}
     </div>
   );
 };
