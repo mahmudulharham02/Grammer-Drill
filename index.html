@@ -1,6 +1,43 @@
 <!doctype html>
 <html lang="en">
   <head>
+    <script>
+      /* Ensure window.fetch has both getter and setter so external shims and libraries never throw "Cannot set property fetch of #<Window> which has only a getter" */
+      (function () {
+        try {
+          var origDefineProperty = Object.defineProperty;
+          Object.defineProperty = function (obj, prop, descriptor) {
+            var isWindowLike =
+              obj === window ||
+              (typeof globalThis !== 'undefined' && obj === globalThis) ||
+              (typeof Window !== 'undefined' && obj === Window.prototype);
+
+            if (isWindowLike && prop === 'fetch' && descriptor) {
+              if (descriptor.get && !descriptor.set) {
+                var originalGet = descriptor.get;
+                var customFetch;
+                var hasCustomFetch = false;
+
+                return origDefineProperty(obj, prop, {
+                  get: function () {
+                    return hasCustomFetch ? customFetch : originalGet.call(this);
+                  },
+                  set: function (val) {
+                    customFetch = val;
+                    hasCustomFetch = true;
+                  },
+                  configurable: true,
+                  enumerable: descriptor.enumerable !== undefined ? descriptor.enumerable : true,
+                });
+              }
+            }
+            return origDefineProperty(obj, prop, descriptor);
+          };
+        } catch (e) {
+          // Graceful fallback
+        }
+      })();
+    </script>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
     <title>Gramify — Master HSC English 2nd Paper</title>

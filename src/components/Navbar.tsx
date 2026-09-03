@@ -17,10 +17,14 @@ import {
   Zap,
   MessageSquare,
   ChevronRight,
+  Cloud,
 } from 'lucide-react';
 import { AppState } from '../types';
 import { getNextHeartRegenSeconds, formatHMS } from '../utils/storage';
 import { soundManager } from '../utils/sound';
+import { useAuth } from '../context/AuthContext';
+import { maskEmail } from '../utils/syncEngine';
+import { LoginModal } from './LoginModal';
 
 interface NavbarProps {
   state: AppState;
@@ -45,6 +49,8 @@ export const Navbar: React.FC<NavbarProps> = ({
   onToggleSound,
   onOpenFeedback,
 }) => {
+  const { user, isLoggedIn, logout } = useAuth();
+  const [showLoginModal, setShowLoginModal] = useState(false);
   const [regenSecs, setRegenSecs] = useState<number>(0);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
@@ -256,7 +262,11 @@ export const Navbar: React.FC<NavbarProps> = ({
                     {state.user.name || 'HSC Aspirant'}
                   </span>
                   <span className="text-[10px] text-slate-400">
-                    Roll: {state.user.roll || 'N/A'} • Lvl {state.level}
+                    {state.user.roll
+                      ? `Roll: ${state.user.roll} • Lvl ${state.level}`
+                      : state.user.institute
+                      ? `${state.user.institute} • Lvl ${state.level}`
+                      : `Lvl ${state.level} • ${state.user.group || 'Science'}`}
                   </span>
                 </div>
               </div>
@@ -305,6 +315,57 @@ export const Navbar: React.FC<NavbarProps> = ({
                 </button>
               );
             })}
+
+            {/* Cloud Auth Section in Drawer */}
+            <div className="pt-2">
+              <div className="border-t border-white/[0.08] my-2" />
+              {isLoggedIn ? (
+                <div className="p-2.5 rounded-xl bg-slate-900/90 border border-white/[0.08] flex items-center justify-between gap-2">
+                  <div className="flex items-center gap-2 min-w-0">
+                    <Cloud className="w-4 h-4 text-cyan-400 shrink-0" />
+                    <span className="text-[11px] text-slate-400 truncate">
+                      Logged in as <span className="text-white font-mono">{maskEmail(user?.email)}</span>
+                    </span>
+                  </div>
+                  <button
+                    id="drawer-logout-btn"
+                    type="button"
+                    onClick={async () => {
+                      soundManager.playClick();
+                      await logout();
+                    }}
+                    className="text-[11px] font-semibold text-red-400 hover:text-red-300 px-2 py-1 rounded hover:bg-red-500/10 transition-colors cursor-pointer shrink-0"
+                  >
+                    Logout
+                  </button>
+                </div>
+              ) : (
+                <button
+                  id="drawer-login-sync-btn"
+                  type="button"
+                  onClick={() => {
+                    soundManager.playClick();
+                    setShowLoginModal(true);
+                  }}
+                  className="w-full p-2.5 rounded-xl flex items-center justify-between text-left text-xs font-semibold bg-cyan-500/10 hover:bg-cyan-500/15 border border-cyan-500/25 transition-colors cursor-pointer"
+                >
+                  <div className="flex items-center gap-2.5">
+                    <div className="p-1.5 rounded-lg bg-cyan-500/20 text-cyan-400 shrink-0">
+                      <Cloud className="w-4 h-4" />
+                    </div>
+                    <div>
+                      <span className="text-cyan-300 font-semibold block text-xs">
+                        Login to Sync
+                      </span>
+                      <span className="text-[10px] text-slate-400 block">
+                        Backup your progress
+                      </span>
+                    </div>
+                  </div>
+                  <span className="text-xs font-semibold text-cyan-400">Login</span>
+                </button>
+              )}
+            </div>
 
             {/* Send Feedback Entry */}
             <div className="pt-2">
@@ -439,6 +500,11 @@ export const Navbar: React.FC<NavbarProps> = ({
           )}
         </button>
       </div>
+
+      <LoginModal
+        isOpen={showLoginModal}
+        onClose={() => setShowLoginModal(false)}
+      />
     </>
   );
 };

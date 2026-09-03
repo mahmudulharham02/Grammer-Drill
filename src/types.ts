@@ -223,6 +223,9 @@ export interface DailyChallengeState {
 export interface StudentProfile {
   name: string | null;
   roll: string | null;
+  roll_id?: string | null;
+  institute?: string | null;
+  college_name: string;
   group: string | null; // Science | Humanities | Business Studies
   board: string | null; // Dhaka | Rajshahi | Chattogram | Sylhet | Barishal | Cumilla | Jashore | Mymensingh | Dinajpur | Madrasah
   avatar: string;
@@ -235,6 +238,9 @@ export interface StudentProfile {
 export interface AppState {
   version: number;
   user: StudentProfile;
+  supabaseUserId?: string | null;
+  lastSyncedAt?: string | null;
+  syncPreference?: 'auto' | 'manual';
   xp: number;
   level: number;
   coins: number;

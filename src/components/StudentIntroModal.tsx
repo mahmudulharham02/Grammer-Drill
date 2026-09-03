@@ -36,7 +36,10 @@ export const StudentIntroModal: React.FC<StudentIntroModalProps> = ({
   const [carouselSlide, setCarouselSlide] = useState(0);
 
   const [name, setName] = useState(initialProfile?.name || '');
-  const [roll, setRoll] = useState(initialProfile?.roll || '');
+  const [roll, setRoll] = useState(initialProfile?.roll_id || initialProfile?.roll || '');
+  const [collegeName, setCollegeName] = useState(
+    initialProfile?.college_name || initialProfile?.institute || ''
+  );
   const [group, setGroup] = useState(initialProfile?.group || 'Science');
   const [board, setBoard] = useState(initialProfile?.board || 'Dhaka');
   const [avatar, setAvatar] = useState<string>(initialProfile?.avatar || 'cap');
@@ -47,7 +50,7 @@ export const StudentIntroModal: React.FC<StudentIntroModalProps> = ({
   );
   const [submitAttempted, setSubmitAttempted] = useState(false);
 
-  const isFormValid = name.trim().length > 0 && roll.trim().length > 0 && gender !== null;
+  const isFormValid = name.trim().length > 0 && gender !== null;
 
   const triggerSave = (profile: Partial<StudentProfile>) => {
     if (typeof onSave === 'function') {
@@ -63,10 +66,16 @@ export const StudentIntroModal: React.FC<StudentIntroModalProps> = ({
     if (!isFormValid || gender === null) return;
     soundManager.playClick();
 
+    const finalRoll = roll.trim() ? roll.trim().slice(0, 20) : null;
+    const finalCollege = collegeName.trim() ? collegeName.trim().slice(0, 80) : '';
+
     if (isEditing) {
       triggerSave({
         name: name.trim().slice(0, 30),
-        roll: roll.trim().slice(0, 20),
+        roll: finalRoll,
+        roll_id: finalRoll,
+        college_name: finalCollege,
+        institute: finalCollege,
         group,
         board,
         avatar,
@@ -88,9 +97,15 @@ export const StudentIntroModal: React.FC<StudentIntroModalProps> = ({
       });
     } catch (_) {}
 
+    const finalRoll = roll.trim() ? roll.trim().slice(0, 20) : null;
+    const finalCollege = collegeName.trim() ? collegeName.trim().slice(0, 80) : '';
+
     triggerSave({
       name: name.trim().slice(0, 30),
-      roll: roll.trim().slice(0, 20),
+      roll: finalRoll,
+      roll_id: finalRoll,
+      college_name: finalCollege,
+      institute: finalCollege,
       group,
       board,
       avatar,
@@ -217,14 +232,13 @@ export const StudentIntroModal: React.FC<StudentIntroModalProps> = ({
 
             {/* Roll / Student ID */}
             <div className="space-y-1.5">
-              <label className="text-[12px] font-semibold text-[#f8fafc] block">
-                Roll / Student ID <span className="text-[#ef4444]">*</span>
+              <label htmlFor="input-student-roll" className="text-[12px] font-semibold text-[#f8fafc] block">
+                Roll / Student ID (Optional)
               </label>
               <input
                 id="input-student-roll"
                 type="text"
                 maxLength={20}
-                required
                 placeholder="e.g. 108425"
                 value={roll}
                 onChange={(e) => setRoll(e.target.value)}
@@ -311,6 +325,22 @@ export const StudentIntroModal: React.FC<StudentIntroModalProps> = ({
                   <option value="Madrasah">Madrasah / Technical</option>
                 </select>
               </div>
+            </div>
+
+            {/* College / Institute (below Education Board) */}
+            <div className="space-y-1.5">
+              <label htmlFor="input-student-college" className="text-[12px] font-semibold text-[#f8fafc] block">
+                College / Institute (Optional)
+              </label>
+              <input
+                id="input-student-college"
+                type="text"
+                maxLength={80}
+                placeholder="e.g. SRCC"
+                value={collegeName}
+                onChange={(e) => setCollegeName(e.target.value)}
+                className="w-full h-[48px] px-3.5 rounded-xl bg-[#0f172a] border border-white/10 text-[14px] text-[#f8fafc] placeholder:text-[#94a3b8]/60 focus:outline-none focus:border-[#0ea5e9]/50 focus:ring-2 focus:ring-[#0ea5e9]/20 transition-all"
+              />
             </div>
 
             {/* Action Buttons */}

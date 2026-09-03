@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { AppState, Question, ShopItem, VoiceSubModuleId, NarrationSubModuleId, DrillMode } from './types';
 import {
   loadAppState,
@@ -24,6 +24,8 @@ import { TOPICS_DATA } from './data/topics';
 import { soundManager } from './utils/sound';
 import { getDrillModePreference, setDrillModePreference } from './utils/modePreferences';
 import { X as CloseIcon } from 'lucide-react';
+import { useAuth } from './context/AuthContext';
+import { scheduleProgressSync, initSyncListeners } from './utils/syncEngine';
 
 // Components
 import { Navbar } from './components/Navbar';
@@ -67,6 +69,12 @@ export function App() {
   const [state, setState] = useState<AppState>(() => loadAppState());
   const [currentRoute, setCurrentRoute] = useState<string>('home');
   const [toastMessage, setToastMessage] = useState<string | null>(null);
+
+  const { user, isLoggedIn, syncProfile, setLastSynced } = useAuth();
+  const stateRef = useRef(state);
+  stateRef.current = state;
+  const userRef = useRef(user);
+  userRef.current = user;
 
   // Active game session config
   const [activeQuestions, setActiveQuestions] = useState<Question[]>([]);
@@ -122,6 +130,33 @@ export function App() {
     }, 15000);
     return () => clearInterval(timer);
   }, []);
+
+  // Initialize visibilitychange and online sync listeners
+  useEffect(() => {
+    const cleanup = initSyncListeners(
+      () => stateRef.current,
+      () => userRef.current,
+      (ts) => {
+        setLastSynced(ts);
+        setState((prev) => ({ ...prev, lastSyncedAt: ts }));
+      }
+    );
+    return cleanup;
+  }, [setLastSynced]);
+
+  // Debounced progress sync trigger for significant events (30 seconds debounce)
+  const triggerProgressSync = useCallback(() => {
+    if (userRef.current) {
+      scheduleProgressSync(
+        () => stateRef.current,
+        userRef.current.id,
+        (ts) => {
+          setLastSynced(ts);
+          setState((prev) => ({ ...prev, lastSyncedAt: ts }));
+        }
+      );
+    }
+  }, [setLastSynced]);
 
   // Update & persist state helper
   const updateState = useCallback((updater: AppState | ((prev: AppState) => AppState)) => {
@@ -555,6 +590,7 @@ export function App() {
 
     saveExamAttempt(attempt);
     setCurrentExamAttempt(attempt);
+    triggerProgressSync();
     window.history.pushState({ page: 'last_hour_prep_results' }, '', '#last_hour_prep_results');
     setCurrentRoute('last_hour_prep_results');
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -580,7 +616,10 @@ export function App() {
   const handleAddXP = (xp: number, coins: number) => {
     setState((prev) => {
       const withSession = recordStudySession(prev);
-      const { newState } = addXPAndCoins(withSession, xp, coins);
+      const { newState, leveledUp, newlyUnlockedBadges } = addXPAndCoins(withSession, xp, coins);
+      if (leveledUp || (newlyUnlockedBadges && newlyUnlockedBadges.length > 0)) {
+        triggerProgressSync();
+      }
       return newState;
     });
   };
@@ -619,6 +658,7 @@ export function App() {
       xp: prev.xp + 50,
       unclaimedBadges: (prev.unclaimedBadges || []).filter((id) => id !== badgeId),
     }));
+    triggerProgressSync();
   };
 
   const handleBuyShopItem = (item: ShopItem) => {
@@ -884,6 +924,7 @@ export function App() {
                   },
                 }));
               }
+              triggerProgressSync();
             }}
             onRecordResult={handleRecordResult}
             onAddXP={handleAddXP}
@@ -937,6 +978,7 @@ export function App() {
             onOpenCertificate={() => setShowCertModal(true)}
             onNavigateTopic={(topicId) => startTopicLesson(topicId)}
             onStartExam={startLastHourPrepExam}
+            onToast={showToast}
           />
         )}
       </main>
@@ -1109,6 +1151,9 @@ export function App() {
                 ...profile,
               },
             }));
+            if (isLoggedIn) {
+              syncProfile(profile);
+            }
           }}
           onSaveProfile={(profile) => {
             setShowIntroModal(false);
@@ -1120,6 +1165,9 @@ export function App() {
                 ...profile,
               },
             }));
+            if (isLoggedIn) {
+              syncProfile(profile);
+            }
           }}
           onClose={() => setShowIntroModal(false)}
         />

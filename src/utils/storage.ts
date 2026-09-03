@@ -251,9 +251,14 @@ export function formatHMS(secondsOrMs: number, isMs: boolean = false): string {
 }
 
 export function ensureUserDefaults(user: Partial<StudentProfile> = {}): StudentProfile {
+  const college = user.college_name ?? user.institute ?? '';
+  const rollVal = user.roll_id ?? user.roll ?? null;
   return {
     name: user.name || null,
-    roll: user.roll || null,
+    roll: rollVal,
+    roll_id: rollVal,
+    college_name: college,
+    institute: college,
     group: user.group || null,
     board: user.board || null,
     avatar: user.avatar || '🧑‍🎓',
@@ -287,6 +292,9 @@ export function getDefaultState(): AppState {
     user: {
       name: null,
       roll: null,
+      roll_id: null,
+      college_name: '',
+      institute: '',
       group: null,
       board: null,
       avatar: 'cap',
@@ -295,6 +303,9 @@ export function getDefaultState(): AppState {
       title: 'Apprentice 🐣',
       gender: null,
     },
+    supabaseUserId: null,
+    lastSyncedAt: null,
+    syncPreference: 'auto',
     xp: 0,
     level: 1,
     coins: 10,
@@ -393,9 +404,7 @@ export function loadAppState(): AppState {
     if (!parsed.user) {
       parsed.user = getDefaultState().user;
     } else {
-      if ((parsed.user as any).gender === 'other' || ((parsed.user as any).gender !== 'male' && (parsed.user as any).gender !== 'female')) {
-        parsed.user.gender = null;
-      }
+      parsed.user = ensureUserDefaults(parsed.user);
     }
 
     if (!parsed.settings) {
@@ -443,6 +452,15 @@ export function loadAppState(): AppState {
     }
     if (parsed.dailyRuleIndex === undefined) {
       parsed.dailyRuleIndex = 0;
+    }
+    if (parsed.supabaseUserId === undefined) {
+      parsed.supabaseUserId = null;
+    }
+    if (parsed.lastSyncedAt === undefined) {
+      parsed.lastSyncedAt = null;
+    }
+    if (parsed.syncPreference === undefined) {
+      parsed.syncPreference = 'auto';
     }
 
     // Check & calculate heart regeneration (every 3 hours)

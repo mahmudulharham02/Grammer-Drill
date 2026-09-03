@@ -72,9 +72,10 @@ export function generateMasteryCertificate(state: AppState): string {
   ctx.font = 'bold 46px "Plus Jakarta Sans", sans-serif';
   ctx.fillText(state.user.name || 'HSC Scholar', 600, 340);
 
-  // Roll, Board, Group details
+  // Roll, Institute, Board, Group details
   const rollText = state.user.roll ? `Roll ID: ${state.user.roll} • ` : '';
-  const boardGroupText = `${rollText}${state.user.group || 'Science'} • ${state.user.board || 'Dhaka'} Board`;
+  const instText = state.user.institute ? `${state.user.institute} • ` : '';
+  const boardGroupText = `${rollText}${instText}${state.user.group || 'Science'} • ${state.user.board || 'Dhaka'} Board`;
   ctx.fillStyle = '#38bdf8';
   ctx.font = '600 20px "JetBrains Mono", monospace';
   ctx.fillText(boardGroupText, 600, 385);

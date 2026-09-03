@@ -19,7 +19,11 @@ import {
   CheckCircle2,
   Edit2,
   Info,
-  X
+  X,
+  Cloud,
+  LogIn,
+  LogOut,
+  Building2
 } from 'lucide-react';
 import { AppState, TopicProgressItem, Badge } from '../types';
 import { ALL_BADGES } from '../data/badges';
@@ -29,6 +33,9 @@ import { getMasteryTier } from '../utils/storage';
 import { getExamHistory, LastHourPrepAttempt } from '../utils/examGenerator';
 import { getDashboardTopicIcon } from './HomeDashboard';
 import { AvatarIcon } from './AvatarIcon';
+import { useAuth } from '../context/AuthContext';
+import { maskEmail, formatLastSynced } from '../utils/syncEngine';
+import { LoginModal } from './LoginModal';
 
 interface ProfileViewProps {
   state: AppState;
@@ -38,6 +45,7 @@ interface ProfileViewProps {
   onOpenCertificate: () => void;
   onNavigateTopic?: (topicId: string) => void;
   onStartExam?: () => void;
+  onToast?: (msg: string) => void;
 }
 
 export const ProfileView: React.FC<ProfileViewProps> = ({
@@ -48,7 +56,10 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
   onOpenCertificate,
   onNavigateTopic,
   onStartExam,
+  onToast,
 }) => {
+  const { user, isLoggedIn, logout, lastSynced } = useAuth();
+  const [showLoginModal, setShowLoginModal] = useState(false);
   const [copiedRoll, setCopiedRoll] = useState(false);
   const [importStatus, setImportStatus] = useState<string | null>(null);
   const [selectedBadge, setSelectedBadge] = useState<Badge | null>(null);
@@ -57,9 +68,10 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
   const latestExam = examHistory.length > 0 ? examHistory[0] : null;
 
   const handleCopyRoll = () => {
-    if (!state.user.roll) return;
+    const rollToCopy = state.user.roll || state.user.roll_id;
+    if (!rollToCopy) return;
     soundManager.playClick();
-    navigator.clipboard.writeText(state.user.roll);
+    navigator.clipboard.writeText(rollToCopy);
     setCopiedRoll(true);
     setTimeout(() => setCopiedRoll(false), 2000);
   };
@@ -92,6 +104,80 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
 
   return (
     <div id="view-student-profile" className="space-y-4 max-w-5xl mx-auto pb-20 animate-fade-in">
+      {/* Cloud Sync Status / Prompt Card */}
+      {isLoggedIn ? (
+        <div
+          id="card-cloud-auth-active"
+          className="rounded-xl p-4 sm:p-5 border border-white/[0.08] bg-slate-800/80 shadow-lg flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3"
+        >
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-cyan-500/10 border border-cyan-500/20 text-cyan-400 flex items-center justify-center shrink-0">
+              <Cloud className="w-5 h-5" />
+            </div>
+            <div>
+              <div className="flex items-center gap-2 flex-wrap">
+                <span className="text-xs sm:text-sm font-semibold text-white">
+                  Logged in as <span className="font-mono text-cyan-300">{maskEmail(user?.email)}</span>
+                </span>
+                <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                  Cloud Active
+                </span>
+              </div>
+              <p className="text-xs text-slate-400 mt-0.5">
+                Last synced:{' '}
+                <span className="text-slate-300 font-medium">
+                  {formatLastSynced(lastSynced || state.lastSyncedAt)}
+                </span>
+              </p>
+            </div>
+          </div>
+
+          <button
+            id="btn-profile-logout"
+            type="button"
+            onClick={async () => {
+              soundManager.playClick();
+              await logout();
+              onToast?.('Logged out. Switched to local mode.');
+            }}
+            className="px-3.5 py-2 rounded-lg border border-red-500/40 text-red-400 hover:bg-red-500/10 hover:border-red-500 text-xs font-semibold flex items-center gap-1.5 transition-colors cursor-pointer active:scale-95 shrink-0"
+          >
+            <LogOut className="w-4 h-4" />
+            <span>Logout</span>
+          </button>
+        </div>
+      ) : (
+        <div
+          id="card-cloud-auth-prompt"
+          className="rounded-xl p-4 sm:p-5 border border-cyan-500/30 bg-[#1e293b] shadow-lg flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4"
+        >
+          <div className="flex items-center gap-3.5">
+            <div className="w-11 h-11 rounded-xl bg-[#0ea5e9]/10 border border-[#0ea5e9]/20 text-[#0ea5e9] flex items-center justify-center shrink-0">
+              <Cloud className="w-6 h-6" />
+            </div>
+            <div>
+              <h2 className="text-sm sm:text-base font-bold text-white">Save Progress to Cloud</h2>
+              <p className="text-xs text-slate-400 mt-0.5">
+                Optional. Login with email to backup your data.
+              </p>
+            </div>
+          </div>
+
+          <button
+            id="btn-profile-login"
+            type="button"
+            onClick={() => {
+              soundManager.playClick();
+              setShowLoginModal(true);
+            }}
+            className="w-full sm:w-auto px-4 py-2.5 rounded-xl bg-[#0ea5e9] hover:bg-[#0284c7] text-white text-xs sm:text-sm font-semibold shadow-md flex items-center justify-center gap-2 transition-all active:scale-95 cursor-pointer shrink-0"
+          >
+            <LogIn className="w-4 h-4" />
+            <span>Login with Email</span>
+          </button>
+        </div>
+      )}
+
       {/* Profile Header Card */}
       <div className="rounded-xl p-4 sm:p-5 border border-white/[0.08] bg-slate-800/80 shadow-lg">
         <div className="flex flex-col sm:flex-row items-center sm:items-start gap-4">
@@ -136,25 +222,52 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
               </button>
             </div>
 
-            {/* Roll Number & Gender */}
-            <div className="flex flex-wrap items-center justify-center sm:justify-start gap-3 pt-1">
-              <div className="flex items-center gap-1.5">
-                <span className="text-xs text-slate-400 font-mono">Roll / ID:</span>
-                <span className="text-xs font-mono font-semibold text-white bg-slate-900/90 px-2 py-0.5 rounded-md border border-white/[0.06]">
-                  {state.user.roll || 'N/A'}
-                </span>
-                {state.user.roll && (
+            {/* Roll Number, College / Institute & Gender */}
+            <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2.5 pt-1">
+              {(state.user.roll || state.user.roll_id) ? (
+                <div id="profile-user-roll" className="flex items-center gap-1.5">
+                  <span className="text-xs text-slate-400 font-mono">Roll:</span>
+                  <span className="text-xs font-mono font-semibold text-white bg-slate-900/90 px-2 py-0.5 rounded-md border border-white/[0.06]">
+                    {state.user.roll || state.user.roll_id}
+                  </span>
                   <button
                     id="btn-copy-roll"
                     type="button"
                     onClick={handleCopyRoll}
-                    className="p-1 rounded-md bg-slate-800 hover:bg-slate-700 text-slate-300 transition-colors"
+                    className="p-1 rounded-md bg-slate-800 hover:bg-slate-700 text-slate-300 transition-colors cursor-pointer"
                     title="Copy Roll ID"
                   >
                     {copiedRoll ? <Check className="w-3 h-3 text-emerald-400" /> : <Copy className="w-3 h-3" />}
                   </button>
-                )}
-              </div>
+                </div>
+              ) : (
+                <div id="profile-user-roll" className="flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-slate-900/90 border border-white/[0.06]">
+                  <span className="text-xs text-slate-400 font-mono">Roll:</span>
+                  <span className="text-xs text-slate-500 italic">Not set</span>
+                </div>
+              )}
+
+              {(state.user.college_name || state.user.institute) ? (
+                <div
+                  id="profile-user-institute"
+                  className="flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-slate-900/90 border border-white/[0.06] max-w-[240px] sm:max-w-[320px]"
+                  title={state.user.college_name || state.user.institute || ''}
+                >
+                  <Building2 className="w-3.5 h-3.5 text-cyan-400 shrink-0" />
+                  <span className="text-xs text-slate-200 truncate font-medium">
+                    {state.user.college_name || state.user.institute}
+                  </span>
+                </div>
+              ) : (
+                <div
+                  id="profile-user-institute"
+                  className="flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-slate-900/90 border border-white/[0.06]"
+                >
+                  <Building2 className="w-3.5 h-3.5 text-slate-500 shrink-0" />
+                  <span className="text-xs text-slate-400">College:</span>
+                  <span className="text-xs text-slate-500 italic">Not set</span>
+                </div>
+              )}
 
               <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-slate-900/90 border border-white/[0.06]">
                 <span className="text-xs">
@@ -584,6 +697,12 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
           </div>
         </div>
       </div>
+
+      <LoginModal
+        isOpen={showLoginModal}
+        onClose={() => setShowLoginModal(false)}
+        onToast={onToast}
+      />
     </div>
   );
 };
