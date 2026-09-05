@@ -24,7 +24,6 @@ import { getXpRequiredForLevel } from '../data/badges';
 import { soundManager } from '../utils/sound';
 import { CacheWarningBanner } from './CacheWarningBanner';
 import { LowHeartsBanner } from './LowHeartsBanner';
-import { AuthTeaserCard } from './AuthTeaserCard';
 import { RuleOfTheDayCard } from './RuleOfTheDayCard';
 import {
   getWeakestSubModule,
@@ -105,9 +104,6 @@ export const HomeDashboard: React.FC<HomeDashboardProps> = ({
 
   return (
     <div id="home-dashboard-container" className="space-y-4 pb-12 max-w-7xl mx-auto">
-      {/* Auth Teaser Notification (first visit only) */}
-      <AuthTeaserCard />
-
       {/* Low Hearts Banner */}
       <LowHeartsBanner
         hearts={state.hearts}

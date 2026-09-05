@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { X, Volume2, VolumeX, Download, Upload, Trash2, AlertTriangle, User, ShieldCheck, MessageSquare, RotateCcw, Check, PenTool } from 'lucide-react';
+import { X, Volume2, VolumeX, Download, Upload, Trash2, AlertTriangle, User, ShieldCheck, MessageSquare, RotateCcw, Check, PenTool, Cloud } from 'lucide-react';
 import { AppState } from '../types';
 import { soundManager } from '../utils/sound';
 import { exportStateAsJSON, importStateFromJSON } from '../utils/storage';
@@ -211,6 +211,19 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
               </label>
             </div>
             {importError && <p className="text-xs text-red-400">{importError}</p>}
+          </div>
+
+          {/* About Cloud Sync */}
+          <div className="space-y-2 bg-slate-800/80 p-3.5 rounded-xl border border-white/[0.08]">
+            <h3 className="text-[11px] font-bold uppercase tracking-wider text-cyan-400 flex items-center gap-1.5">
+              <Cloud className="w-3.5 h-3.5 text-cyan-400" />
+              <span>About Cloud Sync</span>
+            </h3>
+            <p className="text-xs text-slate-400 leading-relaxed">
+              The application will soon incorporate{' '}
+              <strong className="font-semibold text-white">authentication functionality</strong> and{' '}
+              <strong className="font-semibold text-white">store user data</strong>. This is an upcoming feature, not yet available.
+            </p>
           </div>
 
           {/* Practice Mode Preferences */}
